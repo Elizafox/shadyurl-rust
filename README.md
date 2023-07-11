@@ -14,7 +14,8 @@ Contributing
 ============
 By contributing, you agree to disclaim all copyright to your code and release it under the [CC0 waiver](https://creativecommons.org/share-your-work/public-domain/cc0/). You also agree you have all the relevant rights to do so.
 
-You must run the following before submitting a pull request:
-* `cargo fmt`
-* `cargo clippy` and fix any relevant issues (or `cargo clippy --fix`)
-* If any dependencies are updated, `spdx-sbom-generator` or similar to update the SBOM
+You must ensure the following before submitting a pull request:
+* Ensure all your commits are signed off (`git commit --signoff`) and you comply with the [Developer's Certificate of Origin](/DCO.txt)
+* That you have run `cargo fmt`
+* That you have run `cargo clippy` and fixed any relevant issues (or `cargo clippy --fix`)
+* If any dependencies are updated, [`spdx-sbom-generator`](https://github.com/opensbom-generator/spdx-sbom-generator) or similar to update the SBOM
