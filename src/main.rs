@@ -102,8 +102,7 @@ async fn shutdown_signal(pid_file: &mut File) {
 
 // We must fork before we do anything else.
 // We might as well do other environmental init stuff too.
-fn main() -> Result<()>
-{
+fn main() -> Result<()> {
     let env = EnvVars::new()?;
 
     if env.daemon() {
@@ -113,7 +112,7 @@ fn main() -> Result<()>
     }
 
     set_umask();
-    
+
     let mut pid_file = open_pid_file(&env)?;
 
     setup_logger(&env);

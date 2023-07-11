@@ -79,9 +79,11 @@ pub(crate) fn close_stdio() -> Result<()> {
 pub(crate) fn open_pid_file(env: &EnvVars) -> Result<File> {
     // Open the PID file with current privileges before dropping
     // We leak because we want this to live forever
-    let mut pid_file = File::options().create(true).read(true).write(true).open(
-        env.pid_file()
-    )?;
+    let mut pid_file = File::options()
+        .create(true)
+        .read(true)
+        .write(true)
+        .open(env.pid_file())?;
 
     // Lock exclusively
     flock(pid_file.as_raw_fd(), FlockArg::LockExclusiveNonblock)
