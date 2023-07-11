@@ -43,7 +43,7 @@ fn do_initgroups(name: &CStr, gid: Gid) -> Result<()> {
 
 #[cfg(not(target_os = "macos"))]
 #[inline]
-fn do_initgroups(name: CStr, gid: Gid) -> Result<()> {
+fn do_initgroups(name: &CStr, gid: Gid) -> Result<()> {
     initgroups(name, gid).map_err(|e| Error::new(e).context("initgroups() failed"))?;
     Ok(())
 }
