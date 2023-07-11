@@ -16,7 +16,6 @@ use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io::prelude::*;
 use std::os::fd::AsRawFd;
-use std::os::unix::ffi::OsStrExt;
 use std::process::exit;
 
 use anyhow::{anyhow, bail, Error, Result};
@@ -82,7 +81,6 @@ pub(crate) fn open_pid_file(env: &EnvVars) -> Result<File> {
     // We leak because we want this to live forever
     let mut pid_file = File::options().create(true).read(true).write(true).open(
         env.pid_file()
-            .expect("Invariant not upheld: PID file not set"),
     )?;
 
     // Lock exclusively
@@ -141,20 +139,7 @@ pub(crate) fn to_background() -> Result<()> {
         ForkResult::Parent { .. } => exit(0),
         ForkResult::Child => {}
     }
-
-    // On many OSes, it's *unsafe* to proceed in the child, so we HAVE to exec.
-    let mut args: Vec<_> = std::env::args_os()
-        .map(|v| CString::new(v.as_bytes()).expect("Unexpected failure getting arguments"))
-        .collect();
-    let arg0 = args[0].clone();
-    args[0] = CString::new("shadyurl-rust").expect("Unexpected failure setting args[0]");
-    execve(
-        arg0.as_c_str(),
-        &args,
-        &[CString::new("__SHADYURL_POST_EXEC=1")?],
-    )
-    .map_err(|e| Error::new(e).context("execve() failed (uh oh)"))?;
-    unreachable!();
+    Ok(())
 }
 
 #[inline]

@@ -45,7 +45,7 @@ pub(crate) struct EnvVars {
     log_level: Level,
     log_stderr: bool,
     daemon: bool,
-    pid_file: Option<PathBuf>,
+    pid_file: PathBuf,
     daemon_user: Option<String>,
     daemon_group: Option<String>,
 }
@@ -92,10 +92,6 @@ impl EnvVars {
         env::var_os(var).ok_or_else(|| anyhow!("No {var} variable found in environment"))
     }
 
-    fn get_env_var_os_optional(var: &str) -> Option<OsString> {
-        env::var_os(var)
-    }
-
     pub(crate) fn new() -> Result<Self> {
         dotenv().map_err(|e| Error::new(e).context("Could not get environment variable"))?;
 
@@ -127,17 +123,14 @@ impl EnvVars {
         let log_stderr = Self::get_env_var_optional::<bool>("LOG_STDERR")?.unwrap_or(false);
 
         let daemon = Self::get_env_var_optional::<bool>("DAEMON")?.unwrap_or(false);
-        let (pid_file, daemon_user, daemon_group) = if daemon {
-            let pid_file = Some(Self::get_env_var_os_optional("PID_FILE").map_or(
-                // If this fails, we have bigger problems!
-                DEFAULT_PID_FILE.clone(),
-                |v| PathBuf::from(&v),
-            ));
+        let pid_file = Self::get_env_var_os("PID_FILE")
+            .map_or(DEFAULT_PID_FILE.clone(), |v| PathBuf::from(&v));
+        let (daemon_user, daemon_group) = if daemon {
             let daemon_user = Self::get_env_var_optional("DAEMON_USER")?;
             let daemon_group = Self::get_env_var_optional("DAEMON_GROUP")?;
-            (pid_file, daemon_user, daemon_group)
+            (daemon_user, daemon_group)
         } else {
-            (None, None, None)
+            (None, None)
         };
 
         Ok(Self {
@@ -202,8 +195,8 @@ impl EnvVars {
         self.daemon
     }
 
-    pub(crate) fn pid_file(&self) -> Option<&PathBuf> {
-        self.pid_file.as_ref()
+    pub(crate) fn pid_file(&self) -> &PathBuf {
+        &self.pid_file
     }
 
     pub(crate) fn daemon_user(&self) -> Option<&str> {

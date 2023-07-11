@@ -100,36 +100,40 @@ async fn shutdown_signal(pid_file: &mut File) {
     let _ = ftruncate(pid_file.as_raw_fd(), 0);
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
+// We must fork before we do anything else.
+// We might as well do other environmental init stuff too.
+fn main() -> Result<()>
+{
     let env = EnvVars::new()?;
 
-    // The __SHADYURL_POST_EXEC hack here is to prevent us from getting into an endless loop
-    // On macOS and other OSes, it's not safe to do much from a child process, so we NEED to exec
-    // after we fork.
-    if env.daemon() && std::env::var_os("__SHADYURL_POST_EXEC").is_none() {
+    if env.daemon() {
         // Tokio can't survive a fork. This MUST be done first.
         to_background()?;
         close_stdio()?;
     }
 
     set_umask();
-
+    
     let mut pid_file = open_pid_file(&env)?;
 
     setup_logger(&env);
 
-    let db = get_db(&env).await?;
+    tokio_main(&env, &mut pid_file)
+}
 
-    let state = AppState::new_from_env(db, &env);
+#[tokio::main]
+async fn tokio_main(env: &EnvVars, pid_file: &mut File) -> Result<()> {
+    let db = get_db(env).await?;
 
-    let app = get_router(&env, state).await?;
+    let state = AppState::new_from_env(db, env);
+
+    let app = get_router(env, state).await?;
     let server = Server::try_bind(&env.bind().parse()?)?
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .with_graceful_shutdown(shutdown_signal(&mut pid_file));
+        .with_graceful_shutdown(shutdown_signal(pid_file));
 
     // We can only do this after the above
-    drop_privileges(&env)?;
+    drop_privileges(env)?;
 
     server.await?;
 

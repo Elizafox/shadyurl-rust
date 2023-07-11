@@ -29,9 +29,7 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
         "http" | "https" | "ftp" | "ftps" | "gopher" | "irc" | "ircs" | "gemini" => {
             let host_str = url_parsed.host_str().unwrap();
             match host_str.rfind('.') {
-                None => {
-                    Err(ValidationError::new("Invalid hostname"))
-                }
+                None => Err(ValidationError::new("Invalid hostname")),
                 Some(pos) => {
                     if host_str.len() - pos < 3 {
                         return Err(ValidationError::new("Invalid TLD"));
@@ -41,8 +39,6 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
                 }
             }
         }
-        _ => {
-            Err(ValidationError::new("Bad scheme"))
-        }
+        _ => Err(ValidationError::new("Bad scheme")),
     }
 }
