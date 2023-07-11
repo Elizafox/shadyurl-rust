@@ -112,7 +112,7 @@ pub(crate) fn drop_privileges(env: &EnvVars) -> Result<()> {
 
         // Drop privileges
         let username_c = CString::new(user.name)?;
-        do_initgroups(&username_c.as_c_str(), group.gid)?;
+        do_initgroups(username_c.as_c_str(), group.gid)?;
         setgid(group.gid).map_err(|e| Error::new(e).context("setgid() failed"))?;
         setuid(user.uid).map_err(|e| Error::new(e).context("setuid() failed"))?;
     } else if let Some(daemon_group) = env.daemon_group() {
