@@ -1,8 +1,8 @@
 ShadyURL-Rust
 -------------
 [![License: CC0-1.0](https://licensebuttons.net/l/zero/1.0/80x15.png)](http://creativecommons.org/publicdomain/zero/1.0/)
-[![Mark stale issues and pull requests](https://github.com/Elizafox/shadyurl-rust/actions/workflows/stale.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/stale.yml)
-[![Rust](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust.yml)
+[![Stale issues and pull requests](https://github.com/Elizafox/shadyurl-rust/actions/workflows/stale.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/stale.yml)
+[![Build](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust.yml)
 [![rust-clippy analyze](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust-clippy.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/rust-clippy.yml)
 [![DevSkim](https://github.com/Elizafox/shadyurl-rust/actions/workflows/devskim.yml/badge.svg)](https://github.com/Elizafox/shadyurl-rust/actions/workflows/devskim.yml)
 
