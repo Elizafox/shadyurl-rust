@@ -57,3 +57,5 @@ gen_passwd()
 
 	(printf "$pw1" | argon2 "$salt" -id -e -t 12 -m 16 -v 13) || bail "Could not generate argon2 hash"
 }
+
+gen_passwd
