@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8">
+        <meta name="description" content="A thing that makes URLs shady">
+        <meta name="author" content="Elizabeth Myers">
+        <meta property="og:title" content="Make your URLs shady">
+        <meta property="og:type" content="website">
+        <meta property="og:description" content="A thing that makes URLs shady">
+        <title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
+        <link rel="stylesheet" href="assets/style.css">
+    </head>
+    <body>
+        <div id="content">
+            <div id="header">
+                {% block header %}<p>Placeholder header</p>{% endblock %}
+            </div>
+            <div id="body">
+                {% block content %}<p>Placeholder content</p>{% endblock %}
+            </div>
+            <div id="footer">
+                <p>
+                    Made with spite and malice by <a href="https://social.naln1.ca/Elizafox">Elizabeth Myers</a> in Rust.
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

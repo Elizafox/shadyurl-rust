@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ sitename }}{% endblock %}
+{% block header %}
+<h1>{{ sitename }}</h1>
+<h2>Admin login portal</h2>
+{% if err_str != "" %}
+<div id="warning">{{ err_str }}</div>
+{% endif %}
+{% endblock %}
+{% block content %}
+<p>
+    <div id="form">
+        <form action="/login" method="post">
+            <input type="hidden" name="auth_token" value="{{ auth_token }}">
+            <label for="username">Username:</label><br><br>
+            <input type="text" id="username" name="username"><br><br>
+            <label for="password">Password:</label><br><br>
+            <input type="password" id="password" name="password"><br><br>
+            <input type="submit" value="Login">
+        </form>
+    </div>
+</p>
+{% endblock %}

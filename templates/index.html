@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ sitename }}{% endblock %}
+{% block header %}
+<h1>{{ sitename }}</h1>
+<h2>Make your URLs shady</h2>
+{% endblock %}
+{% block content %}
+<p>
+    <div id="form">
+        <form action="/makeurl" method="post">
+            <label for="url">URL (supported types below):</label><br><br>
+            <input type="hidden" name="auth_token" value="{{ auth_token }}">
+            <input type="text" id="url" name="url"><br><br>
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</p>
+<br>
+<p>
+<h2>Supported URL types</h2>
+<p>
+    ftp • ftps • gemini • gopher • http • https • irc • ircs
+</p>
+{% endblock %}

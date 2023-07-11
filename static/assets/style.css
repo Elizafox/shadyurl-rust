@@ -1,0 +1,94 @@
+html {
+    background-color: #181818;
+    color: #00B000;
+}
+
+.inline {
+    display: inline;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    font-size: 1em;
+    text-decoration: underline;
+    cursor: pointer;
+    color: #00E000;
+    font-family: Monospace;
+}
+
+.link-button:focus {
+    outline: none;
+}
+
+.link-button:active {
+    color: #00F000;
+}
+
+div#header h1 {
+    font-size: 3.50em;
+}
+
+div#header h2 {
+    font-size: 2.00em;
+}
+
+div#warning {
+    background-color: #FF0000;
+    color: #000000;
+    height: 1.50em;
+    align: center;
+    border: 1px solid #000000;
+    margin: auto;
+    width: 50%;
+    line-height: 1.50em;
+    font-size: 1.25em;
+}
+
+div#content {
+    margin: auto;
+    line-height: 1.25em;
+    width: 75%;
+    text-align: center;
+    font-family: Monospace;
+}
+
+div#content p {
+    font-size: 1.25em;
+}
+
+div#content a:link {
+    color: #00E000;
+}
+
+div#content a:visited {
+    color: #00D000;
+}
+
+div#body label {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+div#body input {
+    font-size: 1.25em;
+    background-color: #181818;
+    color: #00C000;
+    border: 2px #00AA00;
+    box-shadow: 0 0 3px #00CC00;
+}
+
+div#body input:focus {
+    outline: none;
+    border: 2px #00CC00;
+    box-shadow: 0 0 6px #00DD00;
+}
+
+div#form {
+    padding-top: 2.25em;
+}
+
+div#footer {
+    padding-top: 1.75em;
+    font-size: 0.75em;
+}

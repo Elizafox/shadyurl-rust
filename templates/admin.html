@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Admin – {{ sitename }}{% endblock %}
+{% block header %}
+<h1>Admin – {{ sitename }}</h1>
+<a href="/logout">Logout</a>
+{% endblock %}
+{% block content %}
+<p>
+    <table>
+        <div id="table_heading">
+            <tr id="heading">
+                <td>ID</td>
+                <td>URL</td>
+                <td>Redirect</td>
+                <td>Created</td>
+                <td>IP</td>
+            </tr>
+        </div>
+        {% for entry in urls %}
+        <div id="table_item">
+            <tr>
+                <td>
+                    <form method="post" action="/admin" class="inline">
+                        <input type="hidden" name="auth_token" value="{{ auth_token }}">
+                        <input type="hidden" name="id" value="{{ entry.id }}">
+                        <button type="submit" value="submit" class="link-button">
+                            {{ entry.id }}
+                        </button>
+                    </form>
+                </td>
+                <td>{{ entry.url }}</td>
+                <td>{{ entry.shady }}</td>
+                <td>{{ entry.created_at }}</td>
+                <td>{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
+            </tr>
+        </div>
+        {% endfor %}
+    </table>
+</p>
+{% endblock %}

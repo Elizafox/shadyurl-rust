@@ -1,0 +1,47 @@
+# This is the .env config file for ShadyURL.
+
+# Whether or not to daemonise, set to true or false
+DAEMON=false
+
+# Path to PID file, defaults to /var/run/shadyurl.pid
+PID_FILE="/tmp/shadyurl.pid"
+
+# Set the log level, with 0 being only errors, and 5 being debug
+LOG_LEVEL=1
+
+# Whether or not to log to stderr
+LOG_STDERR=false
+
+# This is for cookies, don't disclose it, and you really need to change this.
+# It must be at least 64 characters long
+# TIP: generate it with the script provided:
+#     /path/to/shadyurl-rust/utils/secret_key.sh
+SECRET_KEY=dummydummydummydummydummydummydummydummydummydummydummydummydumm
+
+# Login username, for the /login endpoint for management
+USERNAME=Elizafox
+
+# Password hash to use for the login endpoint; install argon2 and use the shell script provided:
+#     /path/to/shadyurl-rust/utils/password_hash.sh
+PASSWORD_HASH='$argon2id$v=19$m=16,t=10,p=1$ZGFibW9GVU9GYVhQSkpxSw$6IJIHbZZzHyw/qVZK3EjZQ'
+
+# Local sitename, if you wish to change it
+SITENAME=ShadyURL
+
+# Your site's hostname
+HOSTNAME="localhost:3000"
+
+# IP and port to bind to
+BIND="0.0.0.0:3000"
+
+# Database URL to connect to, following the format:
+#     protocol://username:password@host:port/database
+#
+# SQLite is also supported, in that case it's just a path to a file, as below.
+#
+# Be sure to run from the source dir:
+#     . .env && sea-orm-cli migrate up -d "$DATABASE_URL"
+DATABASE_URL="sqlite:/tmp/test.db"
+
+# Redis URL, must start with redis:// as below.
+REDIS_URL="redis://127.0.0.1"

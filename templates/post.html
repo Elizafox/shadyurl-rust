@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Success{% endblock %}
+{% block header %}
+<h1>Success!</h1>
+{% endblock %}
+{% block content %}
+{%- let slim_shady = "http://{}/{}"|format(hostname, shady|escape) -%}
+<p>
+    <strong><a href="{{ slim_shady }}">{{ slim_shady }}</a></strong><br><br>
+    goes to<br><br>
+    <strong><a href="{{ url }}">{{ url }}</a></strong>.
+</p>
+<br>
+<p>
+    <a href="/">Make another URL shady?</a>
+</p>
+{% endblock %}
