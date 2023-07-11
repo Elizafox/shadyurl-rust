@@ -12,4 +12,4 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-echo "$(LC_ALL=C tr -dc '[:alnum:]+_<>,.-!@%^&*()[]{}\|:;?/`' </dev/urandom | head -c 64)"
+echo "$(LC_ALL=C tr -dc '[:alnum:]+_<>,.-!@%^&*()[]{}\|:;?/`' </dev/random | head -c 64)"
