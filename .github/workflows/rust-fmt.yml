@@ -1,0 +1,40 @@
+name: rust-fmt
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+  schedule:
+    - cron: '33 15 * * 3'
+
+jobs:
+  rust-clippy-analyze:
+    name: Run rust-fmt
+    runs-on: ubuntu-latest
+    permissions:
+      contents: [read, write]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: cargo format
+        uses: actions-rs/cargo@v1
+        with:
+          command: format
+          args: --release --all-features
+
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated commit for `cargo format`
+          branch: master
+          commit_options: '--no-verify --signoff'
+          commit_author: Format Bot <actions@github.com>
+          status_options: '--untracked-files=no'
