@@ -1,6 +1,25 @@
-- name: Anchore SBOM Action
-  uses: anchore/sbom-action@v0
+name: "sbom-action"
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    release:
+    types:
+      - created
+      - edited
+    workflow_dispatch:
 
-- uses: anchore/sbom-action/publish-sbom@v0
-  with:
-    sbom-artifact-match: ".*\\.spdx$"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Anchore SBOM Action
+        uses: anchore/sbom-action@v0
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Anchore SBOM Release Action
+        uses: anchore/sbom-action/publish-sbom@v0
+        with:
+          sbom-artifact-match: ".*\\.spdx$"
