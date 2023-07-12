@@ -19,7 +19,6 @@ You must ensure the following before submitting a pull request:
 * Ensure all your commits are signed off (`git commit --signoff`) and you comply with the [Developer's Certificate of Origin](/DCO.txt)
 * That you have run `cargo fmt`
 * That you have run `cargo clippy` and fixed any relevant issues (or `cargo clippy --fix`)
-* If any dependencies are updated, [`spdx-sbom-generator`](https://github.com/opensbom-generator/spdx-sbom-generator) or similar to update the SBOM
 
 ### Header
 All new files must include a header similar to this:
