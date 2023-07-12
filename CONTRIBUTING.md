@@ -11,7 +11,7 @@ By contributing, you agree to abide by the [Contributor Covenant](/CODE_OF_CONDU
 Failure to abide by the covenant may result in expulsion from the project.
 
 Copyright
-==========
+=========
 By contributing, you agree to disclaim all copyright to your code and release it under the [CC0 waiver](https://creativecommons.org/share-your-work/public-domain/cc0/). You also agree you have all the relevant rights to do so.
 
 You must ensure the following before submitting a pull request:
@@ -48,6 +48,10 @@ The CC0 waiver specifically protects your patent rights. Therefore, by contribut
 However, for your contributions to be accepted, you have two options regarding your patents:
 - You must assert you have no patent rights in the code, and to the best of your knowledge, your contributions are not covered by active patents.
 - You must agree in writing not to enforce your patents against any users of ShadyURL-Rust. Such an agreement must be signed, irrevocable, and made public. Relevant patents must be mentioned in said agreement.
+
+Developer Certificate of Origin
+===============================
+You must acknowledge and affirm you are in compliance with the [Developer's Ceritifcate of Origin](/DCO.txt). All commits must have a `Signed-off-by` line. Use `git commit --signoff` to sign-off your commits.
 
 Style
 =====
