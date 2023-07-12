@@ -22,7 +22,7 @@ use std::{
 
 use anyhow::{anyhow, Error, Result};
 use argon2_kdf::Hash;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use lazy_static::lazy_static;
 use os_str_bytes::RawOsString;
 use tracing::Level;
