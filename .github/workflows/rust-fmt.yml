@@ -28,7 +28,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: fmt
-          args: --release --all-features
 
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
