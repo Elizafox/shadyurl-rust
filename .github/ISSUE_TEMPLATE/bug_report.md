@@ -17,7 +17,7 @@ Steps to reproduce the behavior, for example:
 3. Turboencabulator reacts and begins to emit a 69,420 Hertz tone
 4. Turboencabulator causes resonance in the frobinicator, which then explodes into chartreuse-orange shards
 
-**Expected behavior**
+## Expected behavior
 A clear and concise description of what you expected to happen. (Example: "The frobinicator should not explode into coloured shards")
 
 ## Logs
