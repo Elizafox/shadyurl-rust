@@ -18,7 +18,7 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: actions-rs/toolchain@v1
         with:
@@ -32,7 +32,7 @@ jobs:
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Automated commit for `cargo format`
+          commit_message: Automated commit for `cargo fmt`
           branch: main
           commit_options: '--no-verify --signoff'
           commit_author: Format Bot <actions@github.com>
