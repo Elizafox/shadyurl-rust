@@ -31,6 +31,7 @@ jobs:
 
     if: github.event_name == "release"
     runs-on: ubuntu-latest
+
     steps:
       - name: Anchore SBOM Release Action
         uses: anchore/sbom-action/publish-sbom@v0
@@ -44,12 +45,15 @@ jobs:
           name: sbom
           path: ${{github.workspace}}/Files/sbom.spdx
 
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Download artifact
         uses: actions/download-artifact@v2
         with:
           name: sbom
           path: ${{github.workspace}}/Files
-      
+  
       - name: Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
