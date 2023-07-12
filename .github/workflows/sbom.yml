@@ -8,6 +8,7 @@ on:
     types:
       - created
       - edited
+
     workflow_dispatch:
 
 jobs:
@@ -16,6 +17,7 @@ jobs:
     steps:
       - name: Anchore SBOM Action
         uses: anchore/sbom-action@v0
+
   release:
     runs-on: ubuntu-latest
     steps:
