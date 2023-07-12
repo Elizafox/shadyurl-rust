@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Anchore SBOM Action
         uses: anchore/sbom-action@v0
+        with:
+          artifact-name: sbom.spdx
 
   release:
     runs-on: ubuntu-latest
@@ -27,4 +29,27 @@ jobs:
       - name: Anchore SBOM Release Action
         uses: anchore/sbom-action/publish-sbom@v0
         with:
+          artifact-name: sbom.spdx
           sbom-artifact-match: ".*\\.spdx$"
+    
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: sbom
+          path: ${{github.workspace}}\Files\sbom.spdx
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: sbom
+          path: ${{github.workspace}}\Files
+      
+      - name: Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated commit to add SBOM
+          branch: master
+          commit_options: '--no-verify --signoff'
+          commit_author: SBOM Bot <actions@github.com>
+          status_options: '--untracked-files=no'
+          skip_dirty_check: true
