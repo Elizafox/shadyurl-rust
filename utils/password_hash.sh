@@ -19,7 +19,7 @@ cleanup()
 
 bail()
 {
-	echo "$1"
+	echo "$1" >&2
 	exit 1
 }
 
@@ -37,8 +37,8 @@ gen_randint()
 
 gen_salt()
 {
-	saltlen="$(gen_randint "8" "16" || bail "Could not get random int")"
-	(tr -dc '[:alnum:]' </dev/random | head -c "$saltlen") || bail "Could not generate salt"
+	saltlen="$(gen_randint "12" "24" || bail "Could not get random int")"
+	(tr -dc '[:print:]' </dev/random | head -c "$saltlen") || bail "Could not generate salt"
 }
 
 gen_passwd()
@@ -48,26 +48,34 @@ gen_passwd()
 
 	which -s argon2 || bail "argon2 is not installed; install it via your OS's libargon2 or argon2 package"
 
-	orig_stty="$(stty -g)"
+	if [ -t 0 ]; then
+		tty="$(tty)"
+		orig_stty="$(stty -g)"
 
-	trap exit INT HUP QUIT TERM
-	trap 'cleanup "$orig_stty"' EXIT
+		trap exit INT HUP QUIT TERM;
+		trap 'cleanup "$orig_stty"' EXIT;
 
-	stty -echo
+		printf "Password: " >$tty
+		stty -echo
+		read pw1 || bail "Could not read password"
+		stty "$orig_stty"
 
-	printf "Password: "
-	read pw1 || bail "Could not read password"
+		printf "\nRetype Password: " >$tty
+		stty -echo
+		read pw2 || bail "Could not read password"
+		stty "$orig_stty"
+		echo >$tty
 
-	printf "\nRetype Password: "
-	read pw2 || bail "Could not read password"
+		[ "$pw1" == "$pw2" ] || bail "Passwords didn't match"
+		passwd="$pw1"
 
-	echo
+		salt="$(gen_salt || bail "Could not generate salt")"
+	else
+		passwd="$1"
+	fi
 
-	[ "$pw1" == "$pw2" ] || bail "Passwords didn't match"
-
-	salt="$(gen_salt || bail "Could not generate salt")"
-
-	(printf "$pw1" | argon2 "$salt" -id -e -t 12 -m 16 -v 13) || bail "Could not generate argon2 hash"
+	(printf "$passwd" | argon2 "$salt" -id -e -t 12 -m 16 -v 13) || bail "Could not generate argon2 hash"
 }
 
-gen_passwd
+passwd="$(gen_passwd || bail "Could not generate password")"
+printf "\nPASSWORD_HASH='%s'\n" "${passwd}"
