@@ -33,7 +33,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Automated commit for `cargo format`
-          branch: master
+          branch: main
           commit_options: '--no-verify --signoff'
           commit_author: Format Bot <actions@github.com>
           status_options: '--untracked-files=no'
