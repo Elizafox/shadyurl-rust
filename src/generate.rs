@@ -18,7 +18,7 @@ use rand::{
 };
 
 const NSFW: &[&str] = &[
-    "0-percent-risk",
+"0-percent-risk",
     "100-percent-legal",
     "1-dollar-iphone",
     "1man1jar",
