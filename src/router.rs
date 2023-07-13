@@ -23,7 +23,7 @@ use axum::{
     error_handling::HandleErrorLayer,
     middleware::map_response,
     routing::{get, post},
-    BoxError, Router,
+    Router,
 };
 use axum_client_ip::SecureClientIpSource;
 use axum_login::{
@@ -31,9 +31,7 @@ use axum_login::{
 };
 use tokio::{sync::RwLock, time::Duration};
 use tower::ServiceBuilder;
-use tower_governor::{errors::display_error, governor::GovernorConfigBuilder, GovernorLayer};
 use tower_http::{
-    compression::CompressionLayer,
     services::{ServeDir, ServeFile},
     trace::TraceLayer,
 };
@@ -84,7 +82,6 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
 
     let services = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
-        .layer(CompressionLayer::new())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
         .layer(SecureClientIpSource::RightmostForwarded.into_extension())
@@ -92,44 +89,9 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .layer(session_layer)
         .layer(auth_layer);
 
-    let governor_default_conf = Box::new(
-        GovernorConfigBuilder::default()
-            .per_second(2)
-            .burst_size(5)
-            .finish()
-            .unwrap(),
-    );
-
-    let governor_login_conf = Box::new(
-        GovernorConfigBuilder::default()
-            .per_second(5)
-            .burst_size(3)
-            .finish()
-            .unwrap(),
-    );
-
-    let services_governor_regular = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|e: BoxError| async move {
-            display_error(e)
-        }))
-        .layer(GovernorLayer {
-            // We can leak this because it is created once
-            config: Box::leak(governor_default_conf),
-        });
-
-    let services_governor_login = ServiceBuilder::new()
-        .layer(HandleErrorLayer::new(|e: BoxError| async move {
-            display_error(e)
-        }))
-        .layer(GovernorLayer {
-            config: Box::leak(governor_login_conf),
-        });
-
     let login_router = Router::new()
         .route("/login", get(login_page_handler).post(login_handler))
-        .route_layer(services_governor_login)
-        .route("/logout", get(logout_handler))
-        .route_layer(services_governor_regular.clone());
+        .route("/logout", get(logout_handler));
 
     let admin_router = Router::new()
         .route("/admin", get(admin_handler).post(delete_handler))
@@ -141,8 +103,7 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .nest_service("/favicon.ico", ServeFile::new("static/favicon.ico"))
         .nest_service("/assets", ServeDir::new("static/assets"))
         .route("/*shady", get(get_shady))
-        .route("/", get(root))
-        .route_layer(services_governor_regular);
+        .route("/", get(root));
 
     Ok(Router::new()
         .merge(login_router)

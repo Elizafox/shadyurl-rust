@@ -59,8 +59,7 @@ serde = { version = "1.0.171", features = ["derive"] }
 syslog-tracing = "0.2.0"
 tokio = { version = "1.29.1", features = ["fs", "macros", "net", "parking_lot", "rt-multi-thread", "signal", "time", "tracing"] }
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
-tower-http = { version = "0.4.1", features = ["async-compression", "compression-full", "decompression-full", "fs", "trace", "timeout", "tokio", "tower", "tracing"] }
-tower_governor = { version = "0.0.4", features = ["tracing"] }
+tower-http = { version = "0.4.1", features = ["fs", "trace", "timeout", "tokio", "tower", "tracing"] }
 tracing = { version = "0.1.37", features = ["async-await", "log"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "parking_lot", "serde", "time", "tracing", "tracing-serde"] }
 url = "2.4.0"
