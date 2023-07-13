@@ -17,7 +17,7 @@
 <h1>Success!</h1>
 {% endblock %}
 {% block content %}
-{%- let slim_shady = "http://{}/{}"|format(hostname, shady|escape) -%}
+{%- let slim_shady = "https://{}/{}"|format(hostname, shady|escape) -%}
 <p>
     <strong><a href="{{ slim_shady }}">{{ slim_shady }}</a></strong><br><br>
     goes to<br><br>
