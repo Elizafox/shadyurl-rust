@@ -55,7 +55,10 @@ ul#url-types li {
 }
 
 ul#url-types li:not(:first-child):before {
-    content: ' • ';
+    position: relative;
+    padding-left: 0.10em;
+    padding-right: 0.50em;
+    content: "\2022";
 }
 
 div#header h1 {
