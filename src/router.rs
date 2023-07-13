@@ -87,7 +87,7 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .layer(CompressionLayer::new())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
-        .layer(SecureClientIpSource::ConnectInfo.into_extension())
+        .layer(SecureClientIpSource::RightmostForwarded.into_extension())
         .layer(map_response(transform_error))
         .layer(session_layer)
         .layer(auth_layer);
