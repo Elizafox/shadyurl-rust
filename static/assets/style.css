@@ -39,26 +39,22 @@ html {
     color: #00F000;
 }
 
-div#url-types-box {
-    width: 50%;
-    margin: 0 auto;
+ul#url-types {
+    list-style: none;
+    max-width: 50%;
+    margin: auto auto;
 }
 
 ul#url-types li {
-    font-size: 1.20em;
-    line-height: 1.25em;
+    text-align: center;
     display: inline-block;
-    float: center;
-    margin: 0 auto;
-    display: inline;
-    white-space: nowrap;
+    font-size: 1.20em;
+    line-height: 1.50em;
+    text-align: center;
 }
 
 ul#url-types li:not(:first-child):before {
-    position: relative;
-    padding-left: 0.10em;
-    padding-right: 0.50em;
-    content: "\2022";
+    content: '\2022\00a0';
 }
 
 div#header h1 {
@@ -118,6 +114,10 @@ div#body input:focus {
     outline: none;
     border: 2px #00CC00;
     box-shadow: 0 0 6px #00DD00;
+}
+
+div#body h2 {
+    font-size: 1.75em;
 }
 
 div#form {
