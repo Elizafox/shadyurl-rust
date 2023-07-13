@@ -18,7 +18,7 @@
 {% endblock %}
 {% block content %}
 <p>
-    Your URL <strong>{{ url }}</strong> failed: <strong>{{ reason }}</strong>
+    Could not make your URL <strong>{{ url|escape }}</strong> shady: <strong>{{ reason }}</strong>
     <br><br>
     <a href="/">Go home</a>
 </p>
