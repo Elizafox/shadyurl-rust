@@ -643,7 +643,7 @@ fn generate_hash(rng: &mut dyn RngCore) -> String {
 
 pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     let between_nsfw = Uniform::from(0..NSFW.len());
-    let nsfw_count = rng.gen_range(4..10);
+    let nsfw_count = rng.gen_range(5..10);
     let mut out = Vec::new();
     let mut has_hash = false;
     for _ in 0..nsfw_count {
