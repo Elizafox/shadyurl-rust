@@ -25,6 +25,7 @@ use axum::{
     routing::{get, post},
     BoxError, Router,
 };
+use axum_client_ip::SecureClientIpSource;
 use axum_login::{
     axum_sessions::SessionLayer, memory_store::MemoryStore as AuthMemoryStore, AuthLayer, AuthUser,
 };
@@ -86,6 +87,7 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .layer(CompressionLayer::new())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
+        .layer(SecureClientIpSource::ConnectInfo.into_extension())
         .layer(map_response(transform_error))
         .layer(session_layer)
         .layer(auth_layer);

@@ -12,14 +12,15 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{net::SocketAddr, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
-    extract::{ConnectInfo, Path, State},
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Redirect, Result},
     Form,
 };
+use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
 use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
@@ -74,7 +75,7 @@ pub(crate) async fn root(
 pub(crate) async fn accept_form(
     token: CsrfToken,
     mut session: WritableSession,
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    SecureClientIp(addr): SecureClientIp,
     State(state): State<AppState>,
     Form(payload): Form<UrlPayload>,
 ) -> Result<impl IntoResponse> {
@@ -117,7 +118,7 @@ pub(crate) async fn accept_form(
     .await
     .map_err(|_| respond_internal_server_error())?;
 
-    let ip = addr.ip().to_string();
+    let ip = addr.to_string();
 
     let url_db_obj = url_db::ActiveModel {
         url: Set(url.to_string()),
