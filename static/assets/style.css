@@ -39,6 +39,25 @@ html {
     color: #00F000;
 }
 
+div#url-types-box {
+    width: 50%;
+    margin: 0 auto;
+}
+
+ul#url-types li {
+    font-size: 1.20em;
+    line-height: 1.25em;
+    display: inline-block;
+    float: center;
+    margin: 0 auto;
+    display: inline;
+    white-space: nowrap;
+}
+
+ul#url-types li:not(:first-child):before {
+    content: ' • ';
+}
+
 div#header h1 {
     font-size: 3.50em;
 }
