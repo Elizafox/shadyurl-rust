@@ -26,7 +26,7 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
     }
 
     match url_parsed.scheme() {
-        "http" | "https" | "ftp" | "ftps" | "gopher" | "irc" | "ircs" | "gemini" => {
+        "ftp" | "ftps" | "gemini" | "gopher" | "http" | "https" | "irc" | "irc6" | "ircs" | "jabber" | "matrix" | "mumble" | "mxc" | "spotify" | "teamspeak" | "xmpp" => {
             let host_str = url_parsed.host_str().unwrap();
             match host_str.rfind('.') {
                 None => Err(ValidationError::new("Invalid hostname")),
