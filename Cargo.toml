@@ -42,7 +42,7 @@ askama = { version = "0.12.0", features = ["with-axum"] }
 askama_axum = { version = "0.3.0", features = ["config", "humansize"] }
 async-fred-session = "0.1.4"
 axum = { version = "0.6.18", features = ["macros", "http2", "headers", "multipart", "tracing"] }
-axum_csrf = "0.6.2"
+axum_csrf = "0.7.0"
 axum-login = "0.5.0"
 dotenvy = "0.15.7"
 itertools = "0.11.0"
@@ -53,7 +53,7 @@ num_cpus = "1.16.0"
 os_str_bytes = "6.5.1"
 rand = "0.8.5"
 sea-orm = { version = "0.11.3", features = ["sqlx-all", "runtime-tokio-native-tls", "macros", "with-chrono"] }
-sea-query = { version = "0.28.5", features = ["with-chrono", "thread-safe"] }
+sea-query = { version = "0.29.1", features = ["with-chrono", "thread-safe"] }
 serde = { version = "1.0.171", features = ["derive"] }
 syslog-tracing = "0.2.0"
 tokio = { version = "1.29.1", features = ["fs", "macros", "net", "parking_lot", "rt-multi-thread", "signal", "time", "tracing"] }

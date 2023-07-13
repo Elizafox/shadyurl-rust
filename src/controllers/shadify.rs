@@ -56,7 +56,8 @@ pub(crate) async fn root(
     mut session: WritableSession,
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    let auth_token = token.authenticity_token();
+    let auth_token = token.authenticity_token()
+        .map_err(|_| respond_not_authorised())?;
     session
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised())?;

@@ -87,7 +87,8 @@ pub(crate) async fn login_page_handler(
         return Ok(Redirect::to("/admin").into_response());
     }
 
-    let auth_token = token.authenticity_token();
+    let auth_token = token.authenticity_token()
+        .map_err(|_| respond_not_authorised())?;
     session
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised())?;
@@ -193,7 +194,8 @@ pub(crate) async fn admin_handler(
         .await
         .map_err(|_| respond_internal_server_error())?;
 
-    let auth_token = token.authenticity_token();
+    let auth_token = token.authenticity_token()
+        .map_err(|_| respond_not_authorised())?;
     session
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised())?;
