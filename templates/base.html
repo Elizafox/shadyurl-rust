@@ -21,7 +21,8 @@
         <meta property="og:title" content="Make your URLs shady">
         <meta property="og:type" content="website">
         <meta property="og:description" content="A thing that makes URLs shady">
-        <title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
+	<meta name="darkreader-lock"> <!-- Dark reader breaks the site --!>
+	<title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
         <link rel="stylesheet" href="assets/style.css">
     </head>
     <body>
