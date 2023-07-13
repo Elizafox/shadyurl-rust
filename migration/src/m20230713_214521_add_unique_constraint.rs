@@ -22,7 +22,7 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-         manager
+        manager
             .create_index(
                 sea_query::Index::create()
                     .if_not_exists()
@@ -48,7 +48,7 @@ impl MigrationTrait for Migration {
             )
             .await?;
 
-         manager
+        manager
             .create_index(
                 sea_query::Index::create()
                     .if_not_exists()
@@ -58,7 +58,7 @@ impl MigrationTrait for Migration {
                     .to_owned(),
             )
             .await?;
-       
+
         Ok(())
     }
 }
