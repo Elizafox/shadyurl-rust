@@ -110,7 +110,7 @@ tr#admin-list-item #link-button:active {
 
 ul#url-types {
     list-style: none;
-    max-width: 75%;
+    max-width: 50%;
     margin: 0 auto 0 auto;
     padding: 0;
 }
