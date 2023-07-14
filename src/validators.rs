@@ -28,7 +28,10 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
     match url_parsed.scheme() {
         "ftp" | "ftps" | "gemini" | "gopher" | "http" | "https" | "irc" | "irc6" | "ircs"
         | "jabber" | "matrix" | "mumble" | "mxc" | "spotify" | "teamspeak" | "xmpp" => {
-            match url_parsed.host().ok_or(ValidationError::new("No host found"))? {
+            match url_parsed
+                .host()
+                .ok_or(ValidationError::new("No host found"))?
+            {
                 Host::Ipv4(_) | Host::Ipv6(_) => Ok(()),
                 Host::Domain(host_str) => {
                     let pos = host_str.rfind('.').ok_or(ValidationError::new("No TLD"))?;
