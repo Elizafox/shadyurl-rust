@@ -18,36 +18,31 @@
 <a href="/logout">Logout</a>
 {% endblock %}
 {% block content %}
-<p>
-    <table>
-        <div id="table_heading">
-            <tr id="heading">
-                <td>ID</td>
-                <td>URL</td>
-                <td>Redirect</td>
-                <td>Created</td>
-                <td>IP</td>
-            </tr>
-        </div>
-        {% for entry in urls %}
-        <div id="table_item">
-            <tr>
-                <td>
-                    <form method="post" action="/admin" class="inline">
-                        <input type="hidden" name="auth_token" value="{{ auth_token }}">
-                        <input type="hidden" name="id" value="{{ entry.id }}">
-                        <button type="submit" value="submit" class="link-button">
-                            {{ entry.id }}
-                        </button>
-                    </form>
-                </td>
-                <td>{{ entry.url }}</td>
-                <td>{{ entry.shady }}</td>
-                <td>{{ entry.created_at }}</td>
-                <td>{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
-            </tr>
-        </div>
-        {% endfor %}
-    </table>
-</p>
+<br>
+<table id="admin-list-table">
+    <tr id="admin-list-heading">
+        <th id="admin-list-id-heading">ID</td>
+        <th id="admin-list-url-heading">URL</td>
+        <th id="admin-list-redirect-heading">Redirect</td>
+        <th id="admin-list-created-heading">Created</td>
+        <th id="admin-list-ip-heading">IP</td>
+    </tr>
+{% for entry in urls %}
+    <tr id="admin-list-item">
+        <td id="admin-list-id-item">
+            <form method="post" action="/admin" id="inline">
+                <input type="hidden" name="auth_token" value="{{ auth_token }}">
+                <input type="hidden" name="id" value="{{ entry.id }}">
+                <button type="submit" value="submit" id="link-button">
+                    {{ entry.id }}
+                </button>
+            </form>
+        </td>
+        <td id="admin-list-url-item">{{ entry.url }}</td>
+        <td id="admin-list-redirect-item">{{ entry.shady }}</td>
+        <td id="admin-list-created-item">{{ entry.created_at }}</td>
+        <td id="admin-list-ip-item">{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
+    </tr>
+{% endfor %}
+</table>
 {% endblock %}

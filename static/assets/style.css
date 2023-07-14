@@ -17,11 +17,80 @@ html {
     color: #00B000;
 }
 
-.inline {
+table#admin-list-table {
+    text-align: center;
+    border-collapse: collapse;
+}
+
+table#admin-list-table th,td {
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+tr#admin-list-heading th {
+    font-size: 1.50em;
+    line-height: 0.50em;
+}
+
+th#admin-list-id-heading {
+    text-align: left;
+    min-width: 2em;
+}
+
+th#admin-list-url-heading {
+    text-align: left;
+    min-width: 20em;
+}
+
+th#admin-list-redirect-heading {
+    text-align: left;
+    min-width: 10em;
+    max-width: 20em;
+}
+
+th#admin-list-created-heading {
+    text-align: right;
+    min-width: 4em;
+}
+
+th#admin-list-ip-heading {
+    text-align: right;
+    min-width: 10em;
+}
+
+tr#admin-list-item td {
+    border-top: 0.01em solid limegreen;
+    border-bottom: 0.01em solid limegreen;
+    border-spacing: 0;
+}
+
+td#admin-list-id-item {
+    text-align: left;
+}
+
+td#admin-list-url-item {
+    text-align: left;
+}
+
+td#admin-list-redirect-item {
+    text-align: left;
+}
+
+td#admin-list-created-item {
+    text-align: right;
+}
+
+td#admin-list-ip-item {
+    text-align: right;
+}
+
+tr#admin-list-item #inline {
     display: inline;
 }
 
-.link-button {
+tr#admin-list-item #link-button {
     background: none;
     border: none;
     font-size: 1em;
@@ -31,11 +100,11 @@ html {
     font-family: Monospace;
 }
 
-.link-button:focus {
+tr#admin-list-item #link-button:focus {
     outline: none;
 }
 
-.link-button:active {
+tr#admin-list-item #link-button:active {
     color: #00F000;
 }
 
@@ -81,7 +150,7 @@ div#warning {
 div#content {
     margin: auto;
     line-height: 1.25em;
-    width: 75%;
+    width: 95%;
     text-align: center;
     font-family: Monospace;
 }
