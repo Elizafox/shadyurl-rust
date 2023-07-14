@@ -742,26 +742,28 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     let between_nsfw = Uniform::from(0..NSFW.len());
     let nsfw_count = rng.gen_range(5..10);
     let mut out = Vec::new();
-    let hash = generate_hash(rng);
-    let mut has_hash = false;
-    for _ in 0..nsfw_count {
-        if !has_hash && rng.gen_range(0..nsfw_count) == 0 {
-            out.push(hash.clone());
-            has_hash = true;
+    let hash_pos = rng.gen_range(0..nsfw_count);
+    for i in 0..nsfw_count {
+        if i == hash_pos {
+            out.push(generate_hash(rng));
         } else {
             out.push(NSFW[between_nsfw.sample(rng)].to_string());
         }
-    }
-
-    if !has_hash {
-        out.push(hash.clone());
     }
 
     // Scan for duplicates
     // This copy shouldn't be a big deal, we don't have many items.
     let out_dup = out.clone();
     for (i, item) in out_dup.iter().enumerate() {
-        for check in out_dup.iter().skip(i) {
+        if i == hash_pos {
+            continue;
+        }
+
+        for (j, check) in out_dup.iter().skip(i + 1).enumerate() {
+            if j == hash_pos {
+                continue;
+            }
+
             if check == item {
                 // Replace the item
                 loop {
