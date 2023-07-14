@@ -19,8 +19,10 @@ use argon2_kdf::Hash;
 use axum_client_ip::SecureClientIpSource;
 use dotenvy::dotenv;
 use envy::from_env;
-use serde::de::{Deserializer, Error};
-use serde::Deserialize;
+use serde::{
+    de::{Deserializer, Error},
+    Deserialize,
+};
 use tracing::Level;
 
 fn default_sitename() -> String {
