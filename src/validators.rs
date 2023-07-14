@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use url::Url;
+use url::{Host, Url};
 use validator::ValidationError;
 
 pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
@@ -28,11 +28,11 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
     match url_parsed.scheme() {
         "ftp" | "ftps" | "gemini" | "gopher" | "http" | "https" | "irc" | "irc6" | "ircs"
         | "jabber" | "matrix" | "mumble" | "mxc" | "spotify" | "teamspeak" | "xmpp" => {
-            let host_str = url_parsed.host_str().unwrap();
-            match host_str.rfind('.') {
-                None => Err(ValidationError::new("Invalid hostname")),
-                Some(pos) => {
-                    if host_str.len() - pos < 3 {
+            match url_parsed.host().ok_or(ValidationError::new("No host found"))? {
+                Host::Ipv4(_) | Host::Ipv6(_) => Ok(()),
+                Host::Domain(host_str) => {
+                    let pos = host_str.rfind('.').ok_or(ValidationError::new("No TLD"))?;
+                    if host_str.len() - pos < 2 {
                         return Err(ValidationError::new("Invalid TLD"));
                     }
 
