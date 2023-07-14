@@ -588,6 +588,8 @@ dependencies = [
  "rand",
  "thiserror",
  "time",
+ "tower-layer",
+ "tower-service",
 ]
 
 [[package]]

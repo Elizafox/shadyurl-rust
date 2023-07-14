@@ -14,8 +14,6 @@
 
 use std::sync::Arc;
 
-use axum::extract::FromRef;
-use axum_csrf::{CsrfConfig, Key};
 use sea_orm::DatabaseConnection;
 
 // XXX User shouldn't live in the controller
@@ -27,20 +25,10 @@ pub(crate) struct AppState {
     pub(crate) sitename: String,
     pub(crate) hostname: String,
     pub(crate) user: User,
-    pub(crate) csrf_config: CsrfConfig,
-}
-
-impl FromRef<AppState> for CsrfConfig {
-    fn from_ref(app_state: &AppState) -> CsrfConfig {
-        app_state.csrf_config.clone()
-    }
 }
 
 impl AppState {
     pub(crate) fn new_from_env(db: DatabaseConnection, env: &EnvVars) -> Self {
-        let cookie_key = Key::from(env.secret());
-        let csrf_config = CsrfConfig::default().with_key(Some(cookie_key));
-
         let user = User {
             id: 1,
             username: env.username().to_string(),
@@ -52,7 +40,6 @@ impl AppState {
             sitename: env.sitename().to_string(),
             hostname: env.hostname().to_string(),
             user,
-            csrf_config,
         }
     }
 }
