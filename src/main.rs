@@ -103,9 +103,9 @@ async fn shutdown_signal(pid_file: &mut File) {
 // We must fork before we do anything else.
 // We might as well do other environmental init stuff too.
 fn main() -> Result<()> {
-    let env = EnvVars::new()?;
+    let env = loadenv::load_env()?;
 
-    if env.daemon() {
+    if env.daemon {
         // Tokio can't survive a fork. This MUST be done first.
         to_background()?;
         close_stdio()?;
@@ -127,7 +127,7 @@ async fn tokio_main(env: &EnvVars, pid_file: &mut File) -> Result<()> {
     let state = AppState::new_from_env(db, env);
 
     let app = get_router(env, state).await?;
-    let server = Server::try_bind(&env.bind().parse()?)?
+    let server = Server::try_bind(&env.bind.parse()?)?
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .with_graceful_shutdown(shutdown_signal(pid_file));
 

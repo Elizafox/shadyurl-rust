@@ -46,7 +46,7 @@ use crate::{
 };
 
 async fn create_session_layer(env: &EnvVars) -> Result<SessionLayer<RedisSessionStore>> {
-    let redis_config = RedisConfig::from_url(env.redis_url())
+    let redis_config = RedisConfig::from_url(env.redis_url.as_str())
         .map_err(|e| Error::new(e).context("Failed to parse Redis URL"))?;
     let rds_pool = RedisPool::new(redis_config, None, None, 6).unwrap();
     rds_pool.connect();
@@ -56,12 +56,12 @@ async fn create_session_layer(env: &EnvVars) -> Result<SessionLayer<RedisSession
         .map_err(|e| Error::new(e).context("Could not connect to redis"))?;
 
     let cookie_domain = env
-        .hostname()
+        .hostname
         .split(':')
         .next()
         .ok_or(anyhow!("Failed to parse cookie domain"))?;
     let session_store = RedisSessionStore::from_pool(rds_pool, Some("async-fred-session/".into()));
-    Ok(SessionLayer::new(session_store, env.secret()).with_cookie_domain(cookie_domain))
+    Ok(SessionLayer::new(session_store, &env.secret_key).with_cookie_domain(cookie_domain))
 }
 
 async fn create_auth_layer(
@@ -73,21 +73,21 @@ async fn create_auth_layer(
     store.write().await.insert(user.get_id(), user.clone());
 
     let user_store = AuthMemoryStore::new(&store);
-    AuthLayer::new(user_store, env.secret())
+    AuthLayer::new(user_store, &env.secret_key)
 }
 
 pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router> {
     let session_layer = create_session_layer(env).await?;
     let auth_layer = create_auth_layer(env, &state.user).await;
 
-    let cookie_key = Key::from(env.secret());
+    let cookie_key = Key::from(&env.secret_key);
     let csrf_config = CsrfConfig::default().with_key(Some(cookie_key));
 
     let services = ServiceBuilder::new()
         .layer(TraceLayer::new_for_http())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
-        .layer(env.ip_source().clone().into_extension())
+        .layer(env.ip_source.clone().into_extension())
         .layer(map_response(transform_error))
         .layer(CsrfLayer::new(csrf_config))
         .layer(session_layer)

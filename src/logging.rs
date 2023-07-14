@@ -22,7 +22,7 @@ pub(crate) fn setup_logger(env: &EnvVars) {
     let identity: &CStr = CStr::from_bytes_with_nul(b"shadyurl-rust\0").unwrap();
 
     let mut options: Options = Options::LOG_NDELAY | Options::LOG_PID | Options::LOG_CONS;
-    if env.log_stderr() {
+    if env.log_stderr {
         options = options | Options::LOG_PERROR;
     }
 
@@ -31,7 +31,7 @@ pub(crate) fn setup_logger(env: &EnvVars) {
 
     tracing_subscriber::fmt()
         .with_ansi(false)
-        .with_max_level(env.log_level())
+        .with_max_level(env.log_level)
         .with_writer(syslog)
         .init();
 }

@@ -20,7 +20,7 @@ use tokio::time::Duration;
 use crate::loadenv::EnvVars;
 
 pub(crate) async fn get_db(env: &EnvVars) -> Result<DatabaseConnection> {
-    let mut opt = ConnectOptions::new(env.database_url().to_string());
+    let mut opt = ConnectOptions::new(env.database_url.clone());
     opt.max_connections(100)
         .min_connections(5)
         .connect_timeout(Duration::from_secs(10))

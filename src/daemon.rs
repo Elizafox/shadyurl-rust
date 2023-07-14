@@ -83,7 +83,7 @@ pub(crate) fn open_pid_file(env: &EnvVars) -> Result<File> {
         .create(true)
         .read(true)
         .write(true)
-        .open(env.pid_file())?;
+        .open(&env.pid_file)?;
 
     // Lock exclusively
     flock(pid_file.as_raw_fd(), FlockArg::LockExclusiveNonblock)
@@ -99,13 +99,13 @@ pub(crate) fn open_pid_file(env: &EnvVars) -> Result<File> {
 }
 
 pub(crate) fn drop_privileges(env: &EnvVars) -> Result<()> {
-    if let Some(daemon_user) = env.daemon_user() {
-        let user = User::from_name(daemon_user)?.ok_or(anyhow!("No such user {daemon_user}"))?;
+    if let Some(daemon_user) = &env.daemon_user {
+        let user =
+            User::from_name(daemon_user)?.ok_or(anyhow!("No such user {daemon_user}"))?;
 
-        let group = match env.daemon_group() {
-            Some(daemon_group) => {
-                Group::from_name(daemon_group)?.ok_or(anyhow!("No such group {daemon_group}"))?
-            }
+        let group = match &env.daemon_group {
+            Some(daemon_group) => Group::from_name(daemon_group)?
+                .ok_or(anyhow!("No such group {daemon_group}"))?,
             None => Group::from_gid(user.gid)?
                 .ok_or(anyhow!("User {daemon_user} GID is nonexistent"))?,
         };
@@ -115,9 +115,9 @@ pub(crate) fn drop_privileges(env: &EnvVars) -> Result<()> {
         do_initgroups(username_c.as_c_str(), group.gid)?;
         setgid(group.gid).map_err(|e| Error::new(e).context("setgid() failed"))?;
         setuid(user.uid).map_err(|e| Error::new(e).context("setuid() failed"))?;
-    } else if let Some(daemon_group) = env.daemon_group() {
-        let group =
-            Group::from_name(daemon_group)?.ok_or(anyhow!("No such group {daemon_group}"))?;
+    } else if let Some(daemon_group) = &env.daemon_group {
+        let group = Group::from_name(daemon_group)?
+            .ok_or(anyhow!("No such group {daemon_group}"))?;
         setgid(group.gid).map_err(|e| Error::new(e).context("setgid() failed"))?;
     }
 

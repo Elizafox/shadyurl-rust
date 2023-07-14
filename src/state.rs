@@ -31,14 +31,14 @@ impl AppState {
     pub(crate) fn new_from_env(db: DatabaseConnection, env: &EnvVars) -> Self {
         let user = User {
             id: 1,
-            username: env.username().to_string(),
-            password_hash: Arc::new(env.password_hash().clone()),
+            username: env.username.clone(),
+            password_hash: Arc::new(env.password_hash.clone()),
         };
 
         Self {
             db,
-            sitename: env.sitename().to_string(),
-            hostname: env.hostname().to_string(),
+            sitename: env.sitename.clone(),
+            hostname: env.hostname.clone(),
             user,
         }
     }

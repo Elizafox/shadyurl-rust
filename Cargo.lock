@@ -1208,6 +1208,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "envy"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f47e0157f2cb54f5ae1bd371b30a2ae4311e1c028f575cd4e81de7353215965"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "errno"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3084,6 +3093,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_bytes"
+version = "0.11.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a16be4fe5320ade08736447e3198294a5ea9a6d44dde6f35f0a5e06859c427a"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.171"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3188,6 +3206,7 @@ dependencies = [
  "axum_csrf",
  "dotenvy",
  "entity",
+ "envy",
  "itertools 0.11.0",
  "lazy_static",
  "log",
@@ -3199,6 +3218,7 @@ dependencies = [
  "sea-orm",
  "sea-query 0.29.1",
  "serde",
+ "serde_bytes",
  "syslog-tracing",
  "tokio",
  "tower",
