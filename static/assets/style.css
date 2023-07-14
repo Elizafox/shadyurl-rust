@@ -42,7 +42,8 @@ html {
 ul#url-types {
     list-style: none;
     max-width: 50%;
-    margin: auto auto;
+    margin: 0 auto 0 auto;
+    padding: 0;
 }
 
 ul#url-types li {
