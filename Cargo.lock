@@ -139,12 +139,13 @@ checksum = "3f907281554a3d0312bb7aab855a8e0ef6cbf1614d06de54105039ca8b34460e"
 
 [[package]]
 name = "argon2"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95c2fcf79ad1932ac6269a738109997a83c227c09b75842ae564dc8ede6a861c"
+checksum = "b2e554a8638bdc1e4eae9984845306cc95f8a9208ba8d49c3859fd958b46774d"
 dependencies = [
  "base64ct",
  "blake2",
+ "cpufeatures",
  "password-hash",
 ]
 
@@ -575,9 +576,9 @@ dependencies = [
 
 [[package]]
 name = "axum_csrf"
-version = "0.7.0"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8967aa57e354440d7917657c0c1374cf4342033b600591bc97f05604d12f8c40"
+checksum = "362fcef4c28a7834c5c2e0b021b5a538a5d16a5be8c543edbf9e18e1d2206115"
 dependencies = [
  "argon2",
  "async-trait",
