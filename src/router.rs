@@ -25,7 +25,6 @@ use axum::{
     routing::{get, post},
     Router,
 };
-use axum_client_ip::SecureClientIpSource;
 use axum_csrf::{CsrfConfig, CsrfLayer, Key};
 use axum_login::{
     axum_sessions::SessionLayer, memory_store::MemoryStore as AuthMemoryStore, AuthLayer, AuthUser,
@@ -88,7 +87,7 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .layer(TraceLayer::new_for_http())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
-        .layer(SecureClientIpSource::RightmostForwarded.into_extension())
+        .layer(env.ip_source().clone().into_extension())
         .layer(map_response(transform_error))
         .layer(CsrfLayer::new(csrf_config))
         .layer(session_layer)

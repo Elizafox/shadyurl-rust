@@ -22,6 +22,7 @@ use std::{
 
 use anyhow::{anyhow, Error, Result};
 use argon2_kdf::Hash;
+use axum_client_ip::SecureClientIpSource;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
 use os_str_bytes::RawOsString;
@@ -37,6 +38,7 @@ pub(crate) struct EnvVars {
     hostname: String,
     sitename: String,
     bind: String,
+    ip_source: SecureClientIpSource,
     database_url: String,
     redis_url: String,
     username: String,
@@ -100,6 +102,22 @@ impl EnvVars {
 
         let bind = Self::get_env_var("BIND")?;
 
+        let ip_source = match Self::get_env_var_optional::<String>("IP_SOURCE")? {
+            None => Ok(SecureClientIpSource::ConnectInfo),
+            Some(data) => match data.as_str() {
+                "RightmostForwarded" => Ok(SecureClientIpSource::RightmostForwarded),
+                "RightmostXForwardedFor" => Ok(SecureClientIpSource::RightmostXForwardedFor),
+                "XRealIp" => Ok(SecureClientIpSource::XRealIp),
+                "FlyClientIp" => Ok(SecureClientIpSource::FlyClientIp),
+                "TrueClientIp" => Ok(SecureClientIpSource::TrueClientIp),
+                "CfConnectingIp" => Ok(SecureClientIpSource::CfConnectingIp),
+                "ConnectInfo" => Ok(SecureClientIpSource::ConnectInfo),
+                _ => Err(anyhow!(
+                    "Invalid client IP source in IP_SOURCE environment variable"
+                )),
+            },
+        }?;
+
         let database_url = Self::get_env_var("DATABASE_URL")?;
         let redis_url = Self::get_env_var("REDIS_URL")?;
 
@@ -137,6 +155,7 @@ impl EnvVars {
             hostname,
             sitename,
             bind,
+            ip_source,
             database_url,
             redis_url,
             username,
@@ -161,6 +180,10 @@ impl EnvVars {
 
     pub(crate) fn bind(&self) -> &str {
         &self.bind
+    }
+
+    pub(crate) fn ip_source(&self) -> &SecureClientIpSource {
+        &self.ip_source
     }
 
     pub(crate) fn database_url(&self) -> &str {

@@ -16,18 +16,44 @@
 # Configure it to your site needs.
 # Be sure to carefully read over each directive.
 
-# Whether or not to daemonise, set to true or false
-# If you are running under a supervisor such as systemd, it's highly recommended to say "false" here.
-DAEMON=false
+# Local sitename, if you wish to change it
+SITENAME=ShadyURL
 
-# Path to PID file, defaults to /var/run/shadyurl.pid
-PID_FILE="/tmp/shadyurl.pid"
+# Your site's hostname
+HOSTNAME="localhost:3000"
 
-# Set the log level, with 0 being only errors, and 5 being debug
-LOG_LEVEL=1
+# IP and port to bind to
+BIND="0.0.0.0:3000"
 
-# Whether or not to log to stderr
-LOG_STDERR=false
+# Source to retrieve client IP's from (case-sensitive)
+# Options:
+#     - RightmostForwarded: Select the rightmost IP in the Forwarded header
+#     - RightmostXForwardedFor: Select the rightmost IP in the X-Forwarded-For header
+#     - XRealIp: Select the IP from the X-Real-Ip header
+#     - FlyClientIp: Select the IP from the Fly-Client-IP header
+#     - TrueClientIp: Select the IP from the True-Client-IP header
+#     - CfConnectingIp: Select the IP from the CF-Connecting-IP header
+#     - ConnectInfo: Select the IP from the client's raw connection info (default)
+#
+# When in doubt:
+#     - You likely want RightmostXForwardedFor if this is behind nginx or most webservers
+#     - If running bare without a server in front, ConnectInfo is what you want (not recommended)
+#
+# See https://docs.rs/axum-client-ip/latest/axum_client_ip/enum.SecureClientIpSource.html for
+# detailed documentation on each option.
+IP_SOURCE="RightmostXForwardedFor"
+
+# Database URL to connect to, following the format:
+#     protocol://username:password@host:port/database
+#
+# SQLite is also supported, in that case it's just a path to a file, as below.
+#
+# Be sure to run from the source dir:
+#     . .env && sea-orm-cli migrate -u "$DATABASE_URL" up
+DATABASE_URL="sqlite:/tmp/test.db"
+
+# Redis URL, must start with redis:// as below.
+REDIS_URL="redis://127.0.0.1"
 
 # This is for cookies, don't disclose it, and you really need to change this.
 # It must be at least 64 characters long
@@ -42,23 +68,15 @@ USERNAME=Elizafox
 #     /path/to/shadyurl-rust/utils/password_hash.sh
 PASSWORD_HASH='$argon2id$v=19$m=16,t=10,p=1$ZGFibW9GVU9GYVhQSkpxSw$6IJIHbZZzHyw/qVZK3EjZQ'
 
-# Local sitename, if you wish to change it
-SITENAME=ShadyURL
+# Whether or not to daemonise, set to true or false
+# If you are running under a supervisor such as systemd, it's highly recommended to say "false" here.
+DAEMON=false
 
-# Your site's hostname
-HOSTNAME="localhost:3000"
+# Path to PID file, defaults to /var/run/shadyurl.pid
+PID_FILE="/tmp/shadyurl.pid"
 
-# IP and port to bind to
-BIND="0.0.0.0:3000"
+# Set the log level, with 0 being only errors, and 5 being debug
+LOG_LEVEL=1
 
-# Database URL to connect to, following the format:
-#     protocol://username:password@host:port/database
-#
-# SQLite is also supported, in that case it's just a path to a file, as below.
-#
-# Be sure to run from the source dir:
-#     . .env && sea-orm-cli migrate -u "$DATABASE_URL" up
-DATABASE_URL="sqlite:/tmp/test.db"
-
-# Redis URL, must start with redis:// as below.
-REDIS_URL="redis://127.0.0.1"
+# Whether or not to log to stderr
+LOG_STDERR=false
