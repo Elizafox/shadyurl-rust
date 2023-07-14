@@ -65,6 +65,7 @@ const NSFW: &[&str] = &[
     "bang",
     "bank-transfer",
     "barely-legal",
+    "bargains",
     "basic",
     "bbw",
     "bdsm",
@@ -159,6 +160,7 @@ const NSFW: &[&str] = &[
     "darkweb",
     "dead",
     "deagle",
+    "deals",
     "death",
     "declassified",
     "declassified-dox",
@@ -326,23 +328,48 @@ const NSFW: &[&str] = &[
     "isis-training-camp",
     "islam",
     "israel",
+    "jacked-off",
+    "jacking",
+    "jacking-it",
+    "jacking-off",
     "jackpot",
     "jackpot-lottry-winner",
+    "jail-beatdown",
+    "jail-murder",
+    "jail-stabbing",
     "jailbait",
     "jailbreak",
+    "jailhouse-beatdown",
+    "jailhouse-murder",
+    "jailhouse-stabbing",
+    "japan",
+    "japanese",
+    "jar-inserted",
+    "jar-jar-porn",
     "java",
+    "jelqing",
     "jihad",
-    "john",
+    "jizz",
+    "jizz-fountain",
+    "join-an-orgy",
+    "join-now",
+    "join-our-cult",
+    "join-us",
     "journalist",
     "k9",
     "keygen",
     "keylog",
     "keylogger",
     "king",
+    "king-of-coke",
+    "king-of-drugs",
     "king-scandal",
     "kinky",
     "kitty",
     "knife-fight",
+    "krack",
+    "krazy-deals",
+    "krazy-good-deal",
     "leak",
     "leaked-documents",
     "leaked-dox",
@@ -498,6 +525,8 @@ const NSFW: &[&str] = &[
     "queen",
     "queen-nudes",
     "queen-scandal",
+    "quickie",
+    "quickly-get-rich",
     "quit-ur-job",
     "racket",
     "rapid-growth",
@@ -517,6 +546,9 @@ const NSFW: &[&str] = &[
     "risperidol",
     "root",
     "rootkit",
+    "rope-bondage",
+    "rope-porn",
+    "russia",
     "russian",
     "russian-bots",
     "scam",
@@ -602,6 +634,7 @@ const NSFW: &[&str] = &[
     "they-hurt-her",
     "tighten-my-pussy",
     "tokens",
+    "tool",
     "tor",
     "torrent",
     "track-my-ex",
@@ -722,6 +755,26 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
 
     if !has_hash {
         out.push(hash.clone());
+    }
+
+    // Scan for duplicates
+    // This copy shouldn't be a big deal, we don't have many items.
+    let out_dup = out.clone();
+    for (i, item) in out_dup.iter().enumerate() {
+        for check in out_dup.iter().skip(i) {
+            if check == item {
+                // Replace the item
+                loop {
+                    let nsfw = NSFW[between_nsfw.sample(rng)].to_string();
+                    if &nsfw == item {
+                        continue;
+                    }
+
+                    out[i] = nsfw;
+                    break;
+                }
+            }
+        }
     }
 
     let mut string = out.join("-");
