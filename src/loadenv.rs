@@ -36,16 +36,19 @@ fn default_log_level() -> Level {
 }
 
 fn deserialize_hash<'de, D>(d: D) -> Result<Hash, D::Error>
-where D: Deserializer<'de> {
+where
+    D: Deserializer<'de>,
+{
     let s = String::deserialize(d)?;
-    let hash = Hash::from_str(s.as_str()).map_err(
-        |e| Error::custom(format!("Invalid hash value: {e}")),
-    )?;
+    let hash = Hash::from_str(s.as_str())
+        .map_err(|e| Error::custom(format!("Invalid hash value: {e}")))?;
     Ok(hash)
 }
 
 fn deserialize_level<'de, D>(d: D) -> Result<Level, D::Error>
-where D: Deserializer<'de> {
+where
+    D: Deserializer<'de>,
+{
     let s = u8::deserialize(d)?;
     match s {
         0 => Ok(Level::ERROR),
