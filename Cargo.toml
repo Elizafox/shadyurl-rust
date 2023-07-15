@@ -36,11 +36,11 @@ strip = true
 entity = { path = "entity" }
 migration = { path = "migration" }
 
-anyhow = { version = "1.0.71", features = ["backtrace"] }
+anyhow = { version = "1.0.72", features = ["backtrace"] }
 argon2-kdf = "1.1.2"
 askama = { version = "0.12.0", features = ["with-axum"] }
 askama_axum = { version = "0.3.0", features = ["config", "humansize"] }
-async-fred-session = "0.1.4"
+async-fred-session = "0.1.5"
 axum = { version = "0.6.18", features = ["macros", "http2", "headers", "multipart", "tracing"] }
 axum-client-ip = "0.4.1"
 axum_csrf = { version = "0.7.2", features = ["layer"] }
@@ -66,4 +66,4 @@ tracing = { version = "0.1.37", features = ["async-await", "log", "valuable"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "parking_lot", "serde", "time", "tracing", "tracing-serde"] }
 url = "2.4.0"
 validator = { version = "0.16.1", features = ["derive"] }
-serde_bytes = { version = "0.11.11", features = ["alloc"] }
+serde_bytes = { version = "0.11.12", features = ["alloc"] }
