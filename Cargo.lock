@@ -2552,6 +2552,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "proctitle"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "924cd8a0de90723d63fed19c5035ea129913a0bc998b37686a67f1eaf6a2aab5"
+dependencies = [
+ "lazy_static",
+ "libc",
+ "winapi",
+]
+
+[[package]]
 name = "ptr_meta"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3223,6 +3234,7 @@ dependencies = [
  "nix",
  "num_cpus",
  "os_str_bytes",
+ "proctitle",
  "rand",
  "rand_hc",
  "sea-orm",

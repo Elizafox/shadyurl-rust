@@ -18,6 +18,7 @@ use anyhow::Result;
 use axum::Server;
 use log::error;
 use nix::unistd::ftruncate;
+use proctitle::set_title;
 use tokio::signal;
 
 mod controllers;
@@ -116,6 +117,8 @@ fn main() -> Result<()> {
     let mut pid_file = open_pid_file(&env)?;
 
     setup_logger(&env);
+
+    set_title("shadyurl-rust");
 
     tokio_main(&env, &mut pid_file)
 }
