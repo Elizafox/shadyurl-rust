@@ -59,7 +59,9 @@ where
         2 => Ok(Level::INFO),
         3 => Ok(Level::DEBUG),
         4 => Ok(Level::TRACE),
-        _ => Err(Error::custom(format!("Invalid tracing level, must be 0-4"))),
+        _ => Err(Error::custom(
+            "Invalid tracing level, must be 0-4".to_string(),
+        )),
     }
 }
 
