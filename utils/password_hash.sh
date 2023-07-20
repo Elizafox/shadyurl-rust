@@ -12,6 +12,11 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+usage()
+{
+	echo "Usage: $0 [-t N] [-m N] [-p N] [-h]" >&2
+}
+
 cleanup()
 {
 	stty "$1"
@@ -25,6 +30,9 @@ bail()
 
 gen_randint()
 {
+	# Needed on macOS
+	export LC_ALL="C"
+
 	range0="$1"
 	range1="$2"
 	i=""
@@ -37,20 +45,27 @@ gen_randint()
 
 gen_salt()
 {
-	saltlen="$(gen_randint "12" "24" || bail "Could not get random int")"
+	# Needed on macOS
+	export LC_ALL="C"
+
+	saltlen="$(gen_randint "12" "24")" || bail "Could not get random int"
 	(tr -dc '[:print:]' </dev/random | head -c "$saltlen") || bail "Could not generate salt"
 }
 
-gen_passwd()
+gen_hash()
 {
 	# Needed on macOS
 	export LC_ALL="C"
 
+	ITERATIONS="$1"
+	MEMORY="$2"
+	PARALLELISM="$3"
+
 	which -s argon2 || bail "argon2 is not installed; install it via your OS's libargon2 or argon2 package"
 
 	if [ -t 0 ]; then
-		tty="$(tty)"
-		orig_stty="$(stty -g)"
+		tty="$(tty)" || bail "Could not get tty"
+		orig_stty="$(stty -g)" || bail "Could not get tty parameters"
 
 		trap exit INT HUP QUIT TERM;
 		trap 'cleanup "$orig_stty"' EXIT;
@@ -69,13 +84,51 @@ gen_passwd()
 		[ "$pw1" == "$pw2" ] || bail "Passwords didn't match"
 		passwd="$pw1"
 
-		salt="$(gen_salt || bail "Could not generate salt")"
+		salt="$(gen_salt)" || bail "Could not generate salt"
 	else
 		passwd="$1"
 	fi
 
-	(printf "$passwd" | argon2 "$salt" -id -e -t 12 -m 16 -v 13) || bail "Could not generate argon2 hash"
+	(printf "$passwd" | argon2 "$salt" -id -e -m "$MEMORY" -t "$ITERATIONS" -p "$PARALLELISM" -v 13) || bail "Could not generate argon2 hash"
 }
 
-passwd="$(gen_passwd || bail "Could not generate password")"
+# Defaults
+ITERATIONS=12
+MEMORY=16
+PARALLELISM=4
+
+args=`getopt t:m:p:h $*`
+if [ $? -ne 0 ]; then
+	usage "$0"
+	exit 2
+fi
+set -- $args
+while :; do
+	case "$1" in
+	-t)
+		printf "%d" "$2" &>/dev/null || bail "-t must be an integer"
+		ITERATIONS="$2"
+		shift; shift
+		;;
+	-m)
+		printf "%d" "$2" &>/dev/null || bail "-m must be an integer"
+		MEMORY="$2"
+		shift; shift
+		;;
+	-p)
+		printf "%d" "$2" &>/dev/null || bail "-p must be an integer"
+		PARALLELISM="$2"
+		shift; shift
+		;;
+	-h)
+		usage "$0"
+		exit
+		;;
+	--)
+		shift; break
+		;;
+	esac
+done
+
+passwd="$(gen_hash "$ITERATIONS" "$MEMORY" "$PARALLELISM")" || bail "Could not generate password"
 printf "\nPASSWORD_HASH='%s'\n" "${passwd}"
