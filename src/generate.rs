@@ -12,14 +12,73 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use once_cell::sync::Lazy;
+use std::collections::HashSet;
 
+use once_cell::sync::Lazy;
 use rand::{
     distributions::{Distribution, Uniform},
     prelude::*,
 };
 
 use crate::util::macros::arr;
+
+fn generate_hash(rng: &mut dyn RngCore) -> String {
+    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!$");
+
+    let between = Lazy::new(|| Uniform::new(0, CHARS.len()));
+
+    let char_count = rng.gen_range(8..16);
+    (0..char_count)
+        .map(|_| CHARS[between.sample(rng)] as char)
+        .collect()
+}
+
+pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
+    arr!(const SEPS: [&str; _] = ["-", "!", "_", "+", "$"]);
+
+    // These never change, so no point in regenerating them each time
+    let range_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
+    let range_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
+    let range_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
+
+    let hash = generate_hash(rng);
+
+    /* We multiply by 2 so we can put on the separators and suffix
+     * The total number of separators plus the suffix works out to be double the nsfw_count.
+     * This means the hash_pos must be doubled, too, to be in the right spot.
+     */
+    let nsfw_count = rng.gen_range(6..12) * 2;
+    let hash_pos = rng.gen_range(0..nsfw_count) * 2;
+
+    let mut seen_set = HashSet::new();
+    (0..nsfw_count)
+        .map(|i| {
+            if (i & 1) == 1 {
+                // This is odd. Do we tack on the suffix or a separator?
+                if i == nsfw_count - 1 {
+                    EXT[(*range_ext).sample(rng)]
+                } else {
+                    // This position will always be odd, since nsfw_count * 2 is always even.
+                    // NB: the range is [0..nsfw_count * 2)
+                    //
+                    SEPS[(*range_seps).sample(rng)]
+                }
+            } else if i == hash_pos {
+                hash.as_str()
+            } else {
+                // Loop until we get a unique NSFW fragment
+                loop {
+                    let pos = (*range_nsfw).sample(rng);
+                    if seen_set.contains(&pos) {
+                        continue;
+                    }
+                    seen_set.insert(pos);
+                    break NSFW[pos];
+                }
+            }
+        })
+        .collect()
+}
 
 arr!(const NSFW: [&str; _] = [
     "0-percent-artificial",
@@ -771,86 +830,11 @@ arr!(const NSFW: [&str; _] = [
 ]);
 
 arr!(const EXT: [&str; _] = [
-    "app", "avi", "bas", "bat", "csv", "divx", "dll", "doc", "docx", "exe", "flv", "gif", "htm",
-    "html", "hxt", "ini", "jar", "js", "jpeg", "jpg", "m1v", "m4a", "mid", "midi", "mkv", "mod",
-    "mov", "movie", "mpa", "mpe", "mpeg", "mpg", "mp3", "mp4", "msi", "p7r", "pdf", "png", "ppt",
-    "pptx", "rar", "sgml", "snd", "swf", "tiff", "txt", "webm", "webp", "vbs", "xaf", "xhtml",
-    "xls", "xlsx", "xml", "zip",
+    ".app", ".avi", ".bas", ".bat", ".csv", ".divx", ".dll", ".doc", ".docx", ".exe", ".flv", ".gif", ".htm",
+    ".html", ".hxt", ".ini", ".jar", ".js", ".jpeg", ".jpg", ".m1v", ".m4a", ".mid", ".midi", ".mkv", ".mod",
+    ".mov", ".movie", ".mpa", ".mpe", ".mpeg", ".mpg", ".mp3", ".mp4", ".msi", ".p7r", ".pdf", ".png", ".ppt",
+    ".pptx", ".rar", ".sgml", ".snd", ".swf", ".tiff", ".txt", ".webm", ".webp", ".vbs", ".xaf", ".xhtml",
+    ".xls", ".xlsx", ".xml", ".zip",
 ]);
 
-fn generate_hash(rng: &mut dyn RngCore) -> String {
-    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!");
 
-    let between = Lazy::new(|| Uniform::from(0..CHARS.len()));
-
-    let char_count = rng.gen_range(8..16);
-    let mut ret = String::with_capacity(char_count);
-    for _ in 0..char_count {
-        ret.push(CHARS[between.sample(rng)].into());
-    }
-    ret
-}
-
-pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
-    arr!(const SEPS: [u8; _] = *b"-!_+");
-
-    // These never change, so no point in regenerating them each time
-    let range_seps = Lazy::new(|| Uniform::from(0..SEPS.len()));
-    let range_nsfw = Lazy::new(|| Uniform::from(0..NSFW.len()));
-    let range_ext = Lazy::new(|| Uniform::from(0..EXT.len()));
-
-    let hash = generate_hash(rng);
-
-    let nsfw_count = rng.gen_range(6..12);
-    let hash_pos = rng.gen_range(0..nsfw_count);
-
-    let mut out: Vec<&str> = Vec::with_capacity(nsfw_count + 1);
-
-    for i in 0..nsfw_count {
-        if i == hash_pos {
-            out.push(&hash);
-        } else {
-            out.push(NSFW[(*range_nsfw).sample(rng)]);
-        }
-    }
-
-    // Scan for duplicates
-    // This copy shouldn't be a big deal, we don't have many items.
-    let out_dup = out.clone();
-    for (i, item) in out_dup.iter().enumerate() {
-        if i == hash_pos {
-            continue;
-        }
-
-        for (j, check) in out_dup.iter().skip(i + 1).enumerate() {
-            if j == hash_pos {
-                continue;
-            }
-
-            if check == item {
-                // Replace the item
-                loop {
-                    let nsfw = NSFW[(*range_nsfw).sample(rng)];
-                    if &nsfw == item {
-                        continue;
-                    }
-
-                    out[i] = nsfw;
-                    break;
-                }
-            }
-        }
-    }
-
-    // Build the string with random separators
-    let mut string = String::new();
-    for (i, p) in out.into_iter().enumerate() {
-        if i > 0 {
-            string.push(SEPS[(*range_seps).sample(rng)].into());
-        }
-        string.push_str(&p);
-    }
-
-    string.push_str(format!(".{}", EXT[(*range_ext).sample(rng)]).as_str());
-    string
-}
