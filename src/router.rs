@@ -31,9 +31,7 @@ use axum_login::{
 };
 use tokio::{sync::RwLock, time::Duration};
 use tower::ServiceBuilder;
-use tower_http::{
-    services::{ServeDir, ServeFile},
-};
+use tower_http::services::{ServeDir, ServeFile};
 
 use crate::{
     auth::{RequireAuth, User},
