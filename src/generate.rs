@@ -767,15 +767,15 @@ const NSFW: &[&str] = &[
 ];
 
 const EXT: &[&str] = &[
-    ".app", ".avi", ".bat", ".csv", ".divx", ".dll", ".doc", ".docx", ".exe", ".flv", ".gif",
-    ".htm", ".html", ".hxt", ".ini", ".jar", ".jpg", ".m1v", ".m4a", ".mid", ".midi", ".mkv",
-    ".mov", ".movie", ".mpa", ".mpe", ".mpeg", ".mpg", ".mp3", ".mp4", ".msi", ".p7r", ".pdf",
-    ".png", ".ppt", ".pptx", ".rar", ".snd", ".swf", ".txt", ".vbs", ".xaf", ".xls", ".xlsx",
-    ".xml", ".zip",
+    "app", "avi", "bas", "bat", "csv", "divx", "dll", "doc", "docx", "exe", "flv", "gif", "htm",
+    "html", "hxt", "ini", "jar", "js", "jpeg", "jpg", "m1v", "m4a", "mid", "midi", "mkv", "mod",
+    "mov", "movie", "mpa", "mpe", "mpeg", "mpg", "mp3", "mp4", "msi", "p7r", "pdf", "png", "ppt",
+    "pptx", "rar", "sgml", "snd", "swf", "tiff", "txt", "webm", "webp", "vbs", "xaf", "xhtml",
+    "xls", "xlsx", "xml", "zip",
 ];
 
 fn generate_hash(rng: &mut dyn RngCore) -> String {
-    const CHARS: &[u8] = b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+";
+    const CHARS: &[u8] = b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!";
 
     let between = Uniform::from(0..CHARS.len());
     let char_count = rng.gen_range(8..16);
@@ -828,6 +828,6 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     }
 
     let mut string = out.join("-");
-    string.push_str(EXT[rng.gen_range(0..EXT.len())]);
+    string.push_str(format!(".{}", EXT[rng.gen_range(0..EXT.len())]).as_str());
     string
 }
