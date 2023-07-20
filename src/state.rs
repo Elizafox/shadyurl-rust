@@ -16,8 +16,7 @@ use std::sync::Arc;
 
 use sea_orm::DatabaseConnection;
 
-// XXX User shouldn't live in the controller
-use crate::{controllers::User, loadenv::EnvVars};
+use crate::{auth::User, loadenv::EnvVars};
 
 #[derive(Clone)]
 pub(crate) struct AppState {

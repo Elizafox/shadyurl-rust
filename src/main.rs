@@ -21,6 +21,7 @@ use nix::unistd::ftruncate;
 use proctitle::set_title;
 use tokio::signal;
 
+mod auth;
 mod controllers;
 mod daemon;
 mod database;

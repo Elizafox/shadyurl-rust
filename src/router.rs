@@ -37,9 +37,10 @@ use tower_http::{
 };
 
 use crate::{
+    auth::{RequireAuth, User},
     controllers::{
         accept_form, admin_handler, delete_handler, get_shady, handle_timeout_error, login_handler,
-        login_page_handler, logout_handler, root, transform_error, RequireAuth, User,
+        login_page_handler, logout_handler, root, transform_error,
     },
     loadenv::EnvVars,
     AppState,

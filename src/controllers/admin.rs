@@ -14,7 +14,6 @@
 
 use std::sync::Arc;
 
-use argon2_kdf::Hash;
 use axum::{
     extract::State,
     response::{IntoResponse, Redirect, Result},
@@ -22,11 +21,7 @@ use axum::{
 };
 use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
-use axum_login::{
-    axum_sessions::extractors::WritableSession, extractors::AuthContext,
-    memory_store::MemoryStore as AuthMemoryStore, secrecy::SecretVec, AuthUser,
-    RequireAuthorizationLayer,
-};
+use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
 use log::warn;
 use sea_orm::EntityTrait;
@@ -34,11 +29,12 @@ use serde::Deserialize;
 use tokio::{sync::Semaphore, task::spawn_blocking};
 
 use crate::{
+    auth::{Auth, User},
+    err::{respond_internal_server_error, respond_not_authorised},
     templates::{AdminTemplate, LoginTemplate},
     AppState,
 };
 
-use crate::err::{respond_internal_server_error, respond_not_authorised};
 use entity::prelude::*;
 
 lazy_static! {
@@ -57,26 +53,6 @@ pub(crate) struct DeletePayload {
     id: i64,
     auth_token: String,
 }
-
-#[derive(Debug, Clone)]
-pub(crate) struct User {
-    pub(crate) id: usize,
-    pub(crate) username: String,
-    pub(crate) password_hash: Arc<Hash>,
-}
-
-impl AuthUser<usize> for User {
-    fn get_id(&self) -> usize {
-        self.id
-    }
-
-    fn get_password_hash(&self) -> SecretVec<u8> {
-        SecretVec::new(self.password_hash.to_string().into())
-    }
-}
-
-pub(crate) type Auth = AuthContext<usize, User, AuthMemoryStore<usize, User>>;
-pub(crate) type RequireAuth = RequireAuthorizationLayer<usize, User>;
 
 pub(crate) async fn login_page_handler(
     token: CsrfToken,
