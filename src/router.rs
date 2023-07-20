@@ -33,7 +33,6 @@ use tokio::{sync::RwLock, time::Duration};
 use tower::ServiceBuilder;
 use tower_http::{
     services::{ServeDir, ServeFile},
-    trace::TraceLayer,
 };
 
 use crate::{
@@ -85,7 +84,6 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
     let csrf_config = CsrfConfig::default().with_key(Some(cookie_key));
 
     let services = ServiceBuilder::new()
-        .layer(TraceLayer::new_for_http())
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
         .layer(env.ip_source.clone().into_extension())

@@ -32,39 +32,72 @@ lto = true
 panic = "abort"
 strip = true
 
+[features]
+default = ["sqlite"]
+mysql = ["sea-orm/sqlx-mysql", "migration/mysql"]
+postgres = ["sea-orm/sqlx-postgres", "migration/postgres"]
+sqlite = ["sea-orm/sqlx-sqlite", "migration/sqlite"]
+
 [dependencies]
 entity = { path = "entity" }
 migration = { path = "migration" }
 
+######################################
+# Package dependencies go below here #
+######################################
+
 anyhow = { version = "1.0.72", features = ["backtrace"] }
+
 argon2-kdf = "1.2.0"
+
 askama = { version = "0.12.0", features = ["with-axum"] }
 askama_axum = { version = "0.3.0", features = ["config", "humansize"] }
+
 async-fred-session = "0.1.5"
-axum = { version = "0.6.19", features = ["macros", "http2", "headers", "multipart", "tracing"] }
+
+axum = { version = "0.6.19", features = ["macros", "http2", "headers", "tracing"] }
 axum-client-ip = "0.4.1"
 axum_csrf = { version = "0.7.2", features = ["layer"] }
 axum-login = "0.5.0"
+
 dotenvy = "0.15.7"
+
 envy = "0.4.2"
+
 rand_hc = "0.3.2"
+
 itertools = "0.11.0"
+
 lazy_static = "1.4.0"
+
 log = { version = "0.4.19", features = ["std"] }
+
 nix = "0.26.2"
+
 num_cpus = "1.16.0"
+
 os_str_bytes = "6.5.1"
+
 proctitle = "0.1.1"
+
 rand = "0.8.5"
-sea-orm = { version = "0.11.3", features = ["sqlx-all", "runtime-tokio-native-tls", "macros", "with-chrono"] }
-sea-query = { version = "0.29.1", features = ["with-chrono", "thread-safe"] }
-serde = { version = "1.0.172", features = ["derive", "alloc"] }
+
+sea-orm = { version = "0.11.3", features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
+sea-query = { version = "0.29.1", features = ["thread-safe", "with-chrono"] }
+
+serde = { version = "1.0.173", features = ["derive"] }
+serde_bytes = "0.11.12"
+
 syslog-tracing = "0.2.0"
-tokio = { version = "1.29.1", features = ["fs", "macros", "net", "parking_lot", "rt-multi-thread", "signal", "time", "tracing"] }
-tower = { version = "0.4.13", features = ["timeout", "tokio"] }
-tower-http = { version = "0.4.2", features = ["fs", "trace", "timeout", "tokio", "tower", "tracing"] }
-tracing = { version = "0.1.37", features = ["async-await", "log", "valuable"] }
-tracing-subscriber = { version = "0.3.17", features = ["env-filter", "parking_lot", "serde", "time", "tracing", "tracing-serde"] }
+
+tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time", "tracing"] }
+
+tower = { version = "0.4.13", features = ["timeout", "tokio", "tracing"] }
+tower-http = { version = "0.4.2", features = ["fs", "timeout", "tokio", "tower", "tracing"] }
+
+tracing = { version = "0.1.37", features = ["async-await", "log"] }
+tracing-subscriber = { version = "0.3.17", features = ["parking_lot", "time", "tracing"] }
+
 url = "2.4.0"
+
 validator = { version = "0.16.1", features = ["derive"] }
-serde_bytes = { version = "0.11.12", features = ["alloc"] }
