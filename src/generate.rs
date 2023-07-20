@@ -22,24 +22,98 @@ use rand::{
 
 use crate::util::macros::arr;
 
+#[derive(PartialEq, Eq, Copy, Clone)]
+enum Mangler {
+    NoOp,
+    RandomUppercase,
+    AllUppercase,
+    ReplaceSeps,
+}
+
 fn generate_hash(rng: &mut dyn RngCore) -> String {
-    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!$");
+    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+$");
+    let distr_chars = Lazy::new(|| Uniform::new(0, CHARS.len()));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(8, 16));
 
-    let between = Lazy::new(|| Uniform::new(0, CHARS.len()));
-
-    let char_count = rng.gen_range(8..16);
+    let char_count = distr_count.sample(rng);
     (0..char_count)
-        .map(|_| CHARS[between.sample(rng)] as char)
+        .map(|_| CHARS[distr_chars.sample(rng)] as char)
         .collect()
+}
+
+fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> String {
+    match mangler {
+        Mangler::RandomUppercase => fragment
+            .chars()
+            .map(|ch| {
+                let distr_cap = Lazy::new(|| Uniform::new(0, 3));
+                if (*distr_cap).sample(rng) == 0 {
+                    // This is safe; we don't have unicode chars.
+                    ch.to_uppercase().next().unwrap()
+                } else {
+                    ch
+                }
+            })
+            .collect(),
+        Mangler::AllUppercase => fragment.to_uppercase(),
+        Mangler::ReplaceSeps => fragment
+            .chars()
+            .map(|ch| {
+                let distr_replace = Lazy::new(|| Uniform::new(0, 4));
+                if ch == '-' && (*distr_replace).sample(rng) == 0 {
+                    const SEPS: &[u8] = b"!_+$";
+                    let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
+                    SEPS[(*distr_seps).sample(rng)] as char
+                } else {
+                    ch
+                }
+            })
+            .collect(),
+        Mangler::NoOp => fragment.to_string(),
+    }
+}
+
+fn get_mangler(rng: &mut dyn RngCore) -> Mangler {
+    let distr_one_fourth = Lazy::new(|| Uniform::new(0, 12));
+    match (*distr_one_fourth).sample(rng) {
+        // 1/4 probability of selecting a mangler
+        0 => Mangler::AllUppercase,
+        1 => Mangler::RandomUppercase,
+        2 => Mangler::ReplaceSeps,
+        _ => Mangler::NoOp,
+    }
+}
+
+fn mangle_fragment(fragment: &str, rng: &mut dyn RngCore) -> String {
+    // Select mangling function
+    let mangler = get_mangler(rng);
+    let new = perform_mangle(fragment, mangler, rng);
+
+    if rng.gen() && mangler != Mangler::NoOp {
+        if mangler == Mangler::AllUppercase || mangler == Mangler::RandomUppercase {
+            // Don't repeat a case mangling
+            return perform_mangle(&new, Mangler::ReplaceSeps, rng);
+        } else if mangler == Mangler::ReplaceSeps {
+            let mangler = if rng.gen() {
+                Mangler::AllUppercase
+            } else {
+                Mangler::RandomUppercase
+            };
+            return perform_mangle(&new, mangler, rng);
+        }
+    }
+
+    new
 }
 
 pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     arr!(const SEPS: [&str; _] = ["-", "!", "_", "+", "$"]);
 
     // These never change, so no point in regenerating them each time
-    let range_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
-    let range_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
-    let range_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
+    let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
+    let distr_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
+    let distr_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(6, 12));
 
     let hash = generate_hash(rng);
 
@@ -47,7 +121,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
      * The total number of separators plus the suffix works out to be double the nsfw_count.
      * This means the hash_pos must be doubled, too, to be in the right spot.
      */
-    let nsfw_count = rng.gen_range(6..12) * 2;
+    let nsfw_count = distr_count.sample(rng) * 2;
     let hash_pos = rng.gen_range(0..nsfw_count) * 2;
 
     let mut seen_set = HashSet::new();
@@ -56,24 +130,24 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
             if (i & 1) == 1 {
                 // This is odd. Do we tack on the suffix or a separator?
                 if i == nsfw_count - 1 {
-                    EXT[(*range_ext).sample(rng)]
+                    EXT[(*distr_ext).sample(rng)].to_string()
                 } else {
                     // This position will always be odd, since nsfw_count * 2 is always even.
                     // NB: the range is [0..nsfw_count * 2)
                     //
-                    SEPS[(*range_seps).sample(rng)]
+                    SEPS[(*distr_seps).sample(rng)].to_string()
                 }
             } else if i == hash_pos {
-                hash.as_str()
+                hash.clone()
             } else {
                 // Loop until we get a unique NSFW fragment
                 loop {
-                    let pos = (*range_nsfw).sample(rng);
+                    let pos = (*distr_nsfw).sample(rng);
                     if seen_set.contains(&pos) {
                         continue;
                     }
                     seen_set.insert(pos);
-                    break NSFW[pos];
+                    return mangle_fragment(NSFW[pos], rng);
                 }
             }
         })
@@ -123,8 +197,8 @@ arr!(const NSFW: [&str; _] = [
     "antivirus",
     "apple-giveaway",
     "arpa",
-    "ar-15",
     "ass",
+    "assault",
     "ass-beating",
     "audio",
     "babes",
