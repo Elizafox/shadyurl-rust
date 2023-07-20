@@ -836,5 +836,3 @@ arr!(const EXT: [&str; _] = [
     ".pptx", ".rar", ".sgml", ".snd", ".swf", ".tiff", ".txt", ".webm", ".webp", ".vbs", ".xaf", ".xhtml",
     ".xls", ".xlsx", ".xml", ".zip",
 ]);
-
-
