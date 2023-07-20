@@ -25,8 +25,6 @@ use axum_csrf::CsrfToken;
 use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
 use log::debug;
-use rand::SeedableRng;
-use rand_hc::Hc128Rng;
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use tokio::{sync::Semaphore, task::spawn_blocking};
@@ -35,6 +33,7 @@ use validator::Validate;
 use crate::{
     err::{respond_internal_server_error, respond_not_authorised, respond_not_found},
     generate::shady_filename,
+    util::rng::default_rng,
     templates::{IndexTemplate, PostErrorTemplate, PostTemplate},
     validators::validate_url,
     AppState,
@@ -112,7 +111,7 @@ pub(crate) async fn accept_form(
 
     let permit = SHADY_FILE_SEMAPHORE.clone().acquire_owned().await.unwrap();
     let shady = spawn_blocking(move || {
-        let mut rng = Hc128Rng::from_entropy();
+        let mut rng = default_rng();
         let result = shady_filename(&mut rng);
         drop(permit);
         result

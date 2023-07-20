@@ -26,4 +26,12 @@ pub(crate) mod macros {
     pub(crate) use arr;
 }
 
-pub(crate) use arr;
+pub(crate) mod rng {
+    use rand::{RngCore, SeedableRng};
+    use rand_chacha::ChaCha20Rng;
+
+    #[inline]
+    pub(crate) fn default_rng() -> Box<dyn RngCore> {
+        Box::new(ChaCha20Rng::from_entropy())
+    }
+}

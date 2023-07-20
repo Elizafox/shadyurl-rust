@@ -2620,15 +2620,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand_hc"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b363d4f6370f88d62bf586c80405657bde0f0e1b8945d47d2ad59b906cb4f54"
-dependencies = [
- "rand_core",
-]
-
-[[package]]
 name = "redis-protocol"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3223,7 +3214,7 @@ dependencies = [
  "os_str_bytes",
  "proctitle",
  "rand",
- "rand_hc",
+ "rand_chacha",
  "sea-orm",
  "sea-query 0.29.1",
  "serde",
