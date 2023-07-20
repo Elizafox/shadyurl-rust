@@ -12,14 +12,18 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-macro_rules! arr {
-    (
-        $( #[$attr:meta] )*
-        $v:vis $id:ident $name:ident: [$ty:ty; _] = $value:expr
-    ) => {
-        $( #[$attr] )*
-        $v $id $name: [$ty; $value.len()] = $value;
+pub(crate) mod macros {
+    macro_rules! arr {
+        (
+            $( #[$attr:meta] )*
+            $v:vis $id:ident $name:ident: [$ty:ty; _] = $value:expr
+        ) => {
+            $( #[$attr] )*
+            $v $id $name: [$ty; $value.len()] = $value;
+        }
     }
+
+    pub(crate) use arr;
 }
 
 pub(crate) use arr;

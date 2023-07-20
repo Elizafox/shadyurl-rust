@@ -19,7 +19,7 @@ use rand::{
     prelude::*,
 };
 
-use crate::util::arr;
+use crate::util::macros::arr;
 
 arr!(const NSFW: [&str; _] = [
     "0-percent-artificial",
