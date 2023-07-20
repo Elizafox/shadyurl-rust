@@ -37,10 +37,12 @@ default = ["sqlite"]
 mysql = ["sea-orm/sqlx-mysql", "migration/mysql"]
 postgres = ["sea-orm/sqlx-postgres", "migration/postgres"]
 sqlite = ["sea-orm/sqlx-sqlite", "migration/sqlite"]
+with-tracing = ["axum/tracing", "tokio/tracing", "tower/tracing", "tower-http/tracing"]
 
 [dependencies]
 entity = { path = "entity" }
 migration = { path = "migration" }
+
 
 ######################################
 # Package dependencies go below here #
@@ -55,7 +57,7 @@ askama_axum = { version = "0.3.0", features = ["config", "humansize"] }
 
 async-fred-session = "0.1.5"
 
-axum = { version = "0.6.19", features = ["macros", "http2", "headers", "tracing"] }
+axum = { version = "0.6.19", features = ["macros", "http2", "headers"] }
 axum-client-ip = "0.4.1"
 axum_csrf = { version = "0.7.2", features = ["layer"] }
 axum-login = "0.5.0"
@@ -90,13 +92,13 @@ serde_bytes = "0.11.12"
 
 syslog-tracing = "0.2.0"
 
-tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time", "tracing"] }
+tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
 
-tower = { version = "0.4.13", features = ["timeout", "tokio", "tracing"] }
-tower-http = { version = "0.4.2", features = ["fs", "timeout", "tokio", "tower", "tracing"] }
+tracing = { version = "0.1.37", features = ["async-await", "log"]}
+tracing-subscriber = { version = "0.3.17", features = ["parking_lot"]}
 
-tracing = { version = "0.1.37", features = ["async-await", "log"] }
-tracing-subscriber = { version = "0.3.17", features = ["parking_lot", "time", "tracing"] }
+tower = { version = "0.4.13", features = ["timeout", "tokio"] }
+tower-http = { version = "0.4.2", features = ["fs", "timeout", "tokio", "tower"] }
 
 url = "2.4.0"
 

@@ -75,7 +75,8 @@ DAEMON=false
 # Path to PID file, defaults to /var/run/shadyurl.pid
 PID_FILE="/tmp/shadyurl.pid"
 
-# Set the log level, with 0 being only errors, and 5 being debug
+# Set the log level, with 0 being only errors, and 4 being debug
+# It's recommended to keep this around 0 or 1
 LOG_LEVEL=1
 
 # Whether or not to log to stderr

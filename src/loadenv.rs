@@ -23,6 +23,7 @@ use serde::{
     de::{Deserializer, Error},
     Deserialize,
 };
+
 use tracing::Level;
 
 fn default_sitename() -> String {
@@ -71,27 +72,37 @@ pub(crate) fn load_env() -> Result<EnvVars> {
 #[derive(Deserialize)]
 pub(crate) struct EnvVars {
     pub(crate) hostname: String,
+
     #[serde(default = "default_sitename")]
     pub(crate) sitename: String,
+
     pub(crate) bind: String,
     pub(crate) ip_source: SecureClientIpSource,
     pub(crate) database_url: String,
     pub(crate) redis_url: String,
     pub(crate) username: String,
+
     #[serde(deserialize_with = "deserialize_hash")]
     pub(crate) password_hash: Hash,
+
     #[serde(with = "serde_bytes")]
     pub(crate) secret_key: Vec<u8>,
+
     #[serde(deserialize_with = "deserialize_level", default = "default_log_level")]
     pub(crate) log_level: Level,
+
     #[serde(default)]
     pub(crate) log_stderr: bool,
+
     #[serde(default)]
     pub(crate) daemon: bool,
+
     #[serde(default = "default_pid_file")]
     pub(crate) pid_file: PathBuf,
+
     #[serde(default)]
     pub(crate) daemon_user: Option<String>,
+
     #[serde(default)]
     pub(crate) daemon_group: Option<String>,
 }
