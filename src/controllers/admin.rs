@@ -12,14 +12,15 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{net::SocketAddr, sync::Arc};
+use std::sync::Arc;
 
 use argon2_kdf::Hash;
 use axum::{
-    extract::{ConnectInfo, State},
+    extract::State,
     response::{IntoResponse, Redirect, Result},
     Extension, Form,
 };
+use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
 use axum_login::{
     axum_sessions::extractors::WritableSession, extractors::AuthContext,
@@ -113,7 +114,7 @@ pub(crate) async fn login_handler(
     token: CsrfToken,
     mut session: WritableSession,
     mut auth: Auth,
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    SecureClientIp(addr): SecureClientIp,
     State(state): State<AppState>,
     Form(payload): Form<LoginPayload>,
 ) -> Result<impl IntoResponse> {
@@ -133,7 +134,7 @@ pub(crate) async fn login_handler(
         .map_err(|_| respond_not_authorised())?;
 
     if payload.username != state.user.username {
-        let ip = addr.ip();
+        let ip = addr.to_string();
         warn!(
             "Login attempt from {ip} (username {}): No such username",
             &payload.username
@@ -160,7 +161,7 @@ pub(crate) async fn login_handler(
     .map_err(|_| respond_not_authorised())?;
 
     if !hash_verify {
-        let ip = addr.ip();
+        let ip = addr.to_string();
         warn!(
             "Login attempt from {ip} (username {}): Invalid password",
             &payload.username
