@@ -33,8 +33,8 @@ use validator::Validate;
 use crate::{
     err::{respond_internal_server_error, respond_not_authorised, respond_not_found},
     generate::shady_filename,
-    util::rng::default_rng,
     templates::{IndexTemplate, PostErrorTemplate, PostTemplate},
+    util::rng::default_rng,
     validators::validate_url,
     AppState,
 };
