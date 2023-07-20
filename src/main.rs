@@ -32,6 +32,7 @@ mod logging;
 mod router;
 mod state;
 mod templates;
+mod util;
 mod validators;
 
 use crate::{

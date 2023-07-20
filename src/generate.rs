@@ -17,7 +17,9 @@ use rand::{
     prelude::*,
 };
 
-const NSFW: &[&str] = &[
+use crate::util::arr;
+
+arr!(const NSFW: [&str; _] = [
     "0-percent-artificial",
     "0-percent-risk",
     "100-percent-natural",
@@ -764,18 +766,18 @@ const NSFW: &[&str] = &[
     "zoo",
     "zoo-porn",
     "zoom",
-];
+]);
 
-const EXT: &[&str] = &[
+arr!(const EXT: [&str; _] = [
     "app", "avi", "bas", "bat", "csv", "divx", "dll", "doc", "docx", "exe", "flv", "gif", "htm",
     "html", "hxt", "ini", "jar", "js", "jpeg", "jpg", "m1v", "m4a", "mid", "midi", "mkv", "mod",
     "mov", "movie", "mpa", "mpe", "mpeg", "mpg", "mp3", "mp4", "msi", "p7r", "pdf", "png", "ppt",
     "pptx", "rar", "sgml", "snd", "swf", "tiff", "txt", "webm", "webp", "vbs", "xaf", "xhtml",
     "xls", "xlsx", "xml", "zip",
-];
+]);
 
 fn generate_hash(rng: &mut dyn RngCore) -> String {
-    const CHARS: &[u8] = b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!";
+    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!");
 
     let between = Uniform::from(0..CHARS.len());
     let char_count = rng.gen_range(8..16);
@@ -787,15 +789,22 @@ fn generate_hash(rng: &mut dyn RngCore) -> String {
 }
 
 pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
-    let between_nsfw = Uniform::from(0..NSFW.len());
+    arr!(const SEPS: [u8; _] = *b"-!_+");
+
+    let hash = generate_hash(rng);
+
+    let range_seps = Uniform::from(0..SEPS.len());
+    let range_nsfw = Uniform::from(0..NSFW.len());
     let nsfw_count = rng.gen_range(6..12);
-    let mut out = Vec::new();
     let hash_pos = rng.gen_range(0..nsfw_count);
+
+    let mut out: Vec<&str> = Vec::with_capacity(nsfw_count + 1);
+
     for i in 0..nsfw_count {
         if i == hash_pos {
-            out.push(generate_hash(rng));
+            out.push(&hash);
         } else {
-            out.push(NSFW[between_nsfw.sample(rng)].to_string());
+            out.push(NSFW[range_nsfw.sample(rng)]);
         }
     }
 
@@ -815,7 +824,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
             if check == item {
                 // Replace the item
                 loop {
-                    let nsfw = NSFW[between_nsfw.sample(rng)].to_string();
+                    let nsfw = NSFW[range_nsfw.sample(rng)];
                     if &nsfw == item {
                         continue;
                     }
@@ -827,7 +836,15 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
         }
     }
 
-    let mut string = out.join("-");
+    // Build the string with random separators
+    let mut string = String::new();
+    for (i, p) in out.into_iter().enumerate() {
+        if i > 0 {
+            string.push(SEPS[range_seps.sample(rng)].into());
+        }
+        string.push_str(&p);
+    }
+
     string.push_str(format!(".{}", EXT[rng.gen_range(0..EXT.len())]).as_str());
     string
 }
