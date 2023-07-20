@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+use once_cell::sync::Lazy;
+
 use rand::{
     distributions::{Distribution, Uniform},
     prelude::*,
@@ -779,7 +781,8 @@ arr!(const EXT: [&str; _] = [
 fn generate_hash(rng: &mut dyn RngCore) -> String {
     arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+!");
 
-    let between = Uniform::from(0..CHARS.len());
+    let between = Lazy::new(|| Uniform::from(0..CHARS.len()));
+
     let char_count = rng.gen_range(8..16);
     let mut ret = String::with_capacity(char_count);
     for _ in 0..char_count {
@@ -791,10 +794,13 @@ fn generate_hash(rng: &mut dyn RngCore) -> String {
 pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     arr!(const SEPS: [u8; _] = *b"-!_+");
 
+    // These never change, so no point in regenerating them each time
+    let range_seps = Lazy::new(|| Uniform::from(0..SEPS.len()));
+    let range_nsfw = Lazy::new(|| Uniform::from(0..NSFW.len()));
+    let range_ext = Lazy::new(|| Uniform::from(0..EXT.len()));
+
     let hash = generate_hash(rng);
 
-    let range_seps = Uniform::from(0..SEPS.len());
-    let range_nsfw = Uniform::from(0..NSFW.len());
     let nsfw_count = rng.gen_range(6..12);
     let hash_pos = rng.gen_range(0..nsfw_count);
 
@@ -804,7 +810,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
         if i == hash_pos {
             out.push(&hash);
         } else {
-            out.push(NSFW[range_nsfw.sample(rng)]);
+            out.push(NSFW[(*range_nsfw).sample(rng)]);
         }
     }
 
@@ -824,7 +830,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
             if check == item {
                 // Replace the item
                 loop {
-                    let nsfw = NSFW[range_nsfw.sample(rng)];
+                    let nsfw = NSFW[(*range_nsfw).sample(rng)];
                     if &nsfw == item {
                         continue;
                     }
@@ -840,11 +846,11 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     let mut string = String::new();
     for (i, p) in out.into_iter().enumerate() {
         if i > 0 {
-            string.push(SEPS[range_seps.sample(rng)].into());
+            string.push(SEPS[(*range_seps).sample(rng)].into());
         }
         string.push_str(&p);
     }
 
-    string.push_str(format!(".{}", EXT[rng.gen_range(0..EXT.len())]).as_str());
+    string.push_str(format!(".{}", EXT[(*range_ext).sample(rng)]).as_str());
     string
 }
