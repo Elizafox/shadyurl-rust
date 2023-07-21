@@ -33,7 +33,7 @@ enum Mangler {
 fn generate_hash(rng: &mut dyn RngCore) -> String {
     arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+$");
     let distr_chars = Lazy::new(|| Uniform::new(0, CHARS.len()));
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(8, 16));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(5, 12));
 
     let char_count = distr_count.sample(rng);
     (0..char_count)
@@ -113,7 +113,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
     let distr_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
     let distr_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(6, 12));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(6, 10));
 
     let hash = generate_hash(rng);
 
