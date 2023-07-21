@@ -28,6 +28,7 @@ enum Mangler {
     RandomUppercase,
     AllUppercase,
     ReplaceSeps,
+    NumberLookalike,
 }
 
 fn generate_hash(rng: &mut dyn RngCore) -> String {
@@ -69,38 +70,79 @@ fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> St
                 }
             })
             .collect(),
+        Mangler::NumberLookalike => fragment
+            .chars()
+            .map(|ch| {
+                let distr_replace = Lazy::new(|| Uniform::new(0, 4));
+                if (*distr_replace).sample(rng) == 0 {
+                    match ch {
+                        'o' | 'O' => '0',
+                        'a' | 'A' => '4',
+                        'e' | 'E' => '3',
+                        'g' | 'G' => '9',
+                        'i' | 'I' | 'l' | 'L' => '1',
+                        's' | 'S' => '5',
+                        't' | 'T' => '7',
+                        _ => ch,
+                    }
+                } else {
+                    ch
+                }
+            })
+            .collect(),
         Mangler::NoOp => fragment.to_string(),
     }
 }
 
 fn get_mangler(rng: &mut dyn RngCore) -> Mangler {
-    let distr_one_fourth = Lazy::new(|| Uniform::new(0, 12));
+    let distr_one_fourth = Lazy::new(|| Uniform::new(0, 16));
     match (*distr_one_fourth).sample(rng) {
         // 1/4 probability of selecting a mangler
         0 => Mangler::AllUppercase,
         1 => Mangler::RandomUppercase,
         2 => Mangler::ReplaceSeps,
+        3 => Mangler::NumberLookalike,
         _ => Mangler::NoOp,
     }
 }
 
 fn mangle_fragment(fragment: &str, rng: &mut dyn RngCore) -> String {
     // Select mangling function
+    let distr_second_mangler = Lazy::new(|| Uniform::new(0, 4));
     let mangler = get_mangler(rng);
     let new = perform_mangle(fragment, mangler, rng);
 
-    if rng.gen() && mangler != Mangler::NoOp {
-        if mangler == Mangler::AllUppercase || mangler == Mangler::RandomUppercase {
-            // Don't repeat a case mangling
-            return perform_mangle(&new, Mangler::ReplaceSeps, rng);
-        } else if mangler == Mangler::ReplaceSeps {
-            let mangler = if rng.gen() {
-                Mangler::AllUppercase
-            } else {
-                Mangler::RandomUppercase
-            };
-            return perform_mangle(&new, mangler, rng);
-        }
+    if (*distr_second_mangler).sample(rng) == 0 {
+        // 1/4 chance to apply a second mangler
+        let mangler = match mangler {
+            Mangler::AllUppercase | Mangler::RandomUppercase => {
+                // Don't repeat a case mangling
+                if rng.gen() {
+                    Mangler::ReplaceSeps
+                } else {
+                    Mangler::NumberLookalike
+                }
+            },
+            Mangler::ReplaceSeps => {
+                match rng.gen_range(0..=2) {
+                    0 => Mangler::AllUppercase,
+                    1 => Mangler::RandomUppercase,
+                    2 => Mangler::NumberLookalike,
+                    _ => Mangler::NoOp,
+                }
+            },
+            Mangler::NumberLookalike => {
+                match rng.gen_range(0..=2) {
+                    0 => Mangler::AllUppercase,
+                    1 => Mangler::RandomUppercase,
+                    2 => Mangler::ReplaceSeps,
+                    _ => Mangler::NoOp,
+                }
+            },
+            Mangler::NoOp => Mangler::NoOp,
+        };
+
+        return perform_mangle(&new, mangler, rng);
     }
 
     new
