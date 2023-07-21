@@ -122,22 +122,18 @@ fn mangle_fragment(fragment: &str, rng: &mut dyn RngCore) -> String {
                 } else {
                     Mangler::NumberLookalike
                 }
+            }
+            Mangler::ReplaceSeps => match rng.gen_range(0..=2) {
+                0 => Mangler::AllUppercase,
+                1 => Mangler::RandomUppercase,
+                2 => Mangler::NumberLookalike,
+                _ => Mangler::NoOp,
             },
-            Mangler::ReplaceSeps => {
-                match rng.gen_range(0..=2) {
-                    0 => Mangler::AllUppercase,
-                    1 => Mangler::RandomUppercase,
-                    2 => Mangler::NumberLookalike,
-                    _ => Mangler::NoOp,
-                }
-            },
-            Mangler::NumberLookalike => {
-                match rng.gen_range(0..=2) {
-                    0 => Mangler::AllUppercase,
-                    1 => Mangler::RandomUppercase,
-                    2 => Mangler::ReplaceSeps,
-                    _ => Mangler::NoOp,
-                }
+            Mangler::NumberLookalike => match rng.gen_range(0..=2) {
+                0 => Mangler::AllUppercase,
+                1 => Mangler::RandomUppercase,
+                2 => Mangler::ReplaceSeps,
+                _ => Mangler::NoOp,
             },
             Mangler::NoOp => Mangler::NoOp,
         };
