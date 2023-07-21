@@ -499,7 +499,7 @@ arr!(const NSFW: [&str; _] = [
     "getlaidtonite",
     "getrichovernight",
     "getrichquick",
-    "getting-ucked",
+    "getting-fucked",
     "ghetto",
     "ginger",
     "girl",
