@@ -34,7 +34,7 @@ enum Mangler {
 fn generate_hash(rng: &mut dyn RngCore) -> String {
     arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+$");
     let distr_chars = Lazy::new(|| Uniform::new(0, CHARS.len()));
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(5, 12));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(4, 8));
 
     let char_count = distr_count.sample(rng);
     (0..char_count)
@@ -95,9 +95,9 @@ fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> St
 }
 
 fn get_mangler(rng: &mut dyn RngCore) -> Mangler {
-    let distr_one_fourth = Lazy::new(|| Uniform::new(0, 16));
-    match (*distr_one_fourth).sample(rng) {
-        // 1/4 probability of selecting a mangler
+    let distr_mangle = Lazy::new(|| Uniform::new(0, 12));
+    match (*distr_mangle).sample(rng) {
+        // 1/3 probability of selecting a mangler
         0 => Mangler::AllUppercase,
         1 => Mangler::RandomUppercase,
         2 => Mangler::ReplaceSeps,
@@ -151,16 +151,27 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
     let distr_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
     let distr_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(6, 10));
-
-    let hash = generate_hash(rng);
+    let distr_ext_exe = Lazy::new(|| Uniform::new(0, EXT_EXE.len()));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(5, 9));
 
     /* We multiply by 2 so we can put on the separators and suffix
      * The total number of separators plus the suffix works out to be double the nsfw_count.
      * This means the hash_pos must be doubled, too, to be in the right spot.
      */
-    let nsfw_count = distr_count.sample(rng) * 2;
-    let hash_pos = rng.gen_range(0..nsfw_count) * 2;
+    let nsfw_count_orig = distr_count.sample(rng);
+    let nsfw_count = nsfw_count_orig * 2;
+    let hash_pos = rng.gen_range(1..(nsfw_count_orig - 2)) * 2;
+    let fake_extension_pos = if rng.gen() {
+        loop {
+            let n = rng.gen_range(1..(nsfw_count_orig - 2)) * 2;
+            if n != hash_pos {
+                break n;
+            }
+        }
+    } else {
+        // Deliberately out of range, so it won't be generated.
+        (nsfw_count_orig + 1) * 2
+    };
 
     let mut seen_set = HashSet::new();
     (0..nsfw_count)
@@ -168,15 +179,20 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
             if (i & 1) == 1 {
                 // This is odd. Do we tack on the suffix or a separator?
                 if i == nsfw_count - 1 {
-                    EXT[(*distr_ext).sample(rng)].to_string()
-                } else {
+                    EXT_EXE[(*distr_ext_exe).sample(rng)].to_string()
+                } else if (i + 1) != fake_extension_pos {
+                    // We want to skip this if the next one is the extension.
                     // This position will always be odd, since nsfw_count * 2 is always even.
                     // NB: the range is [0..nsfw_count * 2)
-                    //
                     SEPS[(*distr_seps).sample(rng)].to_string()
+                } else {
+                    // Insert empty string, "this space intentionally left blank."
+                    String::new()
                 }
             } else if i == hash_pos {
-                hash.clone()
+                generate_hash(rng)
+            } else if i == fake_extension_pos {
+                EXT[(*distr_ext).sample(rng)].to_string()
             } else {
                 // Loop until we get a unique NSFW fragment
                 loop {
@@ -1051,9 +1067,13 @@ arr!(const NSFW: [&str; _] = [
 ]);
 
 arr!(const EXT: [&str; _] = [
-    ".app", ".avi", ".bas", ".bat", ".csv", ".divx", ".dll", ".doc", ".docx", ".exe", ".flv", ".gif", ".htm",
-    ".html", ".hxt", ".ini", ".jar", ".js", ".jpeg", ".jpg", ".m1v", ".m4a", ".mid", ".midi", ".mkv", ".mod",
-    ".mov", ".movie", ".mpa", ".mpe", ".mpeg", ".mpg", ".mp3", ".mp4", ".msi", ".p7r", ".pdf", ".png", ".ppt",
-    ".pptx", ".rar", ".sgml", ".snd", ".swf", ".tiff", ".txt", ".webm", ".webp", ".vbs", ".xaf", ".xhtml",
-    ".xls", ".xlsx", ".xml", ".zip",
+    ".avi", ".bas", ".csv", ".divx", ".dll", ".doc", ".docx", ".flv", ".gif", ".htm", ".html",
+    ".ini", ".jar", ".js", ".jpeg", ".jpg", ".m1v", ".m4a", ".mid", ".midi", ".mkv", ".mod", ".mov",
+    ".movie", ".mpa", ".mpe", ".mpeg", ".mpg", ".mp3", ".mp4", ".p7r", ".pdf", ".png", ".ppt",
+    ".pptx", ".rar", ".sgml", ".snd", ".swf", ".tiff", ".txt", ".webm", ".webp", ".vbs", ".xaf",
+    ".xhtml", ".xls", ".xlsx", ".xml", ".zip",
+]);
+
+arr!(const EXT_EXE: [&str; _] = [
+    ".app", ".bat", ".exe", ".msi", ".run", ".script",
 ]);
