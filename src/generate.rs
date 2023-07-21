@@ -14,10 +14,10 @@
 
 use once_cell::sync::Lazy;
 use rand::{
-    Rng,
-    seq::SliceRandom,
-    distributions::{Distribution, Uniform, DistString},
+    distributions::{DistString, Distribution, Uniform},
     prelude::*,
+    seq::SliceRandom,
+    Rng,
 };
 use rand_distr::Alphanumeric;
 
