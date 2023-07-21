@@ -12,13 +12,14 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::collections::HashSet;
-
 use once_cell::sync::Lazy;
 use rand::{
-    distributions::{Distribution, Uniform},
+    Rng,
+    seq::SliceRandom,
+    distributions::{Distribution, Uniform, DistString},
     prelude::*,
 };
+use rand_distr::Alphanumeric;
 
 use crate::util::macros::arr;
 
@@ -32,14 +33,9 @@ enum Mangler {
 }
 
 fn generate_hash(rng: &mut dyn RngCore) -> String {
-    arr!(const CHARS: [u8; _] = *b"abcdefghijiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_+$");
-    let distr_chars = Lazy::new(|| Uniform::new(0, CHARS.len()));
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(4, 8));
-
-    let char_count = distr_count.sample(rng);
-    (0..char_count)
-        .map(|_| CHARS[distr_chars.sample(rng)] as char)
-        .collect()
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(5, 9));
+    let count = distr_count.sample(rng);
+    Alphanumeric.sample_string(rng, count)
 }
 
 fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> String {
@@ -49,10 +45,9 @@ fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> St
             .map(|ch| {
                 let distr_cap = Lazy::new(|| Uniform::new(0, 3));
                 if (*distr_cap).sample(rng) == 0 {
-                    // This is safe; we don't have unicode chars.
-                    ch.to_uppercase().next().unwrap()
+                    ch.to_uppercase().collect()
                 } else {
-                    ch
+                    ch.to_string()
                 }
             })
             .collect(),
@@ -62,11 +57,10 @@ fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> St
             .map(|ch| {
                 let distr_replace = Lazy::new(|| Uniform::new(0, 4));
                 if ch == '-' && (*distr_replace).sample(rng) == 0 {
-                    const SEPS: &[u8] = b"!_+$";
-                    let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
-                    SEPS[(*distr_seps).sample(rng)] as char
+                    arr!(const SEPS: [&str; _] = ["!", "_", "+", "$"]);
+                    SEPS.choose(rng).unwrap().to_string()
                 } else {
-                    ch
+                    ch.to_string()
                 }
             })
             .collect(),
@@ -148,13 +142,9 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     arr!(const SEPS: [&str; _] = ["!", "_", "+", "~"]);
 
     // These never change, so no point in regenerating them each time
-    let distr_seps = Lazy::new(|| Uniform::new(0, SEPS.len()));
-    let distr_nsfw = Lazy::new(|| Uniform::new(0, NSFW.len()));
-    let distr_ext = Lazy::new(|| Uniform::new(0, EXT.len()));
-    let distr_ext_exe = Lazy::new(|| Uniform::new(0, EXT_EXE.len()));
     let distr_count = Lazy::new(|| Uniform::new_inclusive(4, 6));
 
-    /* We multiply by 2 so we can put on the separators and suffix
+    /* We multiply by 2 so we can put on the separators and suffix, which will be at odd positions.
      * The total number of separators plus the suffix works out to be double the nsfw_count.
      * This means the hash_pos must be doubled, too, to be in the right spot.
      */
@@ -173,18 +163,17 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
         (nsfw_count_orig + 1) * 2
     };
 
-    let mut seen_set = HashSet::new();
     (0..nsfw_count)
         .map(|i| {
             if (i & 1) == 1 {
                 // This is odd. Do we tack on the suffix or a separator?
                 if i == nsfw_count - 1 {
-                    EXT_EXE[(*distr_ext_exe).sample(rng)].to_string()
+                    EXT_EXE.choose(rng).unwrap().to_string()
                 } else if (i + 1) != fake_extension_pos {
                     // We want to skip this if the next one is the extension.
                     // This position will always be odd, since nsfw_count * 2 is always even.
                     // NB: the range is [0..nsfw_count * 2)
-                    SEPS[(*distr_seps).sample(rng)].to_string()
+                    SEPS.choose(rng).unwrap().to_string()
                 } else {
                     // Insert empty string, "this space intentionally left blank."
                     String::new()
@@ -192,17 +181,10 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
             } else if i == hash_pos {
                 generate_hash(rng)
             } else if i == fake_extension_pos {
-                EXT[(*distr_ext).sample(rng)].to_string()
+                EXT.choose(rng).unwrap().to_string()
             } else {
-                // Loop until we get a unique NSFW fragment
-                loop {
-                    let pos = (*distr_nsfw).sample(rng);
-                    if seen_set.contains(&pos) {
-                        continue;
-                    }
-                    seen_set.insert(pos);
-                    return mangle_fragment(NSFW[pos], rng);
-                }
+                let nsfw = NSFW.choose(rng).unwrap();
+                mangle_fragment(nsfw, rng)
             }
         })
         .collect()

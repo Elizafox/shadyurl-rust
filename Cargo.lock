@@ -2620,6 +2620,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "rand_distr"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32cb0b9bc82b0a0876c2dd994a7e7a2683d3e7390ca40e6886785ef0c7e3ee31"
+dependencies = [
+ "num-traits",
+ "rand",
+]
+
+[[package]]
 name = "redis-protocol"
 version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3215,6 +3225,7 @@ dependencies = [
  "proctitle",
  "rand",
  "rand_chacha",
+ "rand_distr",
  "sea-orm",
  "sea-query 0.29.1",
  "serde",
