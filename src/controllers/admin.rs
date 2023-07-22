@@ -129,7 +129,7 @@ pub(crate) async fn login_handler(
         .unwrap();
     let password_hash = Arc::clone(&state.user.password_hash);
     let hash_verify = spawn_blocking(move || {
-        let result = password_hash.verify(payload.password.as_str());
+        let result = password_hash.verify(payload.password.as_bytes());
         drop(permit);
         result
     })
