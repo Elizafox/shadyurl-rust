@@ -30,6 +30,7 @@ enum Mangler {
     AllUppercase,
     ReplaceSeps,
     NumberLookalike,
+    HeckTransform,
 }
 
 fn generate_hash(rng: &mut dyn RngCore) -> String {
@@ -84,18 +85,32 @@ fn perform_mangle(rng: &mut dyn RngCore, mangler: Mangler, fragment: &str) -> St
                 }
             })
             .collect(),
+        Mangler::HeckTransform => {
+            let distr_transform = Lazy::new(|| Uniform::new(0, 7));
+            match (*distr_transform).sample(rng) {
+                0 => heck::AsKebabCase(fragment).to_string(),
+                1 => heck::AsLowerCamelCase(fragment).to_string(),
+                2 => heck::AsUpperCamelCase(fragment).to_string(),
+                3 => heck::AsShoutyKebabCase(fragment).to_string(),
+                4 => heck::AsShoutySnakeCase(fragment).to_string(),
+                5 => heck::AsSnakeCase(fragment).to_string(),
+                6 => heck::AsTrainCase(fragment).to_string(),
+                _ => unreachable!(),
+            }
+        },
         Mangler::NoOp => fragment.to_string(),
     }
 }
 
 fn get_mangler(rng: &mut dyn RngCore) -> Mangler {
-    let distr_mangle = Lazy::new(|| Uniform::new(0, 12));
+    let distr_mangle = Lazy::new(|| Uniform::new(0, 15));
     match (*distr_mangle).sample(rng) {
         // 1/3 probability of selecting a mangler
         0 => Mangler::AllUppercase,
         1 => Mangler::RandomUppercase,
         2 => Mangler::ReplaceSeps,
         3 => Mangler::NumberLookalike,
+        4 => Mangler::HeckTransform,
         _ => Mangler::NoOp,
     }
 }
@@ -117,17 +132,24 @@ fn mangle_fragment(rng: &mut dyn RngCore, fragment: &str) -> String {
                     Mangler::NumberLookalike
                 }
             }
-            Mangler::ReplaceSeps => match rng.gen_range(0..=2) {
+            Mangler::ReplaceSeps => match rng.gen_range(0..3) {
                 0 => Mangler::AllUppercase,
                 1 => Mangler::RandomUppercase,
                 2 => Mangler::NumberLookalike,
-                _ => Mangler::NoOp,
+                _ => unreachable!(),
             },
-            Mangler::NumberLookalike => match rng.gen_range(0..=2) {
+            Mangler::NumberLookalike => match rng.gen_range(0..3) {
                 0 => Mangler::AllUppercase,
                 1 => Mangler::RandomUppercase,
                 2 => Mangler::ReplaceSeps,
-                _ => Mangler::NoOp,
+                _ => unreachable!(),
+            },
+            Mangler::HeckTransform => {
+                if rng.gen() {
+                    Mangler::ReplaceSeps
+                } else {
+                    Mangler::NumberLookalike
+                }
             },
             Mangler::NoOp => Mangler::NoOp,
         };
@@ -172,7 +194,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     // nsfw strings + extension
     let mut out = Vec::with_capacity(token_count);
     for i in 0..token_count {
-        if i > 0 {
+        if i > 0 || i + 1 == fake_extension_pos {
             // Prepend
             // SAFETY: never fails
             out.push(unsafe { SEPS.choose(rng).unwrap_unchecked().to_string() });
@@ -947,7 +969,7 @@ arr!(const NSFW: [&str; _] = [
     "turkey-porn",
     "twitter-blowjob",
     "ukranian-brides",
-    "uniqueinvestmentopportunity",
+    "unique-investment-opportunity",
     "un-nwo-conspiracy",
     "underground-death",
     "unlocker4anything",
