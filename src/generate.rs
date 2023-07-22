@@ -38,7 +38,7 @@ fn generate_hash(rng: &mut dyn RngCore) -> String {
     Alphanumeric.sample_string(rng, count)
 }
 
-fn perform_mangle(fragment: &str, mangler: Mangler, rng: &mut dyn RngCore) -> String {
+fn perform_mangle(rng: &mut dyn RngCore, mangler: Mangler, fragment: &str) -> String {
     match mangler {
         Mangler::RandomUppercase => fragment
             .chars()
@@ -100,11 +100,11 @@ fn get_mangler(rng: &mut dyn RngCore) -> Mangler {
     }
 }
 
-fn mangle_fragment(fragment: &str, rng: &mut dyn RngCore) -> String {
+fn mangle_fragment(rng: &mut dyn RngCore, fragment: &str) -> String {
     // Select mangling function
     let distr_second_mangler = Lazy::new(|| Uniform::new(0, 4));
     let mangler = get_mangler(rng);
-    let new = perform_mangle(fragment, mangler, rng);
+    let new = perform_mangle(rng, mangler, fragment);
 
     if (*distr_second_mangler).sample(rng) == 0 {
         // 1/4 chance to apply a second mangler
@@ -132,7 +132,7 @@ fn mangle_fragment(fragment: &str, rng: &mut dyn RngCore) -> String {
             Mangler::NoOp => Mangler::NoOp,
         };
 
-        return perform_mangle(&new, mangler, rng);
+        return perform_mangle(rng, mangler, &new);
     }
 
     new
@@ -142,52 +142,59 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     arr!(const SEPS: [&str; _] = ["!", "_", "+", "~"]);
 
     // These never change, so no point in regenerating them each time
-    let distr_count = Lazy::new(|| Uniform::new_inclusive(4, 6));
+    let distr_count = Lazy::new(|| Uniform::new_inclusive(3, 6));
 
-    /* We multiply by 2 so we can put on the separators and suffix, which will be at odd positions.
-     * The total number of separators plus the suffix works out to be double the nsfw_count.
-     * This means the hash_pos must be doubled, too, to be in the right spot.
-     */
-    let nsfw_count_orig = distr_count.sample(rng);
-    let nsfw_count = nsfw_count_orig * 2;
-    let hash_pos = rng.gen_range(1..(nsfw_count_orig - 2)) * 2;
+    let token_count = distr_count.sample(rng);
+    let mut nsfw_str_count = token_count;
+
+    let hash = generate_hash(rng);
+    let hash_pos = rng.gen_range(1..token_count);
+
     let fake_extension_pos = if rng.gen() {
         loop {
-            let n = rng.gen_range(1..(nsfw_count_orig - 2)) * 2;
+            let n = rng.gen_range(1..token_count);
             if n != hash_pos {
+                nsfw_str_count -= 1;
                 break n;
             }
         }
     } else {
         // Deliberately out of range, so it won't be generated.
-        (nsfw_count_orig + 1) * 2
+        token_count + 1
     };
 
-    (0..nsfw_count)
-        .map(|i| {
-            if (i & 1) == 1 {
-                // This is odd. Do we tack on the suffix or a separator?
-                if i == nsfw_count - 1 {
-                    EXT_EXE.choose(rng).unwrap().to_string()
-                } else if (i + 1) != fake_extension_pos {
-                    // We want to skip this if the next one is the extension.
-                    // This position will always be odd, since nsfw_count * 2 is always even.
-                    // NB: the range is [0..nsfw_count * 2)
-                    SEPS.choose(rng).unwrap().to_string()
-                } else {
-                    // Insert empty string, "this space intentionally left blank."
-                    String::new()
-                }
-            } else if i == hash_pos {
-                generate_hash(rng)
-            } else if i == fake_extension_pos {
-                EXT.choose(rng).unwrap().to_string()
-            } else {
-                let nsfw = NSFW.choose(rng).unwrap();
-                mangle_fragment(nsfw, rng)
-            }
-        })
-        .collect()
+    // Gather unique strings up front
+    let mut nsfw_strs: Vec<_> = NSFW
+        .choose_multiple(rng, nsfw_str_count)
+        .map(|s| mangle_fragment(rng, s))
+        .collect();
+
+    // nsfw strings + extension
+    let mut out = Vec::with_capacity(token_count);
+    for i in 0..token_count {
+        if i > 0 {
+            // Prepend
+            // SAFETY: never fails
+            out.push(unsafe { SEPS.choose(rng).unwrap_unchecked().to_string() });
+        }
+
+        let push_val = if i == hash_pos {
+            hash.clone()
+        } else if i == fake_extension_pos {
+            // SAFETY: never fails
+            unsafe { EXT.choose(rng).unwrap_unchecked().to_string() }
+        } else {
+            // SAFETY: nsfw_strs always has enough strings
+            unsafe { nsfw_strs.pop().unwrap_unchecked() }
+        };
+        out.push(push_val);
+    }
+
+    // Add extension
+    // SAFETY: never fails
+    out.push(unsafe { EXT_EXE.choose(rng).unwrap_unchecked().to_string() });
+
+    out.into_iter().collect()
 }
 
 arr!(const NSFW: [&str; _] = [
