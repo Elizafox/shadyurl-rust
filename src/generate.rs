@@ -97,7 +97,7 @@ fn perform_mangle(rng: &mut dyn RngCore, mangler: Mangler, fragment: &str) -> St
                 6 => heck::AsTrainCase(fragment).to_string(),
                 _ => unreachable!(),
             }
-        },
+        }
         Mangler::NoOp => fragment.to_string(),
     }
 }
@@ -150,7 +150,7 @@ fn mangle_fragment(rng: &mut dyn RngCore, fragment: &str) -> String {
                 } else {
                     Mangler::NumberLookalike
                 }
-            },
+            }
             Mangler::NoOp => Mangler::NoOp,
         };
 
