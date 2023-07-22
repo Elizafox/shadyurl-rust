@@ -194,7 +194,7 @@ pub(crate) fn shady_filename(rng: &mut dyn RngCore) -> String {
     // nsfw strings + extension
     let mut out = Vec::with_capacity(token_count);
     for i in 0..token_count {
-        if i > 0 || i + 1 == fake_extension_pos {
+        if i > 0 && i + 1 != fake_extension_pos {
             // Prepend
             // SAFETY: never fails
             out.push(unsafe { SEPS.choose(rng).unwrap_unchecked().to_string() });
