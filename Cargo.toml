@@ -49,7 +49,7 @@ migration = { path = "migration" }
 ######################################
 
 anyhow = { version = "1.0.72", features = ["backtrace"] }
-argon2-kdf = "1.2.0"
+argon2-kdf = "1.3.0"
 askama = { version = "0.12.0", features = ["with-axum"] }
 askama_axum = { version = "0.3.0", features = ["config", "humansize"] }
 async-fred-session = "0.1.5"
