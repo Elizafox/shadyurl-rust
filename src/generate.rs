@@ -86,15 +86,14 @@ fn perform_mangle(rng: &mut dyn RngCore, mangler: Mangler, fragment: &str) -> St
             })
             .collect(),
         Mangler::HeckTransform => {
-            let distr_transform = Lazy::new(|| Uniform::new(0, 7));
+            let distr_transform = Lazy::new(|| Uniform::new(0, 6));
             match (*distr_transform).sample(rng) {
-                0 => heck::AsKebabCase(fragment).to_string(),
-                1 => heck::AsLowerCamelCase(fragment).to_string(),
-                2 => heck::AsUpperCamelCase(fragment).to_string(),
-                3 => heck::AsShoutyKebabCase(fragment).to_string(),
-                4 => heck::AsShoutySnakeCase(fragment).to_string(),
-                5 => heck::AsSnakeCase(fragment).to_string(),
-                6 => heck::AsTrainCase(fragment).to_string(),
+                0 => heck::AsLowerCamelCase(fragment).to_string(),
+                1 => heck::AsUpperCamelCase(fragment).to_string(),
+                2 => heck::AsShoutyKebabCase(fragment).to_string(),
+                3 => heck::AsShoutySnakeCase(fragment).to_string(),
+                4 => heck::AsSnakeCase(fragment).to_string(),
+                5 => heck::AsTrainCase(fragment).to_string(),
                 _ => unreachable!(),
             }
         }
