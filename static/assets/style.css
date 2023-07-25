@@ -18,19 +18,19 @@ html {
 }
 
 a {
-    line-break: strict;
+    line-break: anywhere;
 }
 
 table#admin-list-table {
     text-align: center;
     border-collapse: collapse;
+    line-break: anywhere;
 }
 
 table#admin-list-table th,td {
     padding-top: 1em;
     padding-bottom: 1em;
-    padding-left: 0;
-    padding-right: 0;
+    line-break: anywhere;
 }
 
 tr#admin-list-heading th {
@@ -40,28 +40,27 @@ tr#admin-list-heading th {
 
 th#admin-list-id-heading {
     text-align: left;
-    min-width: 2em;
+    width: 2%;
 }
 
 th#admin-list-url-heading {
     text-align: left;
-    min-width: 20em;
+    width: 20%;
 }
 
 th#admin-list-redirect-heading {
     text-align: left;
-    min-width: 10em;
-    max-width: 20em;
+    width: 20%;
 }
 
 th#admin-list-created-heading {
     text-align: right;
-    min-width: 4em;
+    width: 8%;
 }
 
 th#admin-list-ip-heading {
     text-align: right;
-    min-width: 10em;
+    width: 10%;
 }
 
 tr#admin-list-item td {
@@ -72,18 +71,22 @@ tr#admin-list-item td {
 
 td#admin-list-id-item {
     text-align: left;
+    padding-right: 0.5em;
 }
 
 td#admin-list-url-item {
     text-align: left;
+    padding-right: 0.5em;
 }
 
 td#admin-list-redirect-item {
     text-align: left;
+    padding-right: 0.5em;
 }
 
 td#admin-list-created-item {
     text-align: right;
+    padding-right: 0.5em;
 }
 
 td#admin-list-ip-item {
