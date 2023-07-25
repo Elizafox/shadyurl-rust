@@ -17,6 +17,10 @@ html {
     color: #00B000;
 }
 
+a {
+    line-break: strict;
+}
+
 table#admin-list-table {
     text-align: center;
     border-collapse: collapse;
