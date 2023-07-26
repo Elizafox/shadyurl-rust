@@ -67,9 +67,7 @@ pub(crate) async fn transform_error<B>(
     (parts.status, t).into_response()
 }
 
-pub(crate) async fn handle_timeout_error(
-    err: BoxError,
-) -> impl IntoResponse {
+pub(crate) async fn handle_timeout_error(err: BoxError) -> impl IntoResponse {
     // Let transform_error handle it
     let error_code = if err.is::<Elapsed>() {
         StatusCode::REQUEST_TIMEOUT
