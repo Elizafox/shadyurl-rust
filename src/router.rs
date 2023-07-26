@@ -100,6 +100,8 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
     let shady_router = Router::new()
         .route("/makeurl", post(accept_form))
         .nest_service("/robots.txt", ServeFile::new("static/robots.txt"))
+        .nest_service("/ads.txt", ServeFile::new("static/robots.txt"))
+        .nest_service("/app-ads.txt", ServeFile::new("static/robots.txt"))
         .nest_service("/favicon.ico", ServeFile::new("static/favicon.ico"))
         .nest_service("/assets", ServeDir::new("static/assets"))
         .route("/*shady", get(get_shady))
