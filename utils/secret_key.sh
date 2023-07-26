@@ -12,5 +12,5 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
-export LC_ALL=C
-echo "SECRET_KEY='$(tr -dc '[:alnum:]+_<>,.-!@%^&*()[]{}"|:;?/`' </dev/random | head -c 64)'"
+# status=none isn't POSIX, probably doesn't matter but let's keep it portable
+dd if=/dev/random bs=66 count=1 2>/dev/null | base64

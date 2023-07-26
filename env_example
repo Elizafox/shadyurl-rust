@@ -59,10 +59,12 @@ DATABASE_URL="sqlite:/tmp/test.db"
 REDIS_URL="redis://127.0.0.1"
 
 # This is for cookies, don't disclose it, and you really need to change this.
-# It must be at least 64 characters long
-# TIP: generate it with the script provided:
+# This is encoded in base64 now; if you have a previous secret, you can do this:
+#     printf '%s' '<old_secret_here>' | base64
+#
+# TIP: for new secrets, generate it with the script provided:
 #     /path/to/shadyurl-rust/utils/secret_key.sh
-SECRET_KEY=dummydummydummydummydummydummydummydummydummydummydummydummydumm
+SECRET_KEY=ZHVtbXlkdW1teWR1bW15ZHVtbXlkdW1teWR1bW15ZHVtbXlkdW1teWR1bW15ZHVtbXlkdW1teWR1bW15ZHVtbXk=
 
 # Login username, for the /login endpoint for management
 USERNAME=Elizafox

@@ -17,6 +17,7 @@ use std::{path::PathBuf, str::FromStr};
 use anyhow::Result;
 use argon2_kdf::Hash;
 use axum_client_ip::SecureClientIpSource;
+use base64ct::{Base64, Encoding};
 use dotenvy::dotenv;
 use envy::from_env;
 use serde::{
@@ -36,6 +37,16 @@ fn default_pid_file() -> PathBuf {
 
 fn default_log_level() -> Level {
     Level::INFO
+}
+
+fn deserialize_secret<'de, D>(d: D) -> Result<Vec<u8>, D::Error>
+where
+    D: Deserializer<'de>
+{
+    let s = String::deserialize(d)?;
+    let vec = Base64::decode_vec(&s)
+        .map_err(|e| Error::custom(format!("Invalid base64 value: {e}")))?;
+    Ok(vec)
 }
 
 fn deserialize_hash<'de, D>(d: D) -> Result<Hash, D::Error>
@@ -90,7 +101,7 @@ pub(crate) struct EnvVars {
     #[serde(deserialize_with = "deserialize_hash")]
     pub(crate) password_hash: Hash,
 
-    #[serde(with = "serde_bytes")]
+    #[serde(deserialize_with = "deserialize_secret")]
     pub(crate) secret_key: Vec<u8>,
 
     #[serde(deserialize_with = "deserialize_level", default = "default_log_level")]

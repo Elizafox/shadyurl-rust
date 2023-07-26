@@ -57,6 +57,7 @@ axum = { version = "0.6.19", features = ["macros", "http2", "headers"] }
 axum-client-ip = "0.4.1"
 axum_csrf = { version = "0.7.2", features = ["layer"] }
 axum-login = "0.5.0"
+base64ct = { version = "1.6.0", features = ["std"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 heck = { version = "0.4.1", features = ["unicode"] }
@@ -74,7 +75,6 @@ rand_distr = "0.4.3"
 sea-orm = { version = "0.11.3", features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
 sea-query = { version = "0.30.0", features = ["thread-safe", "with-chrono"] }
 serde = { version = "1.0.175", features = ["derive"] }
-serde_bytes = "0.11.12"
 syslog-tracing = "0.2.0"
 tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
 tracing = { version = "0.1.37", features = ["async-await", "log"]}

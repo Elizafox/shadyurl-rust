@@ -38,7 +38,8 @@ gen_randint()
 	i=""
 	until [ -n "$i" ] && [ "$i" -gt "$range0" -a "$i" -lt "$range1" ]
 	do
-		i="$(dd if=/dev/random bs=1 count=1 status=none | od -tu1 -An | xargs)"
+		# status=none isn't portable, so do this
+		i="$(dd if=/dev/random bs=1 count=1 2>/dev/null | od -tu1 -An | xargs)"
 	done
 	echo "$i"
 }
