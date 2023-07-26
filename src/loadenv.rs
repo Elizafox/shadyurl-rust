@@ -41,11 +41,11 @@ fn default_log_level() -> Level {
 
 fn deserialize_secret<'de, D>(d: D) -> Result<Vec<u8>, D::Error>
 where
-    D: Deserializer<'de>
+    D: Deserializer<'de>,
 {
     let s = String::deserialize(d)?;
-    let vec = Base64::decode_vec(&s)
-        .map_err(|e| Error::custom(format!("Invalid base64 value: {e}")))?;
+    let vec =
+        Base64::decode_vec(&s).map_err(|e| Error::custom(format!("Invalid base64 value: {e}")))?;
     Ok(vec)
 }
 
