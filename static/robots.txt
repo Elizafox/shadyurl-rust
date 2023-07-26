@@ -16,6 +16,39 @@ User-agent: *
 Disallow: /makeurl
 Disallow: /login
 
+# I opt out of online advertising so malware that injects ads on my site won't get paid.
+# You should do the same. my ads.txt file contains a standard placeholder to forbid any
+# compliant ad networks from paying for ad placement on my domain.
+User-Agent: Adsbot
+Disallow: /
+Allow: /ads.txt
+Allow: /app-ads.txt
+
+# iThenticate is a new service we have developed to combat the piracy of intellectual property and ensure the originality of written work for# publishers, non-profit agencies, corporations, and newspapers. (http://www.slysearch.com/)
+User-Agent: SlySearch
+Disallow: /
+
+# > This robot collects content from the Internet for the sole purpose of # helping educational institutions prevent plagiarism. [...] we compare student papers against the content we find on the Internet to see if we # can find similarities. (http://www.turnitin.com/robot/crawlerinfo.html)
+User-Agent: TurnitinBot
+Disallow: /
+
+# BLEXBot assists internet marketers to get information on the link structure of sites and their interlinking on the web, to avoid any technical and possible legal issues and improve overall online experience. (http://webmeup-crawler.com/)
+User-Agent: BLEXBot
+Disallow: /
+
+# Providing Intellectual Property professionals with superior brand protection services by artfully merging the latest technology with expert analysis. (https://www.checkmarknetwork.com/spider.html/)
+# "The Internet is just way to big to effectively police alone." (ACTUAL quote)
+User-agent: CheckMarkNetwork/1.0 (+https://www.checkmarknetwork.com/spider.html)
+Disallow: /
+
+# Stop trademark violations and affiliate non-compliance in paid search. Automatically monitor your partner and affiliates’ online marketing to protect yourself from harmful brand violations and regulatory risks. We regularly crawl websites on behalf of our clients to ensure content compliance with brand and regulatory guidelines. (https://www.brandverity.com/why-is-brandverity-visiting-me)
+User-agent: BrandVerity/1.0
+Disallow: /
+
+# No.
+User-agent: ChatGPT-User
+Disallow: /
+
 # Spams too many requests
 User-agent: MJ12bot
 Disallow: /
