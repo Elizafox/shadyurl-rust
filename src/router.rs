@@ -21,7 +21,7 @@ use async_fred_session::{
 };
 use axum::{
     error_handling::HandleErrorLayer,
-    middleware::map_response,
+    middleware::from_fn_with_state,
     routing::{get, post},
     Router,
 };
@@ -54,7 +54,7 @@ async fn create_session_layer(env: &EnvVars) -> Result<SessionLayer<RedisSession
         .map_err(|e| Error::new(e).context("Could not connect to redis"))?;
 
     let cookie_domain = env
-        .hostname
+        .base_host
         .split(':')
         .next()
         .ok_or(anyhow!("Failed to parse cookie domain"))?;
@@ -85,7 +85,6 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .layer(HandleErrorLayer::new(handle_timeout_error))
         .timeout(Duration::from_secs(10))
         .layer(env.ip_source.clone().into_extension())
-        .layer(map_response(transform_error))
         .layer(CsrfLayer::new(csrf_config))
         .layer(session_layer)
         .layer(auth_layer);
@@ -104,7 +103,8 @@ pub(crate) async fn get_router(env: &EnvVars, state: AppState) -> Result<Router>
         .nest_service("/favicon.ico", ServeFile::new("static/favicon.ico"))
         .nest_service("/assets", ServeDir::new("static/assets"))
         .route("/*shady", get(get_shady))
-        .route("/", get(root));
+        .route("/", get(root))
+        .route_layer(from_fn_with_state(state.clone(), transform_error));
 
     Ok(Router::new()
         .merge(login_router)

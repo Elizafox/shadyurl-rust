@@ -73,7 +73,10 @@ pub(crate) fn load_env() -> Result<EnvVars> {
 
 #[derive(Deserialize)]
 pub(crate) struct EnvVars {
-    pub(crate) hostname: String,
+    pub(crate) shady_host: String,
+
+    // XXX should default to shady_host, but how?
+    pub(crate) base_host: String,
 
     #[serde(default = "default_sitename")]
     pub(crate) sitename: String,

@@ -13,18 +13,26 @@
  */
 
 use axum::{
-    http::{header::CONTENT_LENGTH, StatusCode},
+    extract::State,
+    http::{header::CONTENT_LENGTH, Request, StatusCode},
+    middleware::Next,
     response::{IntoResponse, Response},
     BoxError,
 };
 use itertools::Itertools;
 use tower::timeout::error::Elapsed;
 
-use crate::templates::ErrorTemplate;
+use crate::{state::AppState, templates::ErrorTemplate};
 
 // This transforms errors without a body into errors that have one.
 // This actually runs as a service, but shrug
-pub(crate) async fn transform_error(response: Response) -> impl IntoResponse {
+pub(crate) async fn transform_error<B>(
+    State(state): State<AppState>,
+    request: Request<B>,
+    next: Next<B>,
+) -> Response {
+    let response = next.run(request).await;
+
     let status_num = response.status().as_u16();
     if status_num < 400 {
         // We only care about client or server errors
@@ -52,26 +60,22 @@ pub(crate) async fn transform_error(response: Response) -> impl IntoResponse {
     );
 
     let t = ErrorTemplate {
+        base_host: &state.base_host,
         error_code: &error_code,
         reason: &reason,
     };
     (parts.status, t).into_response()
 }
 
-pub(crate) async fn handle_timeout_error(err: BoxError) -> impl IntoResponse {
-    let (error_code, reason) = if err.is::<Elapsed>() {
-        (StatusCode::REQUEST_TIMEOUT, "Request timed out".to_owned())
+pub(crate) async fn handle_timeout_error(
+    err: BoxError,
+) -> impl IntoResponse {
+    // Let transform_error handle it
+    let error_code = if err.is::<Elapsed>() {
+        StatusCode::REQUEST_TIMEOUT
     } else {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Error with request: {err}"),
-        )
+        StatusCode::INTERNAL_SERVER_ERROR
     };
 
-    let t = ErrorTemplate {
-        error_code: error_code.as_str(),
-        reason: reason.as_str(),
-    };
-
-    (error_code, t).into_response()
+    error_code.into_response()
 }

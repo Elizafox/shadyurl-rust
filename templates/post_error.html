@@ -12,6 +12,8 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "base.html" %}
+{% block path %}makeurl{% endblock %}
+{% block head_addition %}<meta name="robots" content="noindex">{% endblock %}
 {% block title %}Error{% endblock %}
 {% block header %}
 <h1>Error!</h1>

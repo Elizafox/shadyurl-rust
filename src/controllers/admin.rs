@@ -66,10 +66,10 @@ pub(crate) async fn login_page_handler(
 
     let auth_token = token
         .authenticity_token()
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
     session
         .insert("auth_token", auth_token.clone())
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let err_str = session
         .get::<String>("login_error")
@@ -79,6 +79,7 @@ pub(crate) async fn login_page_handler(
     session.remove("login_error");
 
     let t = LoginTemplate {
+        base_host: &state.base_host,
         err_str: &err_str,
         sitename: &state.sitename,
         auth_token: &auth_token,
@@ -96,18 +97,18 @@ pub(crate) async fn login_handler(
 ) -> Result<impl IntoResponse> {
     token
         .verify(&payload.auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
         .get::<String>("auth_token")
-        .ok_or(respond_not_authorised())?;
+        .ok_or(respond_not_authorised(&state))?;
 
     // Trash previous auth token after looking
     session.remove("auth_token");
 
     token
         .verify(&auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     if payload.username != state.user.username {
         let ip = addr.to_string();
@@ -118,7 +119,7 @@ pub(crate) async fn login_handler(
         // Save the error and redirect
         session
             .insert("login_error", "Invalid username".to_string())
-            .map_err(|_| respond_not_authorised())?;
+            .map_err(|_| respond_not_authorised(&state))?;
         return Ok(Redirect::to("/login").into_response());
     }
 
@@ -134,7 +135,7 @@ pub(crate) async fn login_handler(
         result
     })
     .await
-    .map_err(|_| respond_not_authorised())?;
+    .map_err(|_| respond_not_authorised(&state))?;
 
     if !hash_verify {
         let ip = addr.to_string();
@@ -145,7 +146,7 @@ pub(crate) async fn login_handler(
         // Save the error and redirect
         session
             .insert("login_error", "Invalid password".to_string())
-            .map_err(|_| respond_not_authorised())?;
+            .map_err(|_| respond_not_authorised(&state))?;
         return Ok(Redirect::to("/login").into_response());
     }
 
@@ -170,16 +171,17 @@ pub(crate) async fn admin_handler(
     let results = Url::find()
         .all(&state.db)
         .await
-        .map_err(|_| respond_internal_server_error())?;
+        .map_err(|_| respond_internal_server_error(&state))?;
 
     let auth_token = token
         .authenticity_token()
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
     session
         .insert("auth_token", auth_token.clone())
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let t = AdminTemplate {
+        base_host: &state.base_host,
         sitename: &state.sitename,
         urls: results,
         auth_token: &auth_token,
@@ -196,17 +198,17 @@ pub(crate) async fn delete_handler(
 ) -> Result<impl IntoResponse> {
     token
         .verify(&payload.auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
         .get::<String>("auth_token")
-        .ok_or(respond_not_authorised())?;
+        .ok_or(respond_not_authorised(&state))?;
 
     session.remove("auth_token");
 
     token
         .verify(&auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let _ = Url::delete_by_id(payload.id).exec(&state.db).await;
     Ok(Redirect::to("/admin").into_response())

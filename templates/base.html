@@ -14,15 +14,23 @@
 <!doctype html>
 <html lang="en">
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta charset="utf-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="A thing that makes URLs shady">
         <meta name="author" content="Elizabeth Myers">
-        <meta property="og:title" content="Make your URLs shady">
+        <meta name="darkreader-lock"> <!-- Dark reader breaks the site --!>
+
+        <meta property="og:site_name" content="ShadyURL">
+        <meta property="og:title" content="{%- block title -%}{{ sitename }} — {{ title }}{%- endblock -%}">
+        <meta property="og:url" content="https://{{ base_host }}/{%- block path -%}{%- endblock -%}">
         <meta property="og:type" content="website">
         <meta property="og:description" content="A thing that makes URLs shady">
-        <meta name="darkreader-lock"> <!-- Dark reader breaks the site --!>
+
+        {%- block head_addition -%}{%- endblock -%}
+
         <title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
+
         <link rel="stylesheet" href="assets/style.css">
     </head>
     <body>

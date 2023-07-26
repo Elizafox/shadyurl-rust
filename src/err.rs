@@ -17,26 +17,29 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
-use crate::templates::ErrorTemplate;
+use crate::{state::AppState, templates::ErrorTemplate};
 
-pub(crate) fn respond_not_authorised() -> Response {
+pub(crate) fn respond_not_authorised(state: &AppState) -> Response {
     let t = ErrorTemplate {
+        base_host: &state.base_host,
         error_code: "403",
         reason: "Not authorised",
     };
     (StatusCode::FORBIDDEN, t).into_response()
 }
 
-pub(crate) fn respond_not_found() -> Response {
+pub(crate) fn respond_not_found(state: &AppState) -> Response {
     let t = ErrorTemplate {
+        base_host: &state.base_host,
         error_code: "404",
         reason: "File not found",
     };
     (StatusCode::NOT_FOUND, t).into_response()
 }
 
-pub(crate) fn respond_internal_server_error() -> Response {
+pub(crate) fn respond_internal_server_error(state: &AppState) -> Response {
     let t = ErrorTemplate {
+        base_host: &state.base_host,
         error_code: "500",
         reason: "Internal server error",
     };

@@ -19,8 +19,11 @@
 # Local sitename, if you wish to change it
 SITENAME=ShadyURL
 
-# Your site's hostname
-HOSTNAME="localhost:3000"
+# Hostname to use for shady links
+SHADY_HOST="localhost:3000"
+
+# Your site's base host, non-shady links
+BASE_HOST="localhost:3000"
 
 # IP and port to bind to
 BIND="0.0.0.0:3000"

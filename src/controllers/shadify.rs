@@ -59,12 +59,13 @@ pub(crate) async fn root(
 ) -> Result<impl IntoResponse> {
     let auth_token = token
         .authenticity_token()
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
     session
         .insert("auth_token", auth_token.clone())
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let t = IndexTemplate {
+        base_host: &state.base_host,
         sitename: &state.sitename,
         auth_token: &auth_token,
     };
@@ -81,18 +82,18 @@ pub(crate) async fn accept_form(
 ) -> Result<impl IntoResponse> {
     token
         .verify(&payload.auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
         .get::<String>("auth_token")
-        .ok_or(respond_not_authorised())?;
+        .ok_or(respond_not_authorised(&state))?;
 
     // Trash auth token
     session.remove("auth_token");
 
     token
         .verify(&auth_token)
-        .map_err(|_| respond_not_authorised())?;
+        .map_err(|_| respond_not_authorised(&state))?;
 
     let url = &payload.url;
 
@@ -103,6 +104,7 @@ pub(crate) async fn accept_form(
             .map_or("Unknown error".to_string(), |v| v[0].code.to_string());
         debug!("User attempted to put in invalid URL: \"{url}\", reason: {reason}");
         let t = PostErrorTemplate {
+            base_host: &state.base_host,
             url,
             reason: &reason,
         };
@@ -117,7 +119,7 @@ pub(crate) async fn accept_form(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error())?;
+    .map_err(|_| respond_internal_server_error(&state))?;
 
     let ip = addr.to_string();
 
@@ -130,10 +132,11 @@ pub(crate) async fn accept_form(
     url_db_obj
         .insert(&state.db)
         .await
-        .map_err(|_| respond_internal_server_error())?;
+        .map_err(|_| respond_internal_server_error(&state))?;
 
     let t = PostTemplate {
-        hostname: &state.hostname,
+        base_host: &state.base_host,
+        shady_host: &state.shady_host,
         url,
         shady: &shady,
     };
@@ -148,9 +151,9 @@ pub(crate) async fn get_shady(
         .filter(url_db::Column::Shady.eq(shady))
         .one(&state.db)
         .await
-        .map_err(|_| respond_internal_server_error())?;
+        .map_err(|_| respond_internal_server_error(&state))?;
     Ok(match result {
         Some(row) => Redirect::to(&row.url).into_response(),
-        None => respond_not_found(),
+        None => respond_not_found(&state),
     })
 }

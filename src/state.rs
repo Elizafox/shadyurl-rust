@@ -22,7 +22,8 @@ use crate::{auth::User, loadenv::EnvVars};
 pub(crate) struct AppState {
     pub(crate) db: DatabaseConnection,
     pub(crate) sitename: String,
-    pub(crate) hostname: String,
+    pub(crate) base_host: String,
+    pub(crate) shady_host: String,
     pub(crate) user: User,
 }
 
@@ -37,7 +38,8 @@ impl AppState {
         Self {
             db,
             sitename: env.sitename.clone(),
-            hostname: env.hostname.clone(),
+            base_host: env.base_host.clone(),
+            shady_host: env.shady_host.clone(),
             user,
         }
     }

@@ -19,6 +19,7 @@ use entity::url::Model;
 #[derive(Template)]
 #[template(path = "index.html")]
 pub(crate) struct IndexTemplate<'a> {
+    pub(crate) base_host: &'a str,
     pub(crate) sitename: &'a str,
     pub(crate) auth_token: &'a str,
 }
@@ -26,6 +27,7 @@ pub(crate) struct IndexTemplate<'a> {
 #[derive(Template)]
 #[template(path = "login_landing.html")]
 pub(crate) struct LoginTemplate<'a> {
+    pub(crate) base_host: &'a str,
     pub(crate) err_str: &'a str,
     pub(crate) sitename: &'a str,
     pub(crate) auth_token: &'a str,
@@ -34,7 +36,8 @@ pub(crate) struct LoginTemplate<'a> {
 #[derive(Template)]
 #[template(path = "post.html")]
 pub(crate) struct PostTemplate<'a> {
-    pub(crate) hostname: &'a str,
+    pub(crate) base_host: &'a str,
+    pub(crate) shady_host: &'a str,
     pub(crate) url: &'a str,
     pub(crate) shady: &'a str,
 }
@@ -42,6 +45,7 @@ pub(crate) struct PostTemplate<'a> {
 #[derive(Template)]
 #[template(path = "post_error.html")]
 pub(crate) struct PostErrorTemplate<'a> {
+    pub(crate) base_host: &'a str,
     pub(crate) url: &'a str,
     pub(crate) reason: &'a str,
 }
@@ -49,6 +53,7 @@ pub(crate) struct PostErrorTemplate<'a> {
 #[derive(Template)]
 #[template(path = "admin.html")]
 pub(crate) struct AdminTemplate<'a> {
+    pub(crate) base_host: &'a str,
     pub(crate) sitename: &'a str,
     pub(crate) urls: Vec<Model>,
     pub(crate) auth_token: &'a str,
@@ -57,6 +62,7 @@ pub(crate) struct AdminTemplate<'a> {
 #[derive(Template)]
 #[template(path = "error.html")]
 pub(crate) struct ErrorTemplate<'a> {
+    pub(crate) base_host: &'a str,
     pub(crate) error_code: &'a str,
     pub(crate) reason: &'a str,
 }

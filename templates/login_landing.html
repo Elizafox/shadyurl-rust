@@ -12,6 +12,8 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "base.html" %}
+{% block path %}login{% endblock %}
+{% block head_addition %}<meta name="robots" content="noindex,nofollow">{% endblock %}
 {% block title %}{{ sitename }}{% endblock %}
 {% block header %}
 <h1>{{ sitename }}</h1>
