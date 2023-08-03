@@ -34,9 +34,9 @@ strip = true
 
 [features]
 default = ["sqlite"]
-mysql = ["sea-orm/sqlx-mysql", "migration/mysql"]
-postgres = ["sea-orm/sqlx-postgres", "migration/postgres"]
-sqlite = ["sea-orm/sqlx-sqlite", "migration/sqlite"]
+mysql = ["sea-orm/sqlx-mysql", "sea-query/backend-postgres", "migration/mysql"]
+postgres = ["sea-orm/sqlx-postgres", "sea-query/backend-postgres", "migration/postgres"]
+sqlite = ["sea-orm/sqlx-sqlite", "sea-query/backend-sqlite", "migration/sqlite"]
 with-tracing = ["axum/tracing", "tokio/tracing", "tower/tracing", "tower-http/tracing"]
 
 [dependencies]
@@ -71,8 +71,8 @@ proctitle = "0.1.1"
 rand = { version = "0.8.5", features = ["min_const_gen"] }
 rand_chacha = { version = "0.3.1", features = ["simd"] }
 rand_distr = "0.4.3"
-sea-orm = { version = "0.12.1", features = ["runtime-tokio-native-tls"] }
-sea-query = { version = "0.30.0", features = ["thread-safe", "with-chrono"] }
+sea-orm = { version = "0.12.1", default-features = false, features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
+sea-query = { version = "0.30.0", default-features = false, features = ["thread-safe", "with-chrono"] }
 serde = { version = "1.0.180", features = ["derive"] }
 syslog-tracing = "0.2.0"
 tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }

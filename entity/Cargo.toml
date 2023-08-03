@@ -22,4 +22,4 @@ name = "entity"
 path = "src/lib.rs"
 
 [dependencies]
-sea-orm = { version = "^0", features=["with-chrono"] }
+sea-orm = { version = "^0", default-features = false, features = ["with-chrono"] }
