@@ -69,8 +69,7 @@ num_cpus = "1.16.0"
 once_cell = { version = "1.18.0", features = ["parking_lot"] }
 os_str_bytes = "6.5.1"
 proctitle = "0.1.1"
-rand = "0.8.5"
-rand_chacha = { version = "0.3.1", features = ["simd"] }
+rand = { version = "0.8.5", features = ["min_const_gen"] }
 rand_distr = "0.4.3"
 sea-orm = { version = "0.12.1", features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
 sea-query = { version = "0.30.0", features = ["thread-safe", "with-chrono"] }

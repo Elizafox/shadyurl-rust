@@ -3271,7 +3271,6 @@ dependencies = [
  "os_str_bytes",
  "proctitle",
  "rand",
- "rand_chacha",
  "rand_distr",
  "sea-orm",
  "sea-query",
