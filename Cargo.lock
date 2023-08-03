@@ -2365,15 +2365,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "os_str_bytes"
-version = "6.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d5d9eb14b174ee9aa2ef96dc2b94637a2d4b6e7cb873c7e171f0c20c6cf3eac"
-dependencies = [
- "memchr",
-]
-
-[[package]]
 name = "ouroboros"
 version = "0.17.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3268,9 +3259,9 @@ dependencies = [
  "nix",
  "num_cpus",
  "once_cell",
- "os_str_bytes",
  "proctitle",
  "rand",
+ "rand_chacha",
  "rand_distr",
  "sea-orm",
  "sea-query",
