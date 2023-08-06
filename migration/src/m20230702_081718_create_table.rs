@@ -38,9 +38,8 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(Url::Id)
                             .big_integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
+                            .primary_key()
+                            .not_null(),
                     )
                     .col(ColumnDef::new(Url::Url).string().not_null())
                     .col(ColumnDef::new(Url::Shady).string().not_null())
