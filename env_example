@@ -52,7 +52,7 @@ IP_SOURCE="RightmostXForwardedFor"
 # SQLite is also supported, in that case it's just a path to a file, as below.
 #
 # Be sure to run from the source dir:
-#     . .env && sea-orm-cli migrate -u "$DATABASE_URL" up
+#     . ./.env && sea-orm-cli migrate -u "$DATABASE_URL" up
 DATABASE_URL="sqlite:/tmp/test.db"
 
 # Redis URL, must start with redis:// as below.
