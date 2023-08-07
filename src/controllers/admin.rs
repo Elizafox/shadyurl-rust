@@ -23,7 +23,7 @@ use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
 use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
-use log::warn;
+use log::{error, warn};
 use sea_orm::EntityTrait;
 use serde::Deserialize;
 use tokio::{sync::Semaphore, task::spawn_blocking};
@@ -76,7 +76,10 @@ pub(crate) async fn login_page_handler(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     session
@@ -118,7 +121,10 @@ pub(crate) async fn login_handler(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
@@ -138,7 +144,10 @@ pub(crate) async fn login_handler(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     if payload.username != state.user.username {

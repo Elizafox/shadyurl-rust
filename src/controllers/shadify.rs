@@ -69,7 +69,10 @@ pub(crate) async fn root(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     session
@@ -103,7 +106,10 @@ pub(crate) async fn accept_form(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
@@ -123,7 +129,10 @@ pub(crate) async fn accept_form(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|e| {
+        error!("Error spawning thread: {e}");
+        respond_internal_server_error(&state)
+    })?
     .map_err(|_| respond_not_authorised(&state))?;
 
     let url = &payload.url;
