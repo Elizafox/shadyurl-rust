@@ -39,6 +39,7 @@ use entity::prelude::*;
 
 lazy_static! {
     static ref PASSWORD_HASH_SEMAPHORE: Arc<Semaphore> = Arc::new(Semaphore::new(num_cpus::get()));
+    static ref TOKEN_SEMAPHORE: Arc<Semaphore> = Arc::new(Semaphore::new(num_cpus::get() * 2));
 }
 
 #[derive(Deserialize)]
@@ -64,9 +65,20 @@ pub(crate) async fn login_page_handler(
         return Ok(Redirect::to("/admin").into_response());
     }
 
-    let auth_token = token
-        .authenticity_token()
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Shove the auth token calculation into a thread
+    // This is a CPU intensive operation and we don't wanna block everything.
+    // Why the double map_err? we get a Result<Result<...>>.
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let auth_token = spawn_blocking(move || {
+        let result = t.authenticity_token();
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
+
     session
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised(&state))?;
@@ -95,9 +107,19 @@ pub(crate) async fn login_handler(
     State(state): State<AppState>,
     Form(payload): Form<LoginPayload>,
 ) -> Result<impl IntoResponse> {
-    token
-        .verify(&payload.auth_token)
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Shove the auth token calculation into a thread
+    // This is a CPU intensive operation and we don't wanna block everything.
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let pt = payload.auth_token.clone();
+    spawn_blocking(move || {
+        let result = t.verify(&pt);
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
         .get::<String>("auth_token")
@@ -106,9 +128,18 @@ pub(crate) async fn login_handler(
     // Trash previous auth token after looking
     session.remove("auth_token");
 
-    token
-        .verify(&auth_token)
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Same as above
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let pt = auth_token.clone();
+    spawn_blocking(move || {
+        let result = t.verify(&pt);
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
 
     if payload.username != state.user.username {
         let ip = addr.to_string();

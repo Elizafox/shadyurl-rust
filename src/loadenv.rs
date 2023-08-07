@@ -17,7 +17,7 @@ use std::{path::PathBuf, str::FromStr};
 use anyhow::Result;
 use argon2_kdf::Hash;
 use axum_client_ip::SecureClientIpSource;
-use base64ct::{Base64, Encoding};
+use base64ct::{Base64Unpadded, Encoding};
 use dotenvy::dotenv;
 use envy::from_env;
 use serde::{
@@ -44,8 +44,8 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(d)?;
-    let vec =
-        Base64::decode_vec(&s).map_err(|e| Error::custom(format!("Invalid base64 value: {e}")))?;
+    let vec = Base64Unpadded::decode_vec(&s)
+        .map_err(|e| Error::custom(format!("Invalid base64 value: {e}")))?;
     Ok(vec)
 }
 

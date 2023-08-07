@@ -24,7 +24,7 @@ use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
 use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
-use log::debug;
+use log::{debug, error};
 use sea_orm::{ActiveModelTrait, ActiveValue::Set, ColumnTrait, EntityTrait, QueryFilter};
 use serde::Deserialize;
 use tokio::{sync::Semaphore, task::spawn_blocking};
@@ -43,6 +43,7 @@ use entity::{prelude::*, url as url_db};
 
 lazy_static! {
     static ref SHADY_FILE_SEMAPHORE: Arc<Semaphore> = Arc::new(Semaphore::new(num_cpus::get()));
+    static ref TOKEN_SEMAPHORE: Arc<Semaphore> = Arc::new(Semaphore::new(num_cpus::get() * 2));
 }
 
 #[derive(Deserialize, Validate)]
@@ -57,9 +58,20 @@ pub(crate) async fn root(
     mut session: WritableSession,
     State(state): State<AppState>,
 ) -> Result<impl IntoResponse> {
-    let auth_token = token
-        .authenticity_token()
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Shove the auth token calculation into a thread
+    // This is a CPU intensive operation and we don't wanna block everything.
+    // Why the double map_err? we get a Result<Result<...>>.
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let auth_token = spawn_blocking(move || {
+        let result = t.authenticity_token();
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
+
     session
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised(&state))?;
@@ -80,9 +92,19 @@ pub(crate) async fn accept_form(
     State(state): State<AppState>,
     Form(payload): Form<UrlPayload>,
 ) -> Result<impl IntoResponse> {
-    token
-        .verify(&payload.auth_token)
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Shove the auth token calculation into a thread
+    // This is a CPU intensive operation and we don't wanna block everything.
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let pt = payload.auth_token.clone();
+    spawn_blocking(move || {
+        let result = t.verify(&pt);
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
 
     let auth_token = session
         .get::<String>("auth_token")
@@ -91,9 +113,18 @@ pub(crate) async fn accept_form(
     // Trash auth token
     session.remove("auth_token");
 
-    token
-        .verify(&auth_token)
-        .map_err(|_| respond_not_authorised(&state))?;
+    // Same as above
+    let permit = TOKEN_SEMAPHORE.clone().acquire_owned().await.unwrap();
+    let t = token.clone();
+    let pt = auth_token.clone();
+    spawn_blocking(move || {
+        let result = t.verify(&pt);
+        drop(permit);
+        result
+    })
+    .await
+    .map_err(|_| respond_internal_server_error(&state))?
+    .map_err(|_| respond_not_authorised(&state))?;
 
     let url = &payload.url;
 
@@ -119,7 +150,10 @@ pub(crate) async fn accept_form(
         result
     })
     .await
-    .map_err(|_| respond_internal_server_error(&state))?;
+    .map_err(|e| {
+        error!("Failed to generate shady filename: {e}");
+        respond_internal_server_error(&state)
+    })?;
 
     let ip = addr.to_string();
 
@@ -129,10 +163,10 @@ pub(crate) async fn accept_form(
         ip: Set(Some(ip)),
         ..Default::default()
     };
-    url_db_obj
-        .insert(&state.db)
-        .await
-        .map_err(|_| respond_internal_server_error(&state))?;
+    url_db_obj.insert(&state.db).await.map_err(|e| {
+        error!("Failed to add object to database: {e}");
+        respond_internal_server_error(&state)
+    })?;
 
     let t = PostTemplate {
         base_host: &state.base_host,
@@ -151,7 +185,10 @@ pub(crate) async fn get_shady(
         .filter(url_db::Column::Shady.eq(shady))
         .one(&state.db)
         .await
-        .map_err(|_| respond_internal_server_error(&state))?;
+        .map_err(|e| {
+            error!("Failed to search database: {e}");
+            respond_internal_server_error(&state)
+        })?;
     Ok(match result {
         Some(row) => Redirect::to(&row.url).into_response(),
         None => respond_not_found(&state),
