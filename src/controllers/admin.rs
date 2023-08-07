@@ -23,10 +23,10 @@ use axum_client_ip::SecureClientIp;
 use axum_csrf::CsrfToken;
 use axum_login::axum_sessions::extractors::WritableSession;
 use lazy_static::lazy_static;
-use log::{error, warn};
 use sea_orm::EntityTrait;
 use serde::Deserialize;
 use tokio::{sync::Semaphore, task::spawn_blocking};
+use tracing::{error, warn};
 
 use crate::{
     auth::{Auth, User},

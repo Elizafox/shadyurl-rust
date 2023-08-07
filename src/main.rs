@@ -16,10 +16,10 @@ use std::{fs::File, net::SocketAddr, os::fd::AsRawFd};
 
 use anyhow::Result;
 use axum::Server;
-use log::error;
 use nix::unistd::ftruncate;
 use proctitle::set_title;
 use tokio::signal;
+use tracing::error;
 
 mod auth;
 mod controllers;
