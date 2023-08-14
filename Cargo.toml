@@ -74,7 +74,7 @@ sea-orm = { version = "0.12.2", default-features = false, features = ["macros", 
 sea-query = { version = "0.30.0", default-features = false, features = ["thread-safe", "with-chrono"] }
 serde = { version = "1.0.182", features = ["derive"] }
 syslog-tracing = "0.2.0"
-tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
+tokio = { version = "1.31.0", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
 tracing = { version = "0.1.37", features = ["async-await", "log"]}
 tracing-subscriber = { version = "0.3.17", features = ["local-time", "parking_lot"]}
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
