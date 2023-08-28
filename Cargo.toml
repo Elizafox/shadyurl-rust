@@ -71,7 +71,7 @@ rand = { version = "0.8.5", features = ["min_const_gen"] }
 rand_chacha = { version = "0.3.1", features = ["simd"] }
 rand_distr = "0.4.3"
 sea-orm = { version = "0.12.2", default-features = false, features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
-sea-query = { version = "0.30.0", default-features = false, features = ["thread-safe", "with-chrono"] }
+sea-query = { version = "0.30.1", default-features = false, features = ["thread-safe", "with-chrono"] }
 serde = { version = "1.0.182", features = ["derive"] }
 syslog-tracing = "0.2.0"
 tokio = { version = "1.29.1", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
