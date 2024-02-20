@@ -29,4 +29,4 @@ sqlite = ["sea-orm-migration/sqlx-sqlite"]
 
 [dependencies]
 async-std = { version = "1", features = ["attributes", "tokio1"] }
-sea-orm-migration = { version = "0.12.2", features = ["runtime-tokio-native-tls"] }
+sea-orm-migration = { version = "0.12.14", features = ["runtime-tokio-native-tls"] }
