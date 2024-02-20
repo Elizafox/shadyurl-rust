@@ -86,9 +86,7 @@ pub(crate) async fn login_page_handler(
         .insert("auth_token", auth_token.clone())
         .map_err(|_| respond_not_authorised(&state))?;
 
-    let err_str = session
-        .get::<String>("login_error")
-        .unwrap_or_default();
+    let err_str = session.get::<String>("login_error").unwrap_or_default();
 
     // Remove stale login error
     session.remove("login_error");
