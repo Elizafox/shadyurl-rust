@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{fs::File, net::SocketAddr, os::fd::AsRawFd};
+use std::{fs::File, net::SocketAddr};
 
 use anyhow::Result;
 use axum::Server;
@@ -100,7 +100,7 @@ async fn shutdown_signal(pid_file: &mut File) {
     error!("signal received, starting graceful shutdown");
 
     // Clear PID file
-    let _ = ftruncate(pid_file.as_raw_fd(), 0);
+    let _ = ftruncate(pid_file, 0);
 }
 
 // We must fork before we do anything else.
@@ -142,7 +142,7 @@ async fn tokio_main(env: &EnvVars, pid_file: &mut File) -> Result<()> {
     server.await?;
 
     // FIXME - do we actually get here?
-    let _ = ftruncate(pid_file.as_raw_fd(), 0);
+    let _ = ftruncate(pid_file, 0);
 
     Ok(())
 }

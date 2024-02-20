@@ -90,7 +90,7 @@ pub(crate) fn open_pid_file(env: &EnvVars) -> Result<File> {
         .map_err(|e| Error::new(e).context("PID file is locked (process already running?)"))?;
 
     // Erase and write new PID
-    ftruncate(pid_file.as_raw_fd(), 0)?;
+    ftruncate(&pid_file, 0)?;
     pid_file
         .write_all(getpid().to_string().as_bytes())
         .map_err(|e| Error::new(e).context("Failed to write to PID file"))?;
