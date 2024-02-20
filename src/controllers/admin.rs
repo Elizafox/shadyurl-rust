@@ -88,7 +88,7 @@ pub(crate) async fn login_page_handler(
 
     let err_str = session
         .get::<String>("login_error")
-        .unwrap_or(String::new());
+        .unwrap_or_default();
 
     // Remove stale login error
     session.remove("login_error");

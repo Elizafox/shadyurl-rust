@@ -17,6 +17,7 @@ use sea_orm_migration::prelude::*;
 #[derive(DeriveMigrationName)]
 pub struct Migration;
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Iden)]
 enum Url {
     Table,

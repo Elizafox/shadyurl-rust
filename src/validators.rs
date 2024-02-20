@@ -22,7 +22,7 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
 
     let url_parsed = Url::parse(url).map_err(|_| ValidationError::new("Invalid URL"))?;
     if !url_parsed.has_host() {
-        return Err(ValidationError::new("No host found"))?;
+        Err(ValidationError::new("No host found"))?;
     }
 
     match url_parsed.scheme() {
