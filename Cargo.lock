@@ -3448,9 +3448,9 @@ checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
 name = "syslog-tracing"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f890b68f60eb7e87373b3b8f1f412d2a7d90460cd18294acbc0e90ba496193e"
+checksum = "340b1540dcdb6b066bc2966e7974f977ab1a38f21b2be189014ffb0cc2405768"
 dependencies = [
  "libc",
  "tracing-core",
