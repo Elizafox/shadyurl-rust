@@ -51,7 +51,7 @@ migration = { path = "migration" }
 anyhow = { version = "1.0.80", features = ["backtrace"] }
 argon2-kdf = "1.5.2"
 askama = { version = "0.12.1", features = ["with-axum"] }
-askama_axum = "0.3.0"
+askama_axum = "0.4.0"
 async-fred-session = "0.1.5"
 axum = { version = "0.6.20", features = ["macros", "http2", "headers"] }
 axum-client-ip = "0.4.2"
