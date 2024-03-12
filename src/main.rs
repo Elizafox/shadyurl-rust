@@ -31,6 +31,7 @@ use std::io::{prelude::*, stdin, stdout};
 
 use clap::{Parser, Subcommand};
 use password_auth::generate_hash;
+use proctitle::set_title;
 use rpassword::prompt_password;
 use sea_orm::{ConnectOptions, Database};
 use tracing::log::LevelFilter;
@@ -165,21 +166,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
     match &cli.command {
         Some(Commands::AddUser { username }) => {
+            set_title("shadyurl-rust <add-user>");
             add_user_cli(username).await?;
             println!("Success! User {username} added");
             return Ok(());
         }
         Some(Commands::DeleteUser { username }) => {
+            set_title("shadyurl-rust <delete-user>");
             delete_user_cli(username).await?;
             println!("Success! User {username} deleted");
             return Ok(());
         }
         Some(Commands::ChangePassword { username }) => {
+            set_title("shadyurl-rust <change-password>");
             change_password_cli(username).await?;
             println!("Success! Password for {username} changed");
             return Ok(());
         }
-        Some(Commands::Run) | None => {}
+        Some(Commands::Run) | None => set_title("shadyurl-rust [running]"),
     }
 
     App::new().await?.serve().await

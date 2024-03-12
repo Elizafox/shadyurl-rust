@@ -68,7 +68,7 @@ itertools = "0.12.1"
 lazy_static = "1.4.0"
 once_cell = { version = "1.19.0", features = ["parking_lot"] }
 password-auth = "1.0.0"
-#proctitle = "0.1.1"
+proctitle = "0.1.1"
 rand="0.8.5"
 rand_distr = "0.4.3"
 rpassword = "7.3.1"
