@@ -9,9 +9,9 @@ pub struct Model {
     pub id: i64,
     #[sea_orm(unique)]
     pub filter: String,
-    pub reason: String,
+    pub reason: Option<String>,
     pub created_at: DateTime,
-    pub user_created_id: i64,
+    pub user_created_id: Option<i64>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
@@ -20,8 +20,8 @@ pub enum Relation {
         belongs_to = "super::user::Entity",
         from = "Column::UserCreatedId",
         to = "super::user::Column::Id",
-        on_update = "NoAction",
-        on_delete = "NoAction"
+        on_update = "Cascade",
+        on_delete = "SetNull"
     )]
     User,
 }

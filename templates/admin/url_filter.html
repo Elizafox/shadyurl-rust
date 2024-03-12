@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: CC0-1.0
  #
- # templates/admin/urls.html
+ # templates/admin/url_filters.html
  #
  # This file is a component of ShadyURL by Elizabeth Myers.
  #
@@ -12,27 +12,36 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "base.html" %}
-{% block path %}admin/urls{% endblock %}
+{% block path %}admin/url_filters{% endblock %}
 {% block head_addition %}<meta name="robots" content="noindex,nofollow">{% endblock %}
-{% block title %}Admin – {{ sitename }} — URLs{% endblock %}
+{% block title %}Admin – {{ sitename }} — URL filters{% endblock %}
 {% block header %}
 <h1>Admin – {{ sitename }}</h1>
 <a href="/logout">Logout</a>
 {% endblock %}
 {% block content %}
 <br>
+<form method="post" action="/admin/url_filters">
+    <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
+    <label for="filter">Filter regex:</label>
+    <input type="text" name="filter" placeholder="Filter regex">
+    <label for="reason">Reason (optional):</label>
+    <input type="text" name="reason" placeholder="Reason (optional)">
+    <button type="submit" value="submit">Submit</button>
+</form>
+<br>
 <table id="admin-list-table">
     <tr id="admin-list-heading">
         <th id="admin-list-id-heading">ID</th>
-        <th id="admin-list-url-heading">URL</th>
-        <th id="admin-list-redirect-heading">Redirect</th>
+        <th id="admin-list-url-heading">Filter</th>
+        <th id="admin-list-redirect-heading">Note</th>
         <th id="admin-list-created-heading">Created</th>
-        <th id="admin-list-ip-heading">IP</th>
+        <th id="admin-list-ip-heading">Admin</th>
     </tr>
-{% for entry in urls %}
+{% for (entry, user) in url_filters %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
-            <form method="post" action="/admin/delete" id="inline">
+            <form method="post" action="/admin/url_filters/delete" id="inline">
                 <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
                 <input type="hidden" name="id" value="{{ entry.id }}">
                 <button type="submit" value="submit" id="link-button">
@@ -40,10 +49,10 @@
                 </button>
             </form>
         </td>
-        <td id="admin-list-url-item">{{ entry.url }}</td>
-        <td id="admin-list-redirect-item">{{ entry.shady }}</td>
+        <td id="admin-list-url-item">{{ entry.filter }}</td>
+        <td id="admin-list-redirect-item">{% if entry.reason.is_some() %}{{ entry.reason.as_ref().unwrap() }}{% else %}—{% endif %}</td>
         <td id="admin-list-created-item">{{ entry.created_at }}</td>
-        <td id="admin-list-ip-item">{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
+        <td id="admin-list-ip-item">{% if user.is_some() %}{{ user.as_ref().unwrap().username }}{% else %}–{% endif %}</td>
     </tr>
 {% endfor %}
 </table>

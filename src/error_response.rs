@@ -44,8 +44,11 @@ pub enum AppError {
     #[error(transparent)]
     Db(#[from] sea_orm::DbErr),
 
-    #[error("Could not validate URL {}: {}", .1, .0)]
+    #[error("Could not validate URL {}: {}", .0, .1)]
     UrlValidation(String, String),
+
+    #[error(transparent)]
+    Regex(#[from] regex::Error),
 
     #[error("Not found")]
     NotFound,
@@ -58,8 +61,8 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
             Self::VerifyCsrf(e) => ErrorResponse::bad_request(e.to_string().as_ref()),
-            Self::UrlValidation(error_reason, url) => {
-                ErrorResponse::url_submission(&error_reason, &url)
+            Self::UrlValidation(url, error_reason) => {
+                ErrorResponse::url_submission(&url, &error_reason)
             }
             Self::NotFound => ErrorResponse::not_found(),
             Self::Unauthorized => ErrorResponse::unauthorized(),
@@ -116,7 +119,7 @@ impl ErrorResponse {
         (StatusCode::INTERNAL_SERVER_ERROR, t).into_response()
     }
 
-    pub(crate) fn url_submission<'a>(error_reason: &'a str, url: &'a str) -> Response<Body> {
+    pub(crate) fn url_submission<'a>(url: &'a str, error_reason: &'a str) -> Response<Body> {
         let t = UrlSubmissionErrorTemplate { error_reason, url };
         (StatusCode::UNPROCESSABLE_ENTITY, t).into_response()
     }

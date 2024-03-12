@@ -37,9 +37,9 @@ impl MigrationTrait for Migration {
                     .col(
                         ColumnDef::new(User::Id)
                             .big_integer()
+                            .primary_key()
                             .not_null()
-                            .auto_increment()
-                            .primary_key(),
+                            .auto_increment(),
                     )
                     .col(
                         ColumnDef::new(User::Username)

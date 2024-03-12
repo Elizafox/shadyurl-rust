@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use ::entity::{url, user};
+use ::entity::{url, url_filter, user};
 use sea_orm::*;
 
 use crate::Query;
@@ -28,6 +28,38 @@ impl Mutation {
         user::ActiveModel {
             username: Set(username.to_owned()),
             password_hash: Set(password_hash.to_owned()),
+            ..Default::default()
+        }
+        .save(db)
+        .await
+    }
+
+    pub async fn create_url(
+        db: &DbConn,
+        url: &str,
+        shady: &str,
+        ip: Option<String>,
+    ) -> Result<url::ActiveModel, DbErr> {
+        url::ActiveModel {
+            url: Set(url.to_owned()),
+            shady: Set(shady.to_owned()),
+            ip: Set(ip),
+            ..Default::default()
+        }
+        .save(db)
+        .await
+    }
+
+    pub async fn create_url_filter(
+        db: &DbConn,
+        filter: String,
+        reason: Option<String>,
+        user: &user::Model,
+    ) -> Result<url_filter::ActiveModel, DbErr> {
+        url_filter::ActiveModel {
+            filter: Set(filter),
+            reason: Set(reason),
+            user_created_id: Set(Some(user.id)),
             ..Default::default()
         }
         .save(db)
@@ -57,22 +89,6 @@ impl Mutation {
         user.delete(db).await
     }
 
-    pub async fn create_url(
-        db: &DbConn,
-        url: &str,
-        shady: &str,
-        ip: Option<String>,
-    ) -> Result<url::ActiveModel, DbErr> {
-        url::ActiveModel {
-            url: Set(url.to_owned()),
-            shady: Set(shady.to_owned()),
-            ip: Set(ip),
-            ..Default::default()
-        }
-        .save(db)
-        .await
-    }
-
     pub async fn delete_url(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         let url: url::ActiveModel = Query::find_url_by_id(db, id)
             .await?
@@ -80,5 +96,14 @@ impl Mutation {
             .map(Into::into)?;
 
         url.delete(db).await
+    }
+
+    pub async fn delete_url_filter(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+        let url_filter: url_filter::ActiveModel = Query::find_url_filter(db, id)
+            .await?
+            .ok_or(DbErr::Custom("Cannot find url filter.".to_owned()))
+            .map(Into::into)?;
+
+        url_filter.delete(db).await
     }
 }

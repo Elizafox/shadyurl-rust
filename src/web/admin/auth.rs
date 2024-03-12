@@ -72,30 +72,32 @@ mod post {
         debug!("Successful login, redirecting");
 
         messages.success(format!("Successfully logged in as {}", user.0.username));
-
-        Ok(Redirect::to("/admin/urls").into_response())
+        Ok(Redirect::to("/admin").into_response())
     }
 }
 
 mod get {
     use super::{
-        debug, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, LoginTemplate,
-        Messages, Redirect, Response, Session, State,
+        AppError, AppState, AuthSession, CsrfProtection, IntoResponse, LoginTemplate, Messages,
+        Redirect, Response, Session, State,
     };
 
     pub(super) async fn login(
         session: Session,
+        auth_session: AuthSession,
         messages: Messages,
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
+        if auth_session.user.is_some() {
+            return Ok(Redirect::to("/admin").into_response());
+        }
+
         let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
 
         let authenticity_token = authenticity_token.b64_string();
         let session_token = session_token.b64_string();
 
         session.insert("authenticity_token", &session_token).await?;
-
-        debug!("Token inserted");
 
         Ok(LoginTemplate {
             authenticity_token,
@@ -106,10 +108,12 @@ mod get {
     }
 
     pub(super) async fn logout(
-        messages: Messages,
+        session: Session,
         mut auth_session: AuthSession,
+        messages: Messages,
     ) -> Result<Response, AppError> {
         auth_session.logout().await?;
+        session.clear().await;
         messages.success("You have logged out");
         Ok(Redirect::to("/").into_response())
     }

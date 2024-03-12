@@ -54,7 +54,7 @@ service = { path = "service" }
 askama = { version = "0.12.1", features = ["with-axum", "urlencode", "mime", "mime_guess"], default-features = false }
 askama_axum = { version = "0.4.0", default-features = false, features = ["urlencode"] }
 async-trait = "0.1.77"
-axum = { version = "0.7.4", default-features = false, features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
+axum = { version = "0.7.4", features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
 axum-client-ip = "0.5.1"
 axum-login = "0.14.0"
 axum-messages = "0.5.0"
@@ -71,18 +71,19 @@ password-auth = "1.0.0"
 proctitle = "0.1.1"
 rand="0.8.5"
 rand_distr = "0.4.3"
+regex = "1.10.3"
 rpassword = "7.3.1"
-sea-orm = { version = "1.0.0-rc.1", default-features = false, features = ["macros", "runtime-tokio-native-tls", "with-time"] }
-sea-query = { version = "0.31.0-rc.4", default-features = false, features = ["thread-safe", "with-time"] }
+sea-orm = { version = "1.0.0-rc.1", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
+sea-query = { version = "0.31.0-rc.4", features = ["thread-safe", "with-time"] }
 serde = { version = "1.0.197", features = ["derive"] }
-thiserror = "1.0.57"
+thiserror = "1.0.58"
 time = "0.3.34"
-tokio = { version = "1.36.0", default-features = false, features = ["macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
+tokio = { version = "1.36.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
 tracing = { version = "0.1.40", features = ["async-await", "log"] }
 tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lot", "time"] }
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
 tower-http = { version = "0.5.2", features = ["fs", "normalize-path", "timeout", "tokio"] }
-tower-sessions = { version = "0.11.0", default-features = false, features = ["axum-core"] }
+tower-sessions = { version = "0.11.0", features = ["axum-core"] }
 tower-sessions-redis-store = "0.11.0"
 url = "2.5.0"
 validator = { version = "0.17.0", features = ["derive"] }

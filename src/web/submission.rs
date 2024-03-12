@@ -22,10 +22,11 @@ use axum::{
 };
 use axum_client_ip::SecureClientIp;
 use axum_messages::{Message, Messages};
+use regex::Regex;
 use serde::Deserialize;
 use validator::Validate;
 
-use service::Mutation;
+use service::{Mutation, Query};
 
 use crate::{
     error_response::AppError, generate::Generator, state::AppState, validators::validate_url,
@@ -79,7 +80,7 @@ mod get {
 mod post {
     use super::{
         debug_handler, AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation,
-        Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
+        Query, Regex, Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
     };
 
     #[debug_handler]
@@ -94,7 +95,17 @@ mod post {
                 .field_errors()
                 .get("url")
                 .map_or("Unknown error".to_string(), |v| v[0].code.to_string());
-            return Err(AppError::UrlValidation(error_reason, url_form.url));
+            return Err(AppError::UrlValidation(url_form.url, error_reason));
+        }
+
+        for url_filter in Query::fetch_all_url_filters(&state.db).await? {
+            let creg = Regex::new(&url_filter.0.filter)?;
+            if creg.is_match(&url_form.url) {
+                return Err(AppError::UrlValidation(
+                    url_form.url,
+                    "URL is banned".to_string(),
+                ));
+            }
         }
 
         let shady = Generator::shady_filename();

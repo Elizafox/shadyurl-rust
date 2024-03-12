@@ -35,6 +35,7 @@ use proctitle::set_title;
 use rpassword::prompt_password;
 use sea_orm::{ConnectOptions, Database};
 use tracing::log::LevelFilter;
+use tracing_subscriber::EnvFilter;
 
 use crate::{env::Vars, web::App};
 
@@ -161,7 +162,13 @@ async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::E
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt().compact().init();
+    let ef = EnvFilter::builder()
+        .with_default_directive(tracing_subscriber::filter::LevelFilter::DEBUG.into())
+        .try_from_env()?;
+    tracing_subscriber::fmt()
+        .compact()
+        .with_env_filter(ef)
+        .init();
 
     let cli = Cli::parse();
     match &cli.command {

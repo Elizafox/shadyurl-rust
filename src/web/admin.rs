@@ -14,3 +14,5 @@
 
 pub mod auth;
 pub mod delete;
+pub mod index;
+pub mod url_filter;

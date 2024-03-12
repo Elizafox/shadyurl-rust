@@ -12,7 +12,10 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use ::entity::{url, url::Entity as Url, user, user::Entity as User};
+use ::entity::{
+    url, url::Entity as Url, url_filter, url_filter::Entity as UrlFilter, user,
+    user::Entity as User,
+};
 use sea_orm::*;
 
 pub struct Query;
@@ -52,5 +55,19 @@ impl Query {
 
     pub async fn fetch_all_urls(db: &DbConn) -> Result<Vec<url::Model>, DbErr> {
         Url::find().order_by_asc(url::Column::Id).all(db).await
+    }
+
+    pub async fn find_url_filter(db: &DbConn, id: i64) -> Result<Option<url_filter::Model>, DbErr> {
+        UrlFilter::find_by_id(id).one(db).await
+    }
+
+    pub async fn fetch_all_url_filters(
+        db: &DbConn,
+    ) -> Result<Vec<(url_filter::Model, Option<user::Model>)>, DbErr> {
+        UrlFilter::find()
+            .order_by_desc(url_filter::Column::Filter)
+            .find_also_related(User)
+            .all(db)
+            .await
     }
 }

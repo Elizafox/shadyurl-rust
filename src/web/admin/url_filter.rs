@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/web/admin/delete.rs
+ * src/web/admin/url_filter.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -21,21 +21,29 @@ use axum::{
 };
 use axum_messages::{Message, Messages};
 use csrf::CsrfProtection;
+use regex::Regex;
 use serde::Deserialize;
 use tower_sessions::Session;
 
-use entity::url;
+use entity::{url_filter, user};
 use service::{Mutation, Query};
 
 use crate::{auth::AuthSession, csrf as csrf_crate, error_response::AppError, state::AppState};
 
 #[derive(Template)]
-#[template(path = "admin/urls.html")]
-struct UrlsTemplate<'a> {
+#[template(path = "admin/url_filter.html")]
+struct UrlFiltersTemplate<'a> {
     authenticity_token: &'a str,
     messages: Vec<Message>,
     sitename: &'a str,
-    urls: Vec<url::Model>,
+    url_filters: Vec<(url_filter::Model, Option<user::Model>)>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct SubmitFilterForm {
+    authenticity_token: String,
+    filter: String,
+    reason: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -46,15 +54,62 @@ struct DeleteForm {
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/admin/urls", get(self::get::urls))
-        .route("/admin/delete", post(self::post::delete))
+        .route("/admin/url_filters", get(self::get::url_filters))
+        .route("/admin/url_filters", post(self::post::url_filters))
+        .route("/admin/url_filters/delete", post(self::post::delete))
 }
 
 mod post {
     use super::{
         csrf_crate, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse, Messages,
-        Mutation, Redirect, Response, Session, State,
+        Mutation, Redirect, Regex, Response, Session, State, SubmitFilterForm,
     };
+
+    pub(super) async fn url_filters(
+        session: Session,
+        auth_session: AuthSession,
+        messages: Messages,
+        State(state): State<AppState>,
+        Form(submit_filter_form): Form<SubmitFilterForm>,
+    ) -> Result<Response, AppError> {
+        csrf_crate::verify(
+            &session,
+            &submit_filter_form.authenticity_token,
+            &state.protect,
+        )
+        .await?;
+
+        let Some(user) = auth_session.user else {
+            return Err(AppError::Unauthorized);
+        };
+
+        if submit_filter_form.filter.is_empty() {
+            messages.error("Filter cannot be empty");
+            return Ok(Redirect::to("/admin/url_filters").into_response());
+        }
+
+        if let Err(e) = Regex::new(&submit_filter_form.filter) {
+            messages.error(format!(
+                "Malformed URL filter regex {}: {e}",
+                submit_filter_form.filter
+            ));
+            return Ok(Redirect::to("/admin/url_filters").into_response());
+        }
+
+        Mutation::create_url_filter(
+            &state.db,
+            submit_filter_form.filter.clone(),
+            submit_filter_form.reason,
+            &user.0,
+        )
+        .await?;
+
+        messages.success(format!(
+            "Added filter {} successfullly",
+            submit_filter_form.filter
+        ));
+        Ok(Redirect::to("/admin/url_filters").into_response())
+    }
 
     pub(super) async fn delete(
         session: Session,
@@ -67,23 +122,25 @@ mod post {
 
         if auth_session.user.is_none() {
             return Err(AppError::Unauthorized);
-        }
+        };
 
-        Mutation::delete_url(&state.db, delete_form.id).await?;
+        Mutation::delete_url_filter(&state.db, delete_form.id).await?;
 
-        messages.success(format!("Deleted URL #{} successfully", delete_form.id));
-
-        Ok(Redirect::to("/admin/urls").into_response())
+        messages.success(format!(
+            "Deleted URL filter #{} successfully",
+            delete_form.id
+        ));
+        Ok(Redirect::to("/admin/url_filters").into_response())
     }
 }
 
 mod get {
     use super::{
         AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages, Query, Response,
-        Session, State, UrlsTemplate,
+        Session, State, UrlFiltersTemplate,
     };
 
-    pub(super) async fn urls(
+    pub(super) async fn url_filters(
         session: Session,
         auth_session: AuthSession,
         messages: Messages,
@@ -100,13 +157,13 @@ mod get {
 
         session.insert("authenticity_token", &session_token).await?;
 
-        let urls = Query::fetch_all_urls(&state.db).await?;
+        let url_filters = Query::fetch_all_url_filters(&state.db).await?;
 
-        Ok(UrlsTemplate {
+        Ok(UrlFiltersTemplate {
             authenticity_token: &authenticity_token,
             messages: messages.into_iter().collect(),
             sitename: &state.env.sitename,
-            urls,
+            url_filters,
         }
         .into_response())
     }

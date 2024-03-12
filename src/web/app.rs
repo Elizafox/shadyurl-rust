@@ -33,7 +33,7 @@ use crate::{
     env::Vars,
     state::AppState,
     web::{
-        admin::{auth, delete},
+        admin::{auth, delete, index, url_filter},
         fallback, files, submission, url,
     },
 };
@@ -79,13 +79,7 @@ impl App {
     pub(crate) async fn serve(self) -> Result<(), Box<dyn std::error::Error>> {
         let session_store = RedisStore::new(self.redis_pool);
         let session_layer = SessionManagerLayer::new(session_store)
-            .with_domain(
-                self.state
-                    .env
-                    .base_host
-                    .rsplit_once(':')
-                    .map_or_else(|| self.state.env.base_host.clone(), |i| i.0.to_string()),
-            )
+            .with_secure(false)
             .with_expiry(Expiry::OnInactivity(Duration::days(1)));
 
         let backend = Backend::new(self.state.db.clone());
@@ -94,22 +88,26 @@ impl App {
         let services = ServiceBuilder::new()
             .layer(TimeoutLayer::new(Duration::seconds(15).unsigned_abs()))
             .layer(NormalizePathLayer::trim_trailing_slash())
+            .layer(auth_layer)
             .layer(session_layer)
             .layer(MessagesManagerLayer)
-            .layer(auth_layer)
             .layer(self.state.env.ip_source.clone().into_extension());
+
+        let bind = self.state.env.bind.clone();
 
         let app = Router::new()
             .merge(auth::router())
             .merge(files::router())
             .merge(submission::router())
+            .merge(index::router())
             .merge(delete::router())
             .merge(url::router())
+            .merge(url_filter::router())
             .merge(fallback::router())
             .layer(services)
             .with_state(self.state);
 
-        let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+        let listener = tokio::net::TcpListener::bind(bind).await?;
 
         axum::serve(
             listener,
