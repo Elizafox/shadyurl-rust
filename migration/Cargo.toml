@@ -29,4 +29,5 @@ postgres = ["sea-orm-migration/sqlx-postgres"]
 sqlite = ["sea-orm-migration/sqlx-sqlite"]
 
 [dependencies]
-sea-orm-migration = { version = "1.0.0-rc.1", default-features = false, features = ["runtime-tokio-native-tls", "with-time"] }
+async-std = { version = "1", features = ["attributes", "tokio1"] }
+sea-orm-migration = { version = "1.0.0-rc.1", features = ["runtime-tokio-native-tls", "with-time"] }

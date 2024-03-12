@@ -38,7 +38,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         ColumnDef::new(Url::Id)
-                            .integer()
+                            .big_integer()
                             .primary_key()
                             .not_null()
                             .auto_increment(),

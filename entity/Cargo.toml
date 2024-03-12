@@ -20,7 +20,7 @@ publish = false
 
 [lib]
 name = "entity"
-path = "src/lib.rs"
+path = "src/mod.rs"
 
 [dependencies]
 sea-orm = { version = "1.0.0-rc.1", default-features = false, features = ["with-time"] }
