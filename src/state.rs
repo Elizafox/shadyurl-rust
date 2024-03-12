@@ -14,33 +14,15 @@
 
 use std::sync::Arc;
 
-use sea_orm::DatabaseConnection;
+use csrf::ChaCha20Poly1305CsrfProtection;
+use sea_orm::DbConn;
 
-use crate::{auth::User, loadenv::EnvVars};
+use crate::env::Vars;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Clone)]
-pub(crate) struct AppState {
-    pub(crate) db: DatabaseConnection,
-    pub(crate) sitename: String,
-    pub(crate) base_host: String,
-    pub(crate) shady_host: String,
-    pub(crate) user: User,
-}
-
-impl AppState {
-    pub(crate) fn new_from_env(db: DatabaseConnection, env: &EnvVars) -> Self {
-        let user = User {
-            id: 1,
-            username: env.username.clone(),
-            password_hash: Arc::new(env.password_hash.clone()),
-        };
-
-        Self {
-            db,
-            sitename: env.sitename.clone(),
-            base_host: env.base_host.clone(),
-            shady_host: env.shady_host.clone(),
-            user,
-        }
-    }
+pub struct AppState {
+    pub(crate) db: Arc<DbConn>,
+    pub(crate) env: Vars,
+    pub(crate) protect: Arc<ChaCha20Poly1305CsrfProtection>,
 }

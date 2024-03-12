@@ -142,17 +142,55 @@ div#header h2 {
     font-size: 2.00em;
 }
 
-div#warning {
-    background-color: #FF0000;
-    color: #000000;
-    height: 1.50em;
-    align: center;
-    border: 1px solid #000000;
+div#messages {
     margin: auto;
     width: 50%;
+    padding-top: 0.5em;
+    text-align: center;
     line-height: 1.50em;
     font-size: 1.25em;
 }
+
+div#message-error {
+    background-color: #CC2936 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000;
+    border-radius: 0.25em;
+    padding-bottom: 0.1em !important;
+}
+
+div#message-warning {
+    background-color: #F58F29 !important;
+    color: #000000 !important;
+    border: 1px solid #000000;
+    border-radius: 0.25em;
+    padding-bottom: 0.1em !important;
+}
+
+div#message-success {
+    background-color: #26A96C !important;
+    color: #000000 !important;
+    border: 1px solid #000000;
+    border-radius: 0.25em;
+    padding-bottom: 0.1em !important;
+}
+
+div#message-info {
+    background-color: #2274A5 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #000000;
+    border-radius: 0.25em;
+    padding-bottom: 0.1em !important;
+}
+
+div#message-debug {
+    background-color: #FCF7F8 !important;
+    color: #000000 !important;
+    border: 1px solid #000000;
+    border-radius: 0.25em;
+    padding-bottom: 0.1em !important;
+}
+
 
 div#content {
     margin: auto;

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: CC0-1.0
 #
-# migration/Cargo.toml
+# service/Cargo.toml
 #
 # This file is a component of ShadyURL by Elizabeth Myers.
 #
@@ -12,21 +12,33 @@
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
 [package]
-name = "migration"
+name = "service"
 version = "0.1.0"
 edition = "2021"
 license = "CC0-1.0"
 publish = false
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
-name = "migration"
+name = "service"
 path = "src/lib.rs"
 
 [features]
 default = ["sqlite"]
-mysql = ["sea-orm-migration/sqlx-mysql"]
-postgres = ["sea-orm-migration/sqlx-postgres"]
-sqlite = ["sea-orm-migration/sqlx-sqlite"]
+mysql = ["sea-orm/sqlx-mysql"]
+postgres = ["sea-orm/sqlx-postgres"]
+sqlite = ["sea-orm/sqlx-sqlite"]
 
 [dependencies]
-sea-orm-migration = { version = "1.0.0-rc.1", default-features = false, features = ["runtime-tokio-native-tls", "with-time"] }
+entity = { path = "../entity" }
+
+[dependencies.sea-orm]
+version = "1.0.0-rc.1"
+features = [
+    "debug-print",
+    "runtime-tokio-native-tls",
+]
+
+[dev-dependencies]
+tokio = { version = "1.36", features = ["macros", "rt"] }

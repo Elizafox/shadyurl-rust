@@ -12,137 +12,175 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{fs::File, net::SocketAddr};
-
-use anyhow::Result;
-use axum::Server;
-use nix::unistd::ftruncate;
-use proctitle::set_title;
-use tokio::signal;
-use tracing::error;
+#![warn(unused_extern_crates)]
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+#![warn(clippy::cargo)]
 
 mod auth;
-mod controllers;
-mod daemon;
-mod database;
-mod err;
+mod csrf;
+mod env;
+mod error_response;
 mod generate;
-mod loadenv;
-mod logging;
-mod router;
 mod state;
-mod templates;
 mod util;
 mod validators;
+mod web;
 
-use crate::{
-    daemon::{close_stdio, drop_privileges, open_pid_file, set_umask, to_background},
-    database::get_db,
-    loadenv::EnvVars,
-    logging::setup_logger,
-    router::get_router,
-    state::AppState,
-};
+use std::io::{prelude::*, stdin, stdout};
 
-// XXX passing in the PID file here is a hack
-async fn shutdown_signal(pid_file: &mut File) {
-    let ctrl_c = async {
-        signal::ctrl_c()
-            .await
-            .expect("failed to install Ctrl+C/SIGINT handler");
-    };
+use clap::{Parser, Subcommand};
+use password_auth::generate_hash;
+use rpassword::prompt_password;
+use sea_orm::{ConnectOptions, Database};
+use tracing::log::LevelFilter;
 
-    let alarm = async {
-        signal::unix::signal(signal::unix::SignalKind::alarm())
-            .expect("failed to install SIGALRM handler")
-            .recv()
-            .await;
-    };
+use crate::{env::Vars, web::App};
 
-    let hangup = async {
-        signal::unix::signal(signal::unix::SignalKind::hangup())
-            .expect("failed to install SIGHUP handler")
-            .recv()
-            .await;
-    };
+use migration::{Migrator, MigratorTrait};
+use service::{Mutation, Query};
 
-    let terminate = async {
-        signal::unix::signal(signal::unix::SignalKind::terminate())
-            .expect("failed to install SIGTERM handler")
-            .recv()
-            .await;
-    };
-
-    // Maybe use this for stats later?
-    let user_defined1 = async {
-        signal::unix::signal(signal::unix::SignalKind::user_defined1())
-            .expect("failed to install SIGUSR1 handler")
-            .recv()
-            .await;
-    };
-
-    let user_defined2 = async {
-        signal::unix::signal(signal::unix::SignalKind::user_defined2())
-            .expect("failed to install SIGUSR2 handler")
-            .recv()
-            .await;
-    };
-
-    tokio::select! {
-        _ = ctrl_c => {},
-        _ = alarm => {},
-        _ = hangup => {},
-        _ = terminate => {},
-        _ = user_defined1 => {},
-        _ = user_defined2 => {}
-    }
-
-    error!("signal received, starting graceful shutdown");
-
-    // Clear PID file
-    let _ = ftruncate(pid_file, 0);
+#[derive(Parser)]
+struct Cli {
+    #[command(subcommand)]
+    command: Option<Commands>,
 }
 
-// We must fork before we do anything else.
-// We might as well do other environmental init stuff too.
-fn main() -> Result<()> {
-    let env = loadenv::load_env()?;
+#[derive(Subcommand)]
+enum Commands {
+    Run,
+    AddUser { username: String },
+    DeleteUser { username: String },
+    ChangePassword { username: String },
+}
 
-    if env.daemon {
-        // Tokio can't survive a fork. This MUST be done first.
-        to_background()?;
-        close_stdio()?;
+#[derive(Debug, thiserror::Error)]
+enum UserError {
+    #[error("Could not alter user {}: {}", .0, .1)]
+    Change(String, String),
+
+    #[error("Could not create user {}: {}", .0, .1)]
+    Add(String, String),
+
+    #[error("Could not delete user {}: {}", .0, .1)]
+    Delete(String, String),
+}
+
+async fn add_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let env = Vars::load_env()?;
+    let mut opt = ConnectOptions::new(&env.database_url);
+    opt.sqlx_logging(false)
+        .sqlx_logging_level(LevelFilter::Warn);
+
+    let db = Database::connect(opt).await?;
+
+    Migrator::up(&db, None).await?;
+
+    let mut password = prompt_password("Password:")?;
+    if password != prompt_password("Repeat password:")? {
+        eprintln!("Passwords do not match");
+        return Err(Box::new(UserError::Add(
+            username.to_string(),
+            "Passwords did not match".to_string(),
+        )));
     }
 
-    set_umask();
+    password = generate_hash(password);
 
-    let mut pid_file = open_pid_file(&env)?;
+    Mutation::create_user(&db, username, &password).await?;
 
-    setup_logger(&env);
+    Ok(())
+}
 
-    set_title("shadyurl-rust");
+async fn delete_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let env = Vars::load_env()?;
+    let mut opt = ConnectOptions::new(&env.database_url);
+    opt.sqlx_logging(false)
+        .sqlx_logging_level(LevelFilter::Warn);
 
-    tokio_main(&env, &mut pid_file)
+    let db = Database::connect(opt).await?;
+
+    Migrator::up(&db, None).await?;
+
+    let mut response = String::new();
+    loop {
+        print!("Are you SURE you want to delete user {username}? [yes/no] ");
+        stdout().flush()?;
+        stdin().lock().read_line(&mut response)?;
+        response = response.trim_end().to_ascii_lowercase().to_string();
+        match response.as_str() {
+            "no" | "n" => {
+                return Err(Box::new(UserError::Delete(
+                    username.to_string(),
+                    "Aborted".to_string(),
+                )))
+            }
+            "yes" => break,
+            _ => {
+                response.clear();
+                println!("Please type yes or no.");
+            }
+        }
+    }
+
+    let user = Query::find_user_by_username(&db, username)
+        .await?
+        .ok_or_else(|| UserError::Delete(username.to_string(), "Username not found".to_string()))?;
+
+    Mutation::delete_user(&db, user.id).await?;
+
+    Ok(())
+}
+
+async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let env = Vars::load_env()?;
+    let mut opt = ConnectOptions::new(&env.database_url);
+    opt.sqlx_logging(false)
+        .sqlx_logging_level(LevelFilter::Warn);
+
+    let db = Database::connect(opt).await?;
+
+    Migrator::up(&db, None).await?;
+
+    let mut password = prompt_password("Password:")?;
+    if password != prompt_password("Repeat password:")? {
+        eprintln!("Passwords do not match");
+        return Err(Box::new(UserError::Change(
+            username.to_string(),
+            "Passwords did not match".to_string(),
+        )));
+    }
+
+    password = generate_hash(password);
+
+    Mutation::change_user_password(&db, username, &password).await?;
+
+    Ok(())
 }
 
 #[tokio::main]
-async fn tokio_main(env: &EnvVars, pid_file: &mut File) -> Result<()> {
-    let db = get_db(env).await?;
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt().compact().init();
 
-    let state = AppState::new_from_env(db, env);
+    let cli = Cli::parse();
+    match &cli.command {
+        Some(Commands::AddUser { username }) => {
+            add_user_cli(username).await?;
+            println!("Success! User {username} added");
+            return Ok(());
+        }
+        Some(Commands::DeleteUser { username }) => {
+            delete_user_cli(username).await?;
+            println!("Success! User {username} deleted");
+            return Ok(());
+        }
+        Some(Commands::ChangePassword { username }) => {
+            change_password_cli(username).await?;
+            println!("Success! Password for {username} changed");
+            return Ok(());
+        }
+        Some(Commands::Run) | None => {}
+    }
 
-    let app = get_router(env, state).await?;
-    let server = Server::try_bind(&env.bind.parse()?)?
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .with_graceful_shutdown(shutdown_signal(pid_file));
-
-    // We can only do this after the above
-    drop_privileges(env)?;
-
-    server.await?;
-
-    // FIXME - do we actually get here?
-    let _ = ftruncate(pid_file, 0);
-
-    Ok(())
+    App::new().await?.serve().await
 }

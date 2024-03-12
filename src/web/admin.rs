@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/controllers/mod.rs
+ * src/web/admin.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -12,11 +12,5 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-mod admin;
-pub(crate) use admin::*;
-
-mod err;
-pub(crate) use err::*;
-
-mod shadify;
-pub(crate) use shadify::*;
+pub mod auth;
+pub mod delete;

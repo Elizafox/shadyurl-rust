@@ -1,0 +1,19 @@
+{# SPDX-License-Identifier: CC0-1.0
+ #
+ # templates/errors/form/url.html
+ #
+ # This file is a component of ShadyURL by Elizabeth Myers.
+ #
+ # To the extent possible under law, the person who associated CC0 with
+ # ShadyURL has waived all copyright and related or neighboring rights
+ # to ShadyURL.
+ #
+ # You should have received a copy of the CC0 legalcode along with this
+ # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
+ #}
+{% extends "./errors/base.html" %}
+{% block error_code %}Problem with submission{% endblock %}
+{% block error_content %}
+    Could not make your URL ({{ url|escape }}shady:<br><br>
+    {{ error_reason }}
+{% endblock %}

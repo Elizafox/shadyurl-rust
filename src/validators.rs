@@ -15,7 +15,7 @@
 use url::{Host, Url};
 use validator::ValidationError;
 
-pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
+pub fn validate_url(url: &str) -> Result<(), ValidationError> {
     if url.len() > 2047 {
         return Err(ValidationError::new("URL is too long"));
     }
@@ -30,11 +30,13 @@ pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
         | "jabber" | "matrix" | "mumble" | "mxc" | "spotify" | "teamspeak" | "xmpp" => {
             match url_parsed
                 .host()
-                .ok_or(ValidationError::new("No host found"))?
+                .ok_or_else(|| ValidationError::new("No host found"))?
             {
                 Host::Ipv4(_) | Host::Ipv6(_) => Ok(()),
                 Host::Domain(host_str) => {
-                    let pos = host_str.rfind('.').ok_or(ValidationError::new("No TLD"))?;
+                    let pos = host_str
+                        .rfind('.')
+                        .ok_or_else(|| ValidationError::new("No TLD"))?;
                     if host_str.len() - pos < 2 {
                         return Err(ValidationError::new("Invalid TLD"));
                     }

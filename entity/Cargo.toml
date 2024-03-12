@@ -15,6 +15,7 @@
 name = "entity"
 version = "0.1.0"
 edition = "2021"
+license = "CC0-1.0"
 publish = false
 
 [lib]
@@ -22,4 +23,4 @@ name = "entity"
 path = "src/lib.rs"
 
 [dependencies]
-sea-orm = { version = "^0", default-features = false, features = ["with-chrono"] }
+sea-orm = { version = "1.0.0-rc.1", default-features = false, features = ["with-time"] }

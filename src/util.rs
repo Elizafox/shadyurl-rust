@@ -12,7 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub(crate) mod macros {
+pub mod macros {
+    #[macro_export]
     macro_rules! arr {
         (
             $( #[$attr:meta] )*
@@ -24,13 +25,4 @@ pub(crate) mod macros {
     }
 
     pub(crate) use arr;
-}
-
-pub(crate) mod rng {
-    use rand::RngCore;
-
-    #[inline]
-    pub(crate) fn default_rng() -> Box<dyn RngCore> {
-        Box::new(rand::thread_rng())
-    }
 }

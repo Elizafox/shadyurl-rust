@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: CC0-1.0
  #
- # templates/login_landing.html
+ # templates/admin/login.html
  #
  # This file is a component of ShadyURL by Elizabeth Myers.
  #
@@ -18,15 +18,12 @@
 {% block header %}
 <h1>{{ sitename }}</h1>
 <h2>Admin login portal</h2>
-{% if err_str != "" %}
-<div id="warning">{{ err_str }}</div>
-{% endif %}
 {% endblock %}
 {% block content %}
 <p>
     <div id="form">
         <form action="/login" method="post">
-            <input type="hidden" name="auth_token" value="{{ auth_token }}">
+            <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
             <label for="username">Username:</label><br><br>
             <input type="text" id="username" name="username"><br><br>
             <label for="password">Password:</label><br><br>

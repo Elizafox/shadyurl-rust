@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: CC0-1.0
  #
- # templates/admin.html
+ # templates/admin/urls.html
  #
  # This file is a component of ShadyURL by Elizabeth Myers.
  #
@@ -32,8 +32,8 @@
 {% for entry in urls %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
-            <form method="post" action="/admin" id="inline">
-                <input type="hidden" name="auth_token" value="{{ auth_token }}">
+            <form method="post" action="/admin/delete" id="inline">
+                <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
                 <input type="hidden" name="id" value="{{ entry.id }}">
                 <button type="submit" value="submit" id="link-button">
                     {{ entry.id }}

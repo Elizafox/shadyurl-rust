@@ -13,10 +13,12 @@
 
 [package]
 name = "shadyurl-rust"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-rust-version = "1.65.0"
+rust-version = "1.74.1"
 authors = ["Elizabeth Myers"]
+categories = ["web-programming::http-server"]
+keywords = ["web", "service", "axum", "http"]
 description = "A webapp that makes URLs shady"
 license = "CC0-1.0"
 homepage = "https://github.com/Elizafox/ShadyURL-Rust"
@@ -24,7 +26,7 @@ repository = "https://github.com/Elizafox/ShadyURL-Rust"
 readme = "README.md"
 
 [workspace]
-members = [".", "entity", "migration"]
+members = [".", "entity", "migration", "service"]
 
 [profile.release]
 codegen-units = 1
@@ -37,47 +39,50 @@ default = ["sqlite"]
 mysql = ["sea-orm/sqlx-mysql", "sea-query/backend-postgres", "migration/mysql"]
 postgres = ["sea-orm/sqlx-postgres", "sea-query/backend-postgres", "migration/postgres"]
 sqlite = ["sea-orm/sqlx-sqlite", "sea-query/backend-sqlite", "migration/sqlite"]
-with-tracing = ["axum/tracing", "tokio/tracing", "tower/tracing", "tower-http/tracing"]
+tracing = ["tokio/tracing", "tower/tracing", "tower-http/tracing"]
 
 [dependencies]
 entity = { path = "entity" }
 migration = { path = "migration" }
+service = { path = "service" }
 
 
 ######################################
 # Package dependencies go below here #
 ######################################
 
-anyhow = { version = "1.0.80", features = ["backtrace"] }
-argon2-kdf = "1.5.2"
-askama = { version = "0.12.1", features = ["with-axum"] }
-askama_axum = "0.3.0"
-async-fred-session = "0.1.5"
-axum = { version = "0.6.20", features = ["macros", "http2", "headers"] }
-axum-client-ip = "0.4.2"
-axum_csrf = { version = "0.7.2", features = ["layer"] }
-axum-login = "0.5.0"
-base64ct = { version = "1.6.0", features = ["std"] }
+askama = { version = "0.12.1", features = ["with-axum", "urlencode", "mime", "mime_guess"], default-features = false }
+askama_axum = { version = "0.4.0", default-features = false, features = ["urlencode"] }
+async-trait = "0.1.77"
+axum = { version = "0.7.4", default-features = false, features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
+axum-client-ip = "0.5.1"
+axum-login = "0.14.0"
+axum-messages = "0.5.0"
+base64 = "0.22.0"
+clap = { version = "4.5.2", features = ["cargo", "derive", "unicode"] }
+csrf = "0.4.1"
 dotenvy = "0.15.7"
 envy = "0.4.2"
 heck = { version = "0.4.1", features = ["unicode"] }
 itertools = "0.12.1"
 lazy_static = "1.4.0"
-nix = { version = "0.27.1", default-features = false, features = ["dir", "process", "user"] }
-num_cpus = "1.16.0"
 once_cell = { version = "1.19.0", features = ["parking_lot"] }
-proctitle = "0.1.1"
-rand = { version = "0.8.5", features = ["min_const_gen"] }
-rand_chacha = { version = "0.3.1", features = ["simd"] }
+password-auth = "1.0.0"
+#proctitle = "0.1.1"
+rand="0.8.5"
 rand_distr = "0.4.3"
-sea-orm = { version = "0.12.14", default-features = false, features = ["macros", "runtime-tokio-native-tls", "with-chrono"] }
-sea-query = { version = "0.30.7", default-features = false, features = ["thread-safe", "with-chrono"] }
+rpassword = "7.3.1"
+sea-orm = { version = "1.0.0-rc.1", default-features = false, features = ["macros", "runtime-tokio-native-tls", "with-time"] }
+sea-query = { version = "0.31.0-rc.4", default-features = false, features = ["thread-safe", "with-time"] }
 serde = { version = "1.0.197", features = ["derive"] }
-syslog-tracing = "0.3.0"
-tokio = { version = "1.36.0", features = ["fs", "macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
-tracing = { version = "0.1.40", features = ["async-await", "log"]}
-tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lot"]}
+thiserror = "1.0.57"
+time = "0.3.34"
+tokio = { version = "1.36.0", default-features = false, features = ["macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
+tracing = { version = "0.1.40", features = ["async-await", "log"] }
+tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lot", "time"] }
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
-tower-http = { version = "0.4.4", features = ["fs", "timeout", "tokio", "tower"] }
+tower-http = { version = "0.5.2", features = ["fs", "normalize-path", "timeout", "tokio"] }
+tower-sessions = { version = "0.11.0", default-features = false, features = ["axum-core"] }
+tower-sessions-redis-store = "0.11.0"
 url = "2.5.0"
-validator = { version = "0.16.1", features = ["derive"] }
+validator = { version = "0.17.0", features = ["derive"] }

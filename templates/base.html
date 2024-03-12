@@ -21,24 +21,39 @@
         <meta name="author" content="Elizabeth Myers">
         <meta name="darkreader-lock"> <!-- Dark reader breaks the site --!>
 
-        <meta property="og:site_name" content="ShadyURL">
-        <meta property="og:title" content="{%- block title -%}{{ sitename }} — {{ title }}{%- endblock -%}">
-        <meta property="og:url" content="https://{{ base_host }}/{%- block path -%}{%- endblock -%}">
-        <meta property="og:type" content="website">
-        <meta property="og:image" content="/assets/thumbnail.png">
-        <meta property="og:description" content="A thing that makes URLs shady">
-
         {%- block head_addition -%}{%- endblock -%}
 
         <title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
 
-        <link rel="stylesheet" href="assets/style.css">
+        <link rel="stylesheet" href="/assets/style.css">
     </head>
     <body>
         <div id="content">
             <div id="header">
                 {% block header %}<p>Placeholder header</p>{% endblock %}
             </div>
+            {% block messages %}
+            <div id="messages">
+                {% for message in messages %}
+                {% match message.level %}
+                {% when (axum_messages::Level::Debug) %}
+                <div id="message-debug">
+                {% when (axum_messages::Level::Info) %}
+                <div id="message-info">
+                {% when (axum_messages::Level::Success) %}
+                <div id="message-success">
+                {% when (axum_messages::Level::Warning) %}
+                <div id="message-warning">
+                {% when (axum_messages::Level::Error) %}
+                <div id="message-error">
+                {% else %}
+                <div id="message-unknown">
+                {% endmatch %}
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endblock %}
             <div id="body">
                 {% block content %}<p>Placeholder content</p>{% endblock %}
             </div>

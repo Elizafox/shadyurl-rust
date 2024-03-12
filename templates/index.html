@@ -13,6 +13,14 @@
  #}
 {% extends "base.html" %}
 {% block title %}{{ sitename }}{% endblock %}
+{% block head_addition %}
+<meta property="og:site_name" content="{{ sitename }}">
+<meta property="og:title" content="{%- block title -%}{{ sitename }}{%- endblock -%}">
+<meta property="og:url" content="https://{{ base_host }}/{%- block path -%}{%- endblock -%}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/assets/thumbnail.png">
+<meta property="og:description" content="A thing that makes URLs shady">
+{% endblock %}
 {% block header %}
 <h1>{{ sitename }}</h1>
 <h2>Make your URLs shady</h2>
@@ -20,9 +28,8 @@
 {% block content %}
 <p>
     <div id="form">
-        <form action="/makeurl" method="post">
+        <form action="/submit" method="post">
             <label for="url">URL (supported types below):</label><br><br>
-            <input type="hidden" name="auth_token" value="{{ auth_token }}">
             <input type="text" id="url" name="url"><br><br>
             <input type="submit" value="Submit">
         </form>
