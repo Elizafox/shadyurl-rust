@@ -10,6 +10,8 @@ This is like [ShadyURL](https://github.com/Elizafox/ShadyURL) but written in Rus
 
 Copy the env_example file to .env, edit it, run `sea-orm-cli migrate -d <database URL>`, and you're off to the races.
 
+You can add a user by using `cargo run add-user <username>` and inputting a password. The login portal is at `/login`.
+
 Contributing
 ============
 By contributing, you agree to disclaim all copyright to your code and release it under the [CC0 waiver](https://creativecommons.org/share-your-work/public-domain/cc0/). You also agree you have all the relevant rights to do so.
