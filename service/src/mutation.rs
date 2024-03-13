@@ -25,7 +25,7 @@ impl Mutation {
     pub async fn create_cidr_ban(
         db: &DbConn,
         network: IpNetwork,
-        reason: String,
+        reason: Option<String>,
         user: &user::Model,
     ) -> Result<cidr_ban::ActiveModel, DbErr> {
         let (start, end) = match network {

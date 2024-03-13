@@ -34,7 +34,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(binary_len(CidrBan::RangeBegin, 16).unique_key().not_null())
                     .col(binary_len(CidrBan::RangeEnd, 16).unique_key().not_null())
-                    .col(string(CidrBan::Reason).unique_key().not_null())
+                    .col(string(CidrBan::Reason))
                     .col(
                         ColumnDef::new(CidrBan::CreatedAt)
                             .date_time()

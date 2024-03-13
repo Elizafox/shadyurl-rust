@@ -11,8 +11,8 @@ pub struct Model {
     pub range_begin: Vec<u8>,
     #[sea_orm(column_type = "Binary(16)", unique)]
     pub range_end: Vec<u8>,
-    #[sea_orm(unique)]
-    pub reason: String,
+    pub reason: Option<String>,
+    pub created_at: DateTime,
     pub user_created_id: Option<i64>,
 }
 
