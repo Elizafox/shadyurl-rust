@@ -18,6 +18,10 @@ use sea_orm::*;
 pub struct Query;
 
 impl Query {
+    pub async fn find_cidr_ban(db: &DbConn, id: i64) -> Result<Option<cidr_ban::Model>, DbErr> {
+        CidrBan::find_by_id(id).one(db).await
+    }
+
     pub async fn find_user_by_id(db: &DbConn, id: i64) -> Result<Option<user::Model>, DbErr> {
         User::find_by_id(id).one(db).await
     }
@@ -30,10 +34,6 @@ impl Query {
             .filter(user::Column::Username.eq(username))
             .one(db)
             .await
-    }
-
-    pub async fn find_user_by_id(db: &DbConn, id: i64) -> Result<Option<user::Model>, DbErr> {
-        User::find_by_id(id).one(db).await
     }
 
     pub async fn find_url_by_string(db: &DbConn, url: &str) -> Result<Vec<url::Model>, DbErr> {
@@ -60,6 +60,16 @@ impl Query {
 
     pub async fn find_url_filter(db: &DbConn, id: i64) -> Result<Option<url_filter::Model>, DbErr> {
         UrlFilter::find_by_id(id).one(db).await
+    }
+
+    pub async fn fetch_all_cidr_bans(
+        db: &DbConn,
+    ) -> Result<Vec<(cidr_ban::Model, Option<user::Model>)>, DbErr> {
+        CidrBan::find()
+            .order_by_asc(cidr_ban::Column::RangeBegin)
+            .find_also_related(User)
+            .all(db)
+            .await
     }
 
     pub async fn fetch_all_url_filters(

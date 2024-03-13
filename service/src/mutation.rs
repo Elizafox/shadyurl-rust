@@ -12,6 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+use ipnetwork::{IpNetwork, Ipv6Network};
 use sea_orm::*;
 
 use ::entity::{cidr_ban, prelude::*, url, url_filter, user};
@@ -21,6 +22,34 @@ use crate::Query;
 pub struct Mutation;
 
 impl Mutation {
+    pub async fn create_cidr_ban(
+        db: &DbConn,
+        network: IpNetwork,
+        reason: String,
+        user: &user::Model,
+    ) -> Result<cidr_ban::ActiveModel, DbErr> {
+        let (start, end) = match network {
+            IpNetwork::V4(n) => {
+                let addr = n.network().to_ipv6_mapped();
+                let prefix = n.prefix() + 96;
+                let network =
+                    Ipv6Network::new(addr, prefix).expect("Could not create IPv6 network");
+                (network.network(), network.broadcast())
+            }
+            IpNetwork::V6(n) => (n.network(), n.broadcast()),
+        };
+
+        cidr_ban::ActiveModel {
+            range_begin: ActiveValue::Set(start.octets().to_vec()),
+            range_end: ActiveValue::Set(end.octets().to_vec()),
+            reason: ActiveValue::Set(reason),
+            user_created_id: Set(Some(user.id)),
+            ..Default::default()
+        }
+        .save(db)
+        .await
+    }
+
     pub async fn create_user(
         db: &DbConn,
         username: &str,
