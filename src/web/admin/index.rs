@@ -36,7 +36,10 @@ pub fn router() -> Router<AppState> {
 }
 
 mod get {
-    use super::{AppError, AppState, AuthSession, IndexTemplate, IntoResponse, Messages, Response, State, error};
+    use super::{
+        error, AppError, AppState, AuthSession, IndexTemplate, IntoResponse, Messages, Response,
+        State,
+    };
 
     pub(super) async fn index(
         messages: Messages,
