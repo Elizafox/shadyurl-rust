@@ -12,15 +12,16 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use ::entity::{
-    url, url::Entity as Url, url_filter, url_filter::Entity as UrlFilter, user,
-    user::Entity as User,
-};
+use ::entity::{cidr_ban, prelude::*, url, url_filter, user};
 use sea_orm::*;
 
 pub struct Query;
 
 impl Query {
+    pub async fn find_user_by_id(db: &DbConn, id: i64) -> Result<Option<user::Model>, DbErr> {
+        User::find_by_id(id).one(db).await
+    }
+
     pub async fn find_user_by_username(
         db: &DbConn,
         username: &str,

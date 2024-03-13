@@ -12,8 +12,9 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use ::entity::{url, url_filter, user};
 use sea_orm::*;
+
+use ::entity::{cidr_ban, prelude::*, url, url_filter, user};
 
 use crate::Query;
 
@@ -80,30 +81,19 @@ impl Mutation {
         user.update(db).await.map(Into::into)
     }
 
-    pub async fn delete_user(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
-        let user: user::ActiveModel = Query::find_user_by_id(db, id)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find user.".to_owned()))
-            .map(Into::into)?;
+    pub async fn delete_cidr_ban(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+        CidrBan::delete_by_id(id).exec(db).await
+    }
 
-        user.delete(db).await
+    pub async fn delete_user(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
+        User::delete_by_id(id).exec(db).await
     }
 
     pub async fn delete_url(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
-        let url: url::ActiveModel = Query::find_url_by_id(db, id)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find url.".to_owned()))
-            .map(Into::into)?;
-
-        url.delete(db).await
+        Url::delete_by_id(id).exec(db).await
     }
 
     pub async fn delete_url_filter(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
-        let url_filter: url_filter::ActiveModel = Query::find_url_filter(db, id)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find url filter.".to_owned()))
-            .map(Into::into)?;
-
-        url_filter.delete(db).await
+        UrlFilter::delete_by_id(id).exec(db).await
     }
 }
