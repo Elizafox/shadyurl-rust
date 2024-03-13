@@ -35,6 +35,12 @@ impl MigrationTrait for Migration {
                     .col(binary_len(CidrBan::RangeBegin, 16).unique_key().not_null())
                     .col(binary_len(CidrBan::RangeEnd, 16).unique_key().not_null())
                     .col(string(CidrBan::Reason).unique_key().not_null())
+                    .col(
+                        ColumnDef::new(CidrBan::CreatedAt)
+                            .date_time()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .col(big_integer(CidrBan::UserCreatedId))
                     .foreign_key(
                         ForeignKeyCreateStatement::new()
@@ -84,6 +90,7 @@ enum CidrBan {
     RangeBegin,
     RangeEnd,
     Reason,
+    CreatedAt,
     UserCreatedId,
 }
 
