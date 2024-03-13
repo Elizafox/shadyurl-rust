@@ -2,6 +2,7 @@
 
 pub mod prelude;
 
+pub mod cidr_ban;
 pub mod url;
 pub mod url_filter;
 pub mod user;
