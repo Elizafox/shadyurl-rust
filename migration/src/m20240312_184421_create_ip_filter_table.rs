@@ -25,11 +25,12 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(CidrBan::Table)
                     .if_not_exists()
-                    .col(ColumnDef::new(CidrBan::Id)
-                        .big_integer()
-                        .primary_key()
-                        .not_null()
-                        .auto_increment()
+                    .col(
+                        ColumnDef::new(CidrBan::Id)
+                            .big_integer()
+                            .primary_key()
+                            .not_null()
+                            .auto_increment(),
                     )
                     .col(binary_len(CidrBan::RangeBegin, 16).unique_key().not_null())
                     .col(binary_len(CidrBan::RangeEnd, 16).unique_key().not_null())
@@ -66,8 +67,9 @@ impl MigrationTrait for Migration {
                 Index::drop()
                     .table(CidrBan::Table)
                     .name("idx-cidr_ban-range_begin-range_end")
-                    .to_owned()
-            ).await?;
+                    .to_owned(),
+            )
+            .await?;
 
         manager
             .drop_table(Table::drop().table(CidrBan::Table).to_owned())
