@@ -33,6 +33,7 @@ impl Mutation {
                 let addr = n.network().to_ipv6_mapped();
                 let prefix = n.prefix() + 96;
                 let network =
+                    // Should not fail, as this is coming from a valid IPv4 network
                     Ipv6Network::new(addr, prefix).expect("Could not create IPv6 network");
                 (network.network(), network.broadcast())
             }
