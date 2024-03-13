@@ -6,14 +6,14 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "cidr_ban")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: i64,
     #[sea_orm(column_type = "Binary(16)", unique)]
     pub range_begin: Vec<u8>,
     #[sea_orm(column_type = "Binary(16)", unique)]
     pub range_end: Vec<u8>,
     #[sea_orm(unique)]
     pub reason: String,
-    pub user_created_id: i64,
+    pub user_created_id: Option<i64>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
