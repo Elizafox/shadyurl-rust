@@ -25,6 +25,7 @@ use tower::ServiceBuilder;
 use tower_http::{normalize_path::NormalizePathLayer, timeout::TimeoutLayer};
 use tower_sessions::{Expiry, SessionManagerLayer};
 use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
+use tracing::info;
 
 use migration::{Migrator, MigratorTrait};
 
@@ -83,7 +84,6 @@ impl App {
     pub(crate) async fn serve(self) -> Result<(), Box<dyn std::error::Error>> {
         let session_store = RedisStore::new(self.redis_pool);
         let session_layer = SessionManagerLayer::new(session_store)
-            .with_secure(false)
             .with_expiry(Expiry::OnInactivity(Duration::days(1)));
 
         let backend = Backend::new(self.state.db.clone());
@@ -112,8 +112,8 @@ impl App {
             .layer(services)
             .with_state(self.state);
 
+        info!("Preparing to serve on {bind}");
         let listener = tokio::net::TcpListener::bind(bind).await?;
-
         axum::serve(
             listener,
             app.into_make_service_with_connect_info::<SocketAddr>(),
@@ -121,6 +121,8 @@ impl App {
         .await?;
 
         self.redis_conn.await??;
+
+        info!("Server terminating");
 
         Ok(())
     }

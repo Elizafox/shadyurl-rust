@@ -14,6 +14,7 @@
 
 use num::Float;
 
+// This algorithm is taken from Python's isclose() algorithm in C
 pub fn is_close<T: Float>(a: T, b: T) -> bool {
     let abs_tol = T::from(0.0).unwrap();
     let rel_tol = T::from(1e-05).unwrap();

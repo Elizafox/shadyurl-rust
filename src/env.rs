@@ -20,6 +20,7 @@ use serde::{
     de::{Deserializer, Error},
     Deserialize,
 };
+use tracing::error;
 use validator::Validate;
 
 mod defaults {
@@ -45,7 +46,7 @@ mod defaults {
 }
 
 mod deserializers {
-    use super::{Deserialize, Deserializer, Engine, Error, BASE64_STANDARD};
+    use super::{error, Deserialize, Deserializer, Engine, Error, BASE64_STANDARD};
 
     pub(super) fn csrf_key<'de, D>(d: D) -> Result<[u8; 32], D::Error>
     where
@@ -57,6 +58,10 @@ mod deserializers {
             .map_err(|e| Error::custom(format!("Could not decode csrf key: {e}")))?;
 
         let ret: [u8; 32] = val.try_into().map_err(|v: Vec<u8>| {
+            error!(
+                "CSRF key length was incorrect (expected 32 bytes, got {}",
+                v.len()
+            );
             Error::custom(format!(
                 "Could not decode csrf key: length was incorrect (expected 32 bytes, got {})",
                 v.len()

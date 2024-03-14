@@ -27,6 +27,7 @@ use ipnetwork::IpNetwork;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
+use tracing::{debug, warn};
 
 use entity::{cidr_ban, user};
 use service::{Mutation, Query};
@@ -103,9 +104,9 @@ mod render {
 
 mod post {
     use super::{
-        csrf_crate, find_networks, vec_to_ipaddr, AppError, AppState, AuthSession, DeleteForm,
-        Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect, Response,
-        Session, State, SubmitBanForm,
+        csrf_crate, debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession,
+        DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect,
+        Response, Session, State, SubmitBanForm,
     };
 
     pub(super) async fn cidr_bans(
@@ -123,10 +124,15 @@ mod post {
         .await?;
 
         let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to add a cidr_ban");
             return Err(AppError::Unauthorized);
         };
 
         if submit_ban_form.range.is_empty() {
+            debug!(
+                "Empty ban range received from form from user {}",
+                user.0.username
+            );
             messages.error("Range cannot be empty");
             return Ok(Redirect::to("/admin/cidr_bans").into_response());
         }
@@ -134,6 +140,10 @@ mod post {
         let network = match IpNetwork::from_str(&submit_ban_form.range) {
             Ok(network) => network,
             Err(e) => {
+                debug!(
+                    "Invalid IP range specified ({}) from {}: {e}",
+                    submit_ban_form.range, user.0.username
+                );
                 messages.error(format!("Invalid IP range specified: {e}"));
                 return Ok(Redirect::to("/admin/cidr_bans").into_response());
             }
@@ -144,6 +154,10 @@ mod post {
 
         Mutation::create_cidr_ban(&state.db, network, submit_ban_form.reason, &user.0).await?;
 
+        warn!(
+            "CIDR ban ({}) added by {}",
+            submit_ban_form.range, user.0.username
+        );
         messages.success(format!(
             "Added CIDR ban {} successfullly",
             submit_ban_form.range
@@ -160,7 +174,8 @@ mod post {
     ) -> Result<Response, AppError> {
         csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
 
-        if auth_session.user.is_none() {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to delete a cidr_ban");
             return Err(AppError::Unauthorized);
         };
 
@@ -173,6 +188,11 @@ mod post {
         // Invalidate the ban cache for all networks in this range
         for network in find_networks(begin, end)? {
             state.bancache.invalidate(network);
+            warn!(
+                "CIDR ban ({}) deleted by {}",
+                network.to_string(),
+                user.0.username
+            );
         }
 
         Mutation::delete_cidr_ban(&state.db, delete_form.id).await?;
@@ -184,8 +204,8 @@ mod post {
 
 mod get {
     use super::{
-        AppError, AppState, AuthSession, CidrBansTemplate, CsrfProtection, IntoResponse, Messages,
-        Query, Response, Session, State,
+        debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, CsrfProtection,
+        IntoResponse, Messages, Query, Response, Session, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -194,9 +214,10 @@ mod get {
         messages: Messages,
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
-        if auth_session.user.is_none() {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to access cidr_bans");
             return Err(AppError::Unauthorized);
-        }
+        };
 
         let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
 
@@ -206,6 +227,8 @@ mod get {
         session.insert("authenticity_token", &session_token).await?;
 
         let cidr_bans = Query::fetch_all_cidr_bans(&state.db).await?;
+
+        debug!("CIDR bans retrieved by {}", user.0.username);
 
         Ok(CidrBansTemplate {
             authenticity_token: &authenticity_token,

@@ -25,6 +25,7 @@ use regex::Regex;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
+use tracing::{debug, warn};
 
 use entity::{url_filter, user};
 use service::{Mutation, Query};
@@ -64,8 +65,8 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse, Messages,
-        Mutation, Redirect, Regex, Response, Session, State, SubmitFilterForm,
+        csrf_crate, debug, warn, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse,
+        Messages, Mutation, Redirect, Regex, Response, Session, State, SubmitFilterForm,
     };
 
     pub(super) async fn url_filters(
@@ -83,15 +84,21 @@ mod post {
         .await?;
 
         let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to add a url_filter");
             return Err(AppError::Unauthorized);
         };
 
         if submit_filter_form.filter.is_empty() {
+            debug!("Empty filter received from {}", user.0.username);
             messages.error("Filter cannot be empty");
             return Ok(Redirect::to("/admin/url_filters").into_response());
         }
 
         if let Err(e) = Regex::new(&submit_filter_form.filter) {
+            debug!(
+                "Bad filter regex \"{}\" received from {} ({e})",
+                submit_filter_form.filter, user.0.username
+            );
             messages.error(format!(
                 "Malformed URL filter regex {}: {e}",
                 submit_filter_form.filter
@@ -107,6 +114,10 @@ mod post {
         )
         .await?;
 
+        warn!(
+            "URL filter created by {}: {}",
+            user.0.username, submit_filter_form.filter
+        );
         messages.success(format!(
             "Added filter {} successfullly",
             submit_filter_form.filter
@@ -123,12 +134,17 @@ mod post {
     ) -> Result<Response, AppError> {
         csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
 
-        if auth_session.user.is_none() {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to delete a url_filter");
             return Err(AppError::Unauthorized);
         };
 
         Mutation::delete_url_filter(&state.db, delete_form.id).await?;
 
+        warn!(
+            "URL filter {} deleted by {}",
+            delete_form.id, user.0.username
+        );
         messages.success(format!(
             "Deleted URL filter #{} successfully",
             delete_form.id
@@ -139,8 +155,8 @@ mod post {
 
 mod get {
     use super::{
-        AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages, Query, Response,
-        Session, State, UrlFiltersTemplate,
+        debug, warn, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages,
+        Query, Response, Session, State, UrlFiltersTemplate,
     };
 
     pub(super) async fn url_filters(
@@ -149,9 +165,10 @@ mod get {
         messages: Messages,
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
-        if auth_session.user.is_none() {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to retrieve url_filters");
             return Err(AppError::Unauthorized);
-        }
+        };
 
         let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
 
@@ -161,6 +178,8 @@ mod get {
         session.insert("authenticity_token", &session_token).await?;
 
         let url_filters = Query::fetch_all_url_filters(&state.db).await?;
+
+        debug!("URL filters retrieved by {}", user.0.username);
 
         Ok(UrlFiltersTemplate {
             authenticity_token: &authenticity_token,

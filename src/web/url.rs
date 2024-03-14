@@ -19,6 +19,7 @@ use axum::{
     Router,
 };
 use itertools::join;
+use tracing::trace;
 
 use service::Query;
 
@@ -31,12 +32,15 @@ pub fn router() -> Router<AppState> {
 }
 
 mod get {
-    use super::{join, AppError, AppState, IntoResponse, Path, Query, Redirect, Response, State};
+    use super::{
+        join, trace, AppError, AppState, IntoResponse, Path, Query, Redirect, Response, State,
+    };
 
     pub(super) async fn url(
         Path(url): Path<String>,
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
+        trace!("URL reverse mapping path called: {url}");
         Ok(join(
             Query::find_url_by_string(&state.db, &url)
                 .await?
@@ -54,8 +58,14 @@ mod get {
         Query::find_url_by_shady_string(&state.db, &shady)
             .await?
             .map_or_else(
-                || Err(AppError::NotFound),
-                |url| Ok(Redirect::to(&url.url).into_response()),
+                || {
+                    trace!("Couldn't find URL {shady}");
+                    Err(AppError::NotFound)
+                },
+                |url| {
+                    trace!("Found URL {shady} => {}", url.url);
+                    Ok(Redirect::to(&url.url).into_response())
+                },
             )
     }
 }

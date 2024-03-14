@@ -15,6 +15,7 @@
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use ipnetwork::{IpNetwork, IpNetworkError};
+use tracing::debug;
 
 use super::bits::count_trailing_zeroes;
 
@@ -37,7 +38,13 @@ pub fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
     let addr = match addr.len() {
         4 => IpAddr::from(TryInto::<[u8; 4]>::try_into(addr).unwrap()),
         16 => IpAddr::from(TryInto::<[u8; 16]>::try_into(addr).unwrap()),
-        _ => return Err(AddressError::IncorrectSize(addr.len())),
+        _ => {
+            debug!(
+                "Invalid IP size passed to vec_to_ipaddr: {}, is there data corruption?",
+                addr.len()
+            );
+            return Err(AddressError::IncorrectSize(addr.len()));
+        }
     };
 
     Ok(addr.to_canonical())
@@ -95,7 +102,14 @@ pub fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, Netwo
 
             res
         }
-        _ => return Err(NetworkPrefixError::IpTypeMismatch),
+        _ => {
+            return {
+                debug!(
+                    "find_networks: IP type mismatch (V4 and V6 mixed), is there a bug somewhere?"
+                );
+                Err(NetworkPrefixError::IpTypeMismatch)
+            }
+        }
     };
 
     Ok(res)

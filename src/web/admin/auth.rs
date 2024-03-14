@@ -22,7 +22,7 @@ use axum::{
 use axum_messages::{Message, Messages};
 use csrf::CsrfProtection;
 use tower_sessions::Session;
-use tracing::debug;
+use tracing::{info, warn};
 
 use crate::{
     auth::{AuthSession, Credentials},
@@ -48,7 +48,7 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, debug, AppError, AppState, AuthSession, Credentials, Form, IntoResponse,
+        csrf_crate, info, warn, AppError, AppState, AuthSession, Credentials, Form, IntoResponse,
         Messages, Redirect, Response, Session, State,
     };
 
@@ -62,15 +62,17 @@ mod post {
         csrf_crate::verify(&session, &creds.authenticity_token, &state.protect).await?;
 
         let Some(user) = auth_session.authenticate(creds.clone()).await? else {
-            debug!("Invalid credentials received");
+            warn!(
+                "Invalid credentials received (username: {})",
+                creds.username
+            );
             messages.error("Invalid credentials");
             return Ok(Redirect::to("/login").into_response());
         };
 
         auth_session.login(&user).await?;
 
-        debug!("Successful login, redirecting");
-
+        info!("Successful login from {}", creds.username);
         messages.success(format!("Successfully logged in as {}", user.0.username));
         Ok(Redirect::to("/admin").into_response())
     }
@@ -78,8 +80,8 @@ mod post {
 
 mod get {
     use super::{
-        AppError, AppState, AuthSession, CsrfProtection, IntoResponse, LoginTemplate, Messages,
-        Redirect, Response, Session, State,
+        info, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, LoginTemplate,
+        Messages, Redirect, Response, Session, State,
     };
 
     pub(super) async fn login(
@@ -114,6 +116,7 @@ mod get {
     ) -> Result<Response, AppError> {
         auth_session.logout().await?;
         session.clear().await;
+        info!("User {} logging out", auth_session.user.unwrap().0.username);
         messages.success("You have logged out");
         Ok(Redirect::to("/").into_response())
     }

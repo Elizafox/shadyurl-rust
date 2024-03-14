@@ -18,6 +18,7 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
+use tracing::{error, warn};
 
 use crate::{
     auth::{AuthError, Backend},
@@ -71,13 +72,19 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
-            Self::VerifyCsrf(e) => ErrorResponse::bad_request(e.to_string().as_ref()),
+            Self::VerifyCsrf(e) => {
+                warn!("CSRF token verification failed");
+                ErrorResponse::bad_request(e.to_string().as_ref())
+            }
             Self::UrlValidation(url, error_reason) => {
                 ErrorResponse::url_submission(&url, &error_reason)
             }
             Self::NotFound => ErrorResponse::not_found(),
             Self::Unauthorized => ErrorResponse::unauthorized(),
-            _ => ErrorResponse::internal_server_error(self.to_string().as_str()),
+            _ => {
+                error!("Internal server error: {}", self.to_string());
+                ErrorResponse::internal_server_error(self.to_string().as_str())
+            }
         }
     }
 }

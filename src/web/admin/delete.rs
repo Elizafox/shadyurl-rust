@@ -24,6 +24,7 @@ use csrf::CsrfProtection;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
+use tracing::{debug, info};
 
 use entity::url;
 use service::{Mutation, Query};
@@ -55,8 +56,8 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse, Messages,
-        Mutation, Redirect, Response, Session, State,
+        csrf_crate, info, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse,
+        Messages, Mutation, Redirect, Response, Session, State,
     };
 
     pub(super) async fn delete(
@@ -74,16 +75,16 @@ mod post {
 
         Mutation::delete_url(&state.db, delete_form.id).await?;
 
+        info!("Deleted URL ID # {}", delete_form.id);
         messages.success(format!("Deleted URL #{} successfully", delete_form.id));
-
         Ok(Redirect::to("/admin/urls").into_response())
     }
 }
 
 mod get {
     use super::{
-        AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages, Query, Response,
-        Session, State, UrlsTemplate,
+        debug, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages, Query,
+        Response, Session, State, UrlsTemplate,
     };
 
     pub(super) async fn urls(
@@ -104,6 +105,11 @@ mod get {
         session.insert("authenticity_token", &session_token).await?;
 
         let urls = Query::fetch_all_urls(&state.db).await?;
+
+        debug!(
+            "Fetching all URLs for {}",
+            auth_session.user.unwrap().0.username
+        );
 
         Ok(UrlsTemplate {
             authenticity_token: &authenticity_token,

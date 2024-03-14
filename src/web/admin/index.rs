@@ -20,7 +20,7 @@ use axum::{
     Router,
 };
 use axum_messages::{Message, Messages};
-use tracing::error;
+use tracing::{debug, warn};
 
 use crate::{auth::AuthSession, error_response::AppError, state::AppState};
 
@@ -37,8 +37,8 @@ pub fn router() -> Router<AppState> {
 
 mod get {
     use super::{
-        error, AppError, AppState, AuthSession, IndexTemplate, IntoResponse, Messages, Response,
-        State,
+        debug, warn, AppError, AppState, AuthSession, IndexTemplate, IntoResponse, Messages,
+        Response, State,
     };
 
     pub(super) async fn index(
@@ -46,10 +46,12 @@ mod get {
         auth_session: AuthSession,
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
-        if auth_session.user.is_none() {
-            error!("User was not authorised");
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to access admin page");
             return Err(AppError::Unauthorized);
-        }
+        };
+
+        debug!("Showing index to {}", user.0.username);
 
         Ok(IndexTemplate {
             messages: messages.into_iter().collect(),

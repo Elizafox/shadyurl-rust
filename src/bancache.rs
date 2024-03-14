@@ -18,7 +18,7 @@ use ipnetwork::IpNetwork;
 use moka::future::Cache;
 use sea_orm::{DbConn, DbErr};
 use time::Duration;
-use tracing::debug;
+use tracing::trace;
 
 use service::Query;
 
@@ -51,17 +51,18 @@ impl BanCache {
 
     pub(crate) async fn check_ban(&self, ip: IpAddr) -> Result<bool, BanCacheError> {
         if let Some(result) = self.cache.get(&ip).await {
-            debug!("Got a cache hit");
+            trace!("{ip}: got a cache hit (banned: {result})");
             Ok(result)
         } else {
-            debug!("Cache miss");
             let result = Query::check_ip_ban(&self.db, ip).await?;
+            trace!("{ip}: got a cache miss (banned: {result})");
             self.cache.insert(ip, result).await;
             Ok(result)
         }
     }
 
     pub(crate) fn invalidate(&self, network: IpNetwork) {
+        trace!("Invalidating cache for {network}");
         self.cache
             .invalidate_entries_if(move |k, _| network.contains(*k))
             .expect("Could not invalidate cache");

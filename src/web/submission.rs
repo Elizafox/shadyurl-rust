@@ -23,6 +23,7 @@ use axum_client_ip::SecureClientIp;
 use axum_messages::{Message, Messages};
 use regex::Regex;
 use serde::Deserialize;
+use tracing::{debug, info};
 use validator::Validate;
 
 use service::{Mutation, Query};
@@ -78,8 +79,8 @@ mod get {
 
 mod post {
     use super::{
-        AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation, Query, Regex,
-        Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
+        debug, info, AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation, Query,
+        Regex, Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
     };
 
     pub(super) async fn submit(
@@ -89,6 +90,10 @@ mod post {
         Form(url_form): Form<UrlForm>,
     ) -> Result<Response, AppError> {
         if state.bancache.check_ban(addr).await? {
+            info!(
+                "Banned client ({addr}) attempted to submit url: {}",
+                url_form.url
+            );
             return Err(AppError::Unauthorized);
         }
 
@@ -97,6 +102,7 @@ mod post {
                 .field_errors()
                 .get("url")
                 .map_or("Unknown error".to_string(), |v| v[0].code.to_string());
+            debug!("Invalid URL submitted ({}): {error_reason}", url_form.url);
             return Err(AppError::UrlValidation(url_form.url, error_reason));
         }
 
@@ -108,11 +114,16 @@ mod post {
                     "URL is banned".to_string(),
                 ));
             }
+            info!(
+                "Blacklisted URL submitted matching \"{}\": {}",
+                url_filter.0.filter, url_form.url
+            );
         }
 
         let shady = Generator::shady_filename();
-
         Mutation::create_url(&state.db, &url_form.url, &shady, Some(addr.to_string())).await?;
+
+        debug!("URL created: {} -> {shady}", url_form.url);
 
         Ok(SubmissionTemplate {
             url: &url_form.url,
