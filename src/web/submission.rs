@@ -29,7 +29,7 @@ use validator::Validate;
 use service::{Mutation, Query};
 
 use crate::{
-    error_response::AppError, generate::Generator, state::AppState, validators::validate_url,
+    err::AppError, generate::Generator, state::AppState, validators::validate_url,
 };
 
 #[derive(Template)]

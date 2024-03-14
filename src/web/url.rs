@@ -23,7 +23,7 @@ use tracing::trace;
 
 use service::Query;
 
-use crate::{error_response::AppError, state::AppState};
+use crate::{err::AppError, state::AppState};
 
 pub fn router() -> Router<AppState> {
     Router::new()

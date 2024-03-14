@@ -21,7 +21,7 @@ mod auth;
 mod bancache;
 mod csrf;
 mod env;
-mod error_response;
+mod err;
 mod generate;
 mod state;
 mod util;

@@ -27,7 +27,7 @@ use tracing::{info, warn};
 use crate::{
     auth::{AuthSession, Credentials},
     csrf as csrf_crate,
-    error_response::AppError,
+    err::AppError,
     state::AppState,
 };
 

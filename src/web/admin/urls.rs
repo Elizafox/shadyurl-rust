@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/web/admin/delete.rs
+ * src/web/admin/urls.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -30,7 +30,7 @@ use entity::url;
 use service::{Mutation, Query};
 
 use crate::{
-    auth::AuthSession, csrf as csrf_crate, error_response::AppError, state::AppState, util::format,
+    auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format,
 };
 
 #[derive(Template)]
@@ -51,7 +51,7 @@ struct DeleteForm {
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/admin/urls", get(self::get::urls))
-        .route("/admin/delete", post(self::post::delete))
+        .route("/admin/urls/delete", post(self::post::delete))
 }
 
 mod post {

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/error_response.rs
+ * src/err.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *

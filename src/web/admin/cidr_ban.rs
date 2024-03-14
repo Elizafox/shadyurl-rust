@@ -35,7 +35,7 @@ use service::{Mutation, Query};
 use crate::{
     auth::AuthSession,
     csrf as csrf_crate,
-    error_response::AppError,
+    err::AppError,
     state::AppState,
     util::{
         format,

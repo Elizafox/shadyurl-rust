@@ -31,7 +31,7 @@ use entity::{url_filter, user};
 use service::{Mutation, Query};
 
 use crate::{
-    auth::AuthSession, csrf as csrf_crate, error_response::AppError, state::AppState, util::format,
+    auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format,
 };
 
 #[derive(Template)]

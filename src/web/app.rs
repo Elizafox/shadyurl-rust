@@ -34,10 +34,7 @@ use crate::{
     bancache::BanCache,
     env::Vars,
     state::AppState,
-    web::{
-        admin::{auth, cidr_ban, delete, index, url_filter},
-        fallback, files, submission, url,
-    },
+    web::{admin, fallback, files, submission, url},
 };
 
 pub struct App {
@@ -100,14 +97,10 @@ impl App {
         let bind = self.state.env.bind.clone();
 
         let app = Router::new()
-            .merge(auth::router())
-            .merge(cidr_ban::router())
-            .merge(delete::router())
+            .merge(admin::router())
             .merge(files::router())
-            .merge(index::router())
             .merge(submission::router())
             .merge(url::router())
-            .merge(url_filter::router())
             .merge(fallback::router())
             .layer(services)
             .with_state(self.state);

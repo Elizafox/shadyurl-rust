@@ -27,7 +27,7 @@
 {%- for entry in urls %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
-            <form method="post" action="/admin/delete" id="inline">
+            <form method="post" action="/admin/urls/delete" id="inline">
                 <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
                 <input type="hidden" name="id" value="{{ entry.id }}">
                 <button type="submit" value="submit" id="link-button">

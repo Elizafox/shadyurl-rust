@@ -22,7 +22,7 @@ use axum::{
 use axum_messages::{Message, Messages};
 use tracing::{debug, warn};
 
-use crate::{auth::AuthSession, error_response::AppError, state::AppState};
+use crate::{auth::AuthSession, err::AppError, state::AppState};
 
 #[derive(Template)]
 #[template(path = "admin/index.html")]

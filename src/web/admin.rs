@@ -12,8 +12,21 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub(super) mod auth;
-pub(super) mod cidr_ban;
-pub(super) mod delete;
-pub(super) mod index;
-pub(super) mod url_filter;
+mod auth;
+mod cidr_ban;
+mod index;
+mod url_filter;
+mod urls;
+
+use axum::Router;
+
+use crate::state::AppState;
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .merge(auth::router())
+        .merge(cidr_ban::router())
+        .merge(index::router())
+        .merge(urls::router())
+        .merge(url_filter::router())
+}
