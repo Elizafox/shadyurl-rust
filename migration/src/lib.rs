@@ -19,6 +19,7 @@ mod m20230713_214521_add_unique_constraint;
 mod m20240302_082409_create_user_table;
 mod m20240312_050549_create_url_filter_table;
 mod m20240312_184421_create_ip_filter_table;
+mod m20240314_011046_convert_to_timezone;
 
 pub struct Migrator;
 
@@ -31,6 +32,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20240302_082409_create_user_table::Migration),
             Box::new(m20240312_050549_create_url_filter_table::Migration),
             Box::new(m20240312_184421_create_ip_filter_table::Migration),
+            Box::new(m20240314_011046_convert_to_timezone::Migration),
         ]
     }
 }

@@ -36,7 +36,7 @@ impl MigrationTrait for Migration {
                     .col(string(UrlFilter::Reason))
                     .col(
                         ColumnDef::new(UrlFilter::CreatedAt)
-                            .date_time()
+                            .timestamp_with_time_zone()
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )

@@ -37,7 +37,7 @@ impl MigrationTrait for Migration {
                     .col(string(CidrBan::Reason))
                     .col(
                         ColumnDef::new(CidrBan::CreatedAt)
-                            .date_time()
+                            .timestamp_with_time_zone()
                             .default(Expr::current_timestamp())
                             .not_null(),
                     )
