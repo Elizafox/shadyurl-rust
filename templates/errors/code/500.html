@@ -12,5 +12,5 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "./errors/base.html" %}
-{% block error_code %}500{% endblock %}
-{% block error_content %}Internal Server Error: <strong>{{ error_reason }}</strong>{% endblock %}
+{%- block error_code %}500{% endblock -%}
+{%- block error_content %}Internal Server Error: <strong>{{ error_reason }}</strong>{% endblock -%}

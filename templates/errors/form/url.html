@@ -12,8 +12,8 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "./errors/base.html" %}
-{% block error_code %}Problem with submission{% endblock %}
-{% block error_content %}
+{%- block error_code %}Problem with submission{% endblock -%}
+{%- block error_content -%}
     Could not make your URL ({{ url|escape }}) shady:<br><br>
     <strong>{{ error_reason }}</strong>
-{% endblock %}
+{%- endblock -%}

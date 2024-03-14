@@ -12,9 +12,9 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "admin/admin_base.html" %}
-{% block path %}admin/urls{% endblock %}
-{% block title %}{{ sitename }} — Admin — URLs{% endblock %}
-{% block content %}
+{%- block path %}admin/urls{% endblock -%}
+{%- block title %}{{ sitename }} — Admin — URLs{% endblock -%}
+{%- block content -%}
 <br>
 <table id="admin-list-table">
     <tr id="admin-list-heading">
@@ -24,7 +24,7 @@
         <th id="admin-list-created-heading">Created</th>
         <th id="admin-list-ip-heading">IP</th>
     </tr>
-{% for entry in urls %}
+{%- for entry in urls %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
             <form method="post" action="/admin/delete" id="inline">
@@ -44,6 +44,6 @@
         </td>
         <td id="admin-list-ip-item">{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
     </tr>
-{% endfor %}
+{%- endfor -%}
 </table>
-{% endblock %}
+{%- endblock -%}

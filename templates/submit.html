@@ -12,13 +12,13 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "base.html" %}
-{% block path %}makeurl{% endblock %}
-{% block head_addition %}<meta name="robots" content="noindex">{% endblock %}
-{% block title %}Success{% endblock %}
-{% block header %}
+{%- block path %}submit{% endblock -%}
+{%- block head_addition %}<meta name="robots" content="noindex">{% endblock -%}
+{%- block title %}Success{% endblock -%}
+{%- block header -%}
 <h1>Success!</h1>
-{% endblock %}
-{% block content %}
+{%- endblock -%}
+{%- block content -%}
 {%- let slim_shady = "https://{}/{}"|format(shady_host, shady|escape) -%}
 <p>
     <strong><a href="{{ slim_shady }}">{{ slim_shady }}</a></strong><br><br>
@@ -29,4 +29,4 @@
 <p>
     <a href="/">Make another URL shady?</a>
 </p>
-{% endblock %}
+{%- endblock -%}

@@ -12,20 +12,20 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "base.html" %}
-{% block title %}{{ sitename }}{% endblock %}
-{% block head_addition %}
+{%- block title %}{{ sitename }}{% endblock -%}
+{%- block head_addition -%}
 <meta property="og:site_name" content="{{ sitename }}">
-<meta property="og:title" content="{%- block title -%}{{ sitename }}{%- endblock -%}">
-<meta property="og:url" content="https://{{ base_host }}/{%- block path -%}{%- endblock -%}">
+<meta property="og:title" content="{{ sitename }}">
+<meta property="og:url" content="https://{{ base_host }}/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="/assets/thumbnail.png">
 <meta property="og:description" content="A thing that makes URLs shady">
-{% endblock %}
-{% block header %}
+{%- endblock -%}
+{%- block header -%}
 <h1>{{ sitename }}</h1>
 <h2>Make your URLs shady</h2>
-{% endblock %}
-{% block content %}
+{%- endblock -%}
+{%- block content %}
 <p>
     <div id="form">
         <form action="/submit" method="post">

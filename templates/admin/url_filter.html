@@ -12,9 +12,9 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "admin/admin_base.html" %}
-{% block path %}admin/url_filters{% endblock %}
-{% block title %}{{ sitename }} — Admin — URL filters{% endblock %}
-{% block content %}
+{%- block path %}admin/url_filters{% endblock -%}
+{%- block title %}{{ sitename }} — Admin — URL filters{% endblock -%}
+{%- block content -%}
 <br>
 <form method="post" action="/admin/url_filters">
     <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
@@ -22,7 +22,7 @@
     <input type="text" name="filter" placeholder="Filter regex">
     <label for="reason">Reason (optional):</label>
     <input type="text" name="reason" placeholder="Reason (optional)">
-    <button type="submit" value="submit">Submit</button>
+    <input type="submit" value="submit">Submit</input>
 </form>
 <br>
 <table id="admin-list-table">
@@ -33,7 +33,7 @@
         <th id="admin-list-created-heading">Created</th>
         <th id="admin-list-admin-heading">Admin</th>
     </tr>
-{% for (entry, user) in url_filters %}
+{%- for (entry, user) in url_filters %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
             <form method="post" action="/admin/url_filters/delete" id="inline">
@@ -53,6 +53,6 @@
         </td>
         <td id="admin-list-admin-item">{% if user.is_some() %}{{ user.as_ref().unwrap().username }}{% else %}–{% endif %}</td>
     </tr>
-{% endfor %}
+{% endfor -%}
 </table>
-{% endblock %}
+{%- endblock -%}

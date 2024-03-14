@@ -12,9 +12,9 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "admin/admin_base.html" %}
-{% block path %}admin{% endblock %}
-{% block title %}A{{ sitename }} — Admin{% endblock %}
-{% block content %}
+{%- block path %}admin{% endblock -%}
+{%- block title %}A{{ sitename }} — Admin{% endblock -%}
+{%- block content -%}
 <p>
 <a href="/admin/urls">Manage URLs</a>
 <br><br>
@@ -22,4 +22,4 @@
 <br><br>
 <a href="/admin/cidr_bans">Manage CIDR bans</a>
 </p>
-{% endblock %}
+{%- endblock -%}

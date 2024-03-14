@@ -23,39 +23,45 @@
 
         {%- block head_addition -%}{%- endblock -%}
 
-        <title>{% block title %}{{ sitename }} — {{ title }}{% endblock %}</title>
+        <title>{%- block title %}{{ sitename }} — {{ title }}{% endblock -%}</title>
 
         <link rel="stylesheet" href="/assets/style.css">
     </head>
     <body>
         <div id="content">
             <div id="header">
-                {% block header %}<p>Placeholder header</p>{% endblock %}
+                {%- block header %}
+                <p>Placeholder header</p>
+                {%- endblock %}
             </div>
-            {% block messages %}
+            {%- block messages -%}
+            {% if messages.len() > 0 %}
             <div id="messages">
-                {% for message in messages %}
-                {% match message.level %}
-                {% when (axum_messages::Level::Debug) %}
+                {%- for message in messages %}
+                {%- match message.level %}
+                {%- when (axum_messages::Level::Debug) %}
                 <div id="message-debug">
-                {% when (axum_messages::Level::Info) %}
+                {%- when (axum_messages::Level::Info) %}
                 <div id="message-info">
-                {% when (axum_messages::Level::Success) %}
+                {%- when (axum_messages::Level::Success) %}
                 <div id="message-success">
-                {% when (axum_messages::Level::Warning) %}
+                {%- when (axum_messages::Level::Warning) %}
                 <div id="message-warning">
-                {% when (axum_messages::Level::Error) %}
+                {%- when (axum_messages::Level::Error) %}
                 <div id="message-error">
-                {% else %}
+                {%- else %}
                 <div id="message-unknown">
-                {% endmatch %}
+                {%- endmatch %}
                     {{ message }}
                 </div>
-                {% endfor %}
+                {%- endfor %}
             </div>
-            {% endblock %}
+            {%- endif -%}
+            {%- endblock %}
             <div id="body">
-                {% block content %}<p>Placeholder content</p>{% endblock %}
+            {%- block content %}
+                <p>Placeholder content</p>
+            {%- endblock %}
             </div>
             <div id="footer">
                 <p>

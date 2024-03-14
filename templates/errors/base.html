@@ -12,21 +12,20 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "../base.html" %}
-
-{% block head_addition %}<meta name="robots" content="noindex">{% endblock %}
-{% block title %}Error{% endblock %}
-{% block header %}
+{%- block head_addition %}<meta name="robots" content="noindex">{% endblock -%}
+{%- block title %}Error{% endblock -%}
+{%- block header -%}
 <h1>Error</h1>
-<h2>{% block error_code %}An error occurred{% endblock %}</h2>
-{% endblock %}
-{% block messages %}{% endblock %}
-{% block content %}
+<h2>{%- block error_code %}An error occurred{% endblock -%}</h2>
+{%- endblock -%}
+{%- block messages %}{% endblock -%}
+{%- block content -%}
 <p>
-{% block error_content %}
-{% endblock %}
+{%- block error_content -%}
+{%- endblock -%}
 </p>
 <br>
 <p>
     <a href="/">Go home</a>
 </p>
-{% endblock %}
+{%- endblock -%}
