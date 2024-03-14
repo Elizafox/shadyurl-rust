@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{net::IpAddr, str::FromStr};
+use std::str::FromStr;
 
 use askama_axum::Template;
 use axum::{
@@ -96,7 +96,7 @@ mod render {
         let begin = vec_to_ipaddr(begin)?;
         let end = vec_to_ipaddr(end)?;
 
-        let nets = find_networks(begin.clone(), end.clone())?;
+        let nets = find_networks(begin, end)?;
         Ok(nets.into_iter().map(|v| format!("{v}")).collect())
     }
 }
@@ -104,8 +104,8 @@ mod render {
 mod post {
     use super::{
         csrf_crate, find_networks, vec_to_ipaddr, AppError, AppState, AuthSession, DeleteForm,
-        Form, FromStr, IntoResponse, IpAddr, IpNetwork, Messages, Mutation, Query, Redirect,
-        Response, Session, State, SubmitBanForm,
+        Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect, Response,
+        Session, State, SubmitBanForm,
     };
 
     pub(super) async fn cidr_bans(
@@ -131,45 +131,11 @@ mod post {
             return Ok(Redirect::to("/admin/cidr_bans").into_response());
         }
 
-        let range = submit_ban_form.range.clone();
-        let network = match range.rsplit_once("/") {
-            Some((address, prefix)) => {
-                let Ok(addr) = IpAddr::from_str(address) else {
-                    messages.error("Invalid IP range");
-                    return Ok(Redirect::to("/admin/cidr_bans").into_response());
-                };
-
-                let Ok(prefix) = prefix.parse::<u8>() else {
-                    messages.error("Invalid network prefix");
-                    return Ok(Redirect::to("/admin/cidr_bans").into_response());
-                };
-
-                match IpNetwork::new(addr, prefix) {
-                    Ok(i) => i,
-                    Err(_) => {
-                        messages.error("Invalid IP range");
-                        return Ok(Redirect::to("/admin/cidr_bans").into_response());
-                    }
-                }
-            }
-            None => {
-                let Ok(addr) = IpAddr::from_str(&range) else {
-                    messages.error("Invalid IP range");
-                    return Ok(Redirect::to("/admin/cidr_bans").into_response());
-                };
-
-                let prefix = match addr {
-                    IpAddr::V4(_) => 32,
-                    IpAddr::V6(_) => 128,
-                };
-
-                match IpNetwork::new(addr, prefix) {
-                    Ok(i) => i,
-                    Err(_) => {
-                        messages.error("Invalid IP range");
-                        return Ok(Redirect::to("/admin/cidr_bans").into_response());
-                    }
-                }
+        let network = match IpNetwork::from_str(&submit_ban_form.range) {
+            Ok(network) => network,
+            Err(e) => {
+                messages.error(format!("Invalid IP range specified: {e}"));
+                return Ok(Redirect::to("/admin/cidr_bans").into_response());
             }
         };
 
@@ -202,7 +168,7 @@ mod post {
         let end = vec_to_ipaddr(ban.range_end)?;
 
         for network in find_networks(begin, end)? {
-            state.bancache.invalidate(network).await;
+            state.bancache.invalidate(network);
         }
 
         Mutation::delete_cidr_ban(&state.db, delete_form.id).await?;

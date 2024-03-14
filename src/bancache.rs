@@ -25,13 +25,13 @@ use service::Query;
 const CACHE_ENTRIES: u64 = 10_000;
 
 #[derive(Debug, thiserror::Error)]
-pub(crate) enum BanCacheError {
+pub enum BanCacheError {
     #[error(transparent)]
     Db(#[from] DbErr),
 }
 
 #[derive(Clone)]
-pub(crate) struct BanCache {
+pub struct BanCache {
     cache: Cache<IpAddr, bool>,
     db: Arc<DbConn>,
 }
@@ -61,9 +61,9 @@ impl BanCache {
         }
     }
 
-    pub(crate) async fn invalidate(&mut self, network: IpNetwork) {
+    pub(crate) fn invalidate(&mut self, network: IpNetwork) {
         self.cache
-            .invalidate_entries_if(move |k, _| network.contains(k.clone()))
+            .invalidate_entries_if(move |k, _| network.contains(*k))
             .expect("Could not invalidate cache");
     }
 }

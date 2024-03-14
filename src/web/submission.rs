@@ -88,7 +88,7 @@ mod post {
         State(state): State<AppState>,
         Form(url_form): Form<UrlForm>,
     ) -> Result<Response, AppError> {
-        if state.bancache.check_ban(addr.clone()).await? {
+        if state.bancache.check_ban(addr).await? {
             return Err(AppError::Unauthorized);
         }
 
