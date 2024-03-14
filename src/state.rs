@@ -17,7 +17,7 @@ use std::sync::Arc;
 use csrf::ChaCha20Poly1305CsrfProtection;
 use sea_orm::DbConn;
 
-use crate::env::Vars;
+use crate::{bancache::BanCache, env::Vars};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone)]
@@ -25,4 +25,5 @@ pub struct AppState {
     pub(crate) db: Arc<DbConn>,
     pub(crate) env: Vars,
     pub(crate) protect: Arc<ChaCha20Poly1305CsrfProtection>,
+    pub(crate) bancache: BanCache,
 }

@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::{convert::TryInto, net::IpAddr, str::FromStr};
+use std::{net::IpAddr, str::FromStr};
 
 use askama_axum::Template;
 use axum::{
@@ -23,8 +23,7 @@ use axum::{
 };
 use axum_messages::{Message, Messages};
 use csrf::CsrfProtection;
-use ipnetwork::{IpNetwork, IpNetworkError};
-use itertools::Itertools;
+use ipnetwork::IpNetwork;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
@@ -39,7 +38,7 @@ use crate::{
     state::AppState,
     util::{
         format,
-        net::{find_networks, NetworkPrefixError},
+        net::{find_networks, vec_to_ipaddr, AddressError, NetworkPrefixError},
     },
 };
 
@@ -73,48 +72,40 @@ pub fn router() -> Router<AppState> {
 }
 
 mod render {
-    use super::{find_networks, IpAddr, IpNetworkError, Itertools, NetworkPrefixError, TryInto};
+    use super::{find_networks, vec_to_ipaddr, AddressError, NetworkPrefixError};
+
+    #[derive(Debug, thiserror::Error)]
+    pub(super) enum RangeDisplayError {
+        #[error(transparent)]
+        NetworkPrefix(#[from] NetworkPrefixError),
+
+        #[error(transparent)]
+        Addr(#[from] AddressError),
+    }
 
     pub(super) fn range_to_display(
-        start: Vec<u8>,
+        begin: Vec<u8>,
         end: Vec<u8>,
-    ) -> Result<Vec<String>, NetworkPrefixError> {
-        let Some((start, end)) = match (start.len(), end.len()) {
-            (4, 4) => [
-                // These should never fail
-                IpAddr::from(
-                    TryInto::<[u8; 4]>::try_into(start).expect("Failed to convert start IP"),
-                ),
-                IpAddr::from(TryInto::<[u8; 4]>::try_into(end).expect("Failed to convert end IP")),
-            ],
-            (16, 16) => [
-                // These should never fail
-                IpAddr::from(
-                    TryInto::<[u8; 16]>::try_into(start).expect("Failed to convert start IP"),
-                ),
-                IpAddr::from(TryInto::<[u8; 16]>::try_into(end).expect("Failed to convert end IP")),
-            ],
-            _ => {
-                return Err(NetworkPrefixError::IpNetwork(IpNetworkError::InvalidAddr(
-                    "Invalid range".to_string(),
-                )))
-            }
+    ) -> Result<Vec<String>, RangeDisplayError> {
+        if begin.len() != end.len() {
+            return Err(RangeDisplayError::NetworkPrefix(
+                NetworkPrefixError::IpTypeMismatch,
+            ));
         }
-        .into_iter()
-        .map(|v| v.to_canonical())
-        .collect_tuple() else {
-            unreachable!();
-        };
 
-        let nets = find_networks(start.clone(), end.clone())?;
+        let begin = vec_to_ipaddr(begin)?;
+        let end = vec_to_ipaddr(end)?;
+
+        let nets = find_networks(begin.clone(), end.clone())?;
         Ok(nets.into_iter().map(|v| format!("{v}")).collect())
     }
 }
 
 mod post {
     use super::{
-        csrf_crate, AppError, AppState, AuthSession, DeleteForm, Form, FromStr, IntoResponse,
-        IpAddr, IpNetwork, Messages, Mutation, Redirect, Response, Session, State, SubmitBanForm,
+        csrf_crate, find_networks, vec_to_ipaddr, AppError, AppState, AuthSession, DeleteForm,
+        Form, FromStr, IntoResponse, IpAddr, IpNetwork, Messages, Mutation, Query, Redirect,
+        Response, Session, State, SubmitBanForm,
     };
 
     pub(super) async fn cidr_bans(
@@ -195,7 +186,7 @@ mod post {
         session: Session,
         auth_session: AuthSession,
         messages: Messages,
-        State(state): State<AppState>,
+        State(mut state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
         csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
@@ -203,6 +194,16 @@ mod post {
         if auth_session.user.is_none() {
             return Err(AppError::Unauthorized);
         };
+
+        let ban = Query::find_cidr_ban(&state.db, delete_form.id)
+            .await?
+            .ok_or_else(|| AppError::NotFound)?;
+        let begin = vec_to_ipaddr(ban.range_begin)?;
+        let end = vec_to_ipaddr(ban.range_end)?;
+
+        for network in find_networks(begin, end)? {
+            state.bancache.invalidate(network).await;
+        }
 
         Mutation::delete_cidr_ban(&state.db, delete_form.id).await?;
 

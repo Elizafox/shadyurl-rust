@@ -21,7 +21,9 @@ use axum::{
 
 use crate::{
     auth::{AuthError, Backend},
+    bancache::BanCacheError,
     csrf::VerifyCsrfError,
+    util::net::{AddressError, NetworkPrefixError},
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -43,6 +45,15 @@ pub enum AppError {
 
     #[error(transparent)]
     Db(#[from] sea_orm::DbErr),
+
+    #[error(transparent)]
+    BanCache(#[from] BanCacheError),
+
+    #[error(transparent)]
+    Address(#[from] AddressError),
+
+    #[error(transparent)]
+    NetworkPrefix(#[from] NetworkPrefixError),
 
     #[error("Could not validate URL {}: {}", .0, .1)]
     UrlValidation(String, String),

@@ -14,7 +14,6 @@
 
 use askama_axum::Template;
 use axum::{
-    debug_handler,
     extract::State,
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -79,17 +78,20 @@ mod get {
 
 mod post {
     use super::{
-        debug_handler, AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation,
-        Query, Regex, Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
+        AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation, Query, Regex,
+        Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
     };
 
-    #[debug_handler]
     pub(super) async fn submit(
         messages: Messages,
         SecureClientIp(addr): SecureClientIp,
         State(state): State<AppState>,
         Form(url_form): Form<UrlForm>,
     ) -> Result<Response, AppError> {
+        if state.bancache.check_ban(addr.clone()).await? {
+            return Err(AppError::Unauthorized);
+        }
+
         if let Err(e) = url_form.validate() {
             let error_reason = e
                 .field_errors()

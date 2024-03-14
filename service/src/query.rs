@@ -12,8 +12,11 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use ::entity::{cidr_ban, prelude::*, url, url_filter, user};
+use std::net::IpAddr;
+
 use sea_orm::*;
+
+use ::entity::{cidr_ban, prelude::*, url, url_filter, user};
 
 pub struct Query;
 
@@ -80,5 +83,24 @@ impl Query {
             .find_also_related(User)
             .all(db)
             .await
+    }
+
+    pub async fn check_ip_ban(db: &DbConn, addr: IpAddr) -> Result<bool, DbErr> {
+        let octets: [u8; 16] = match addr {
+            IpAddr::V4(i) => i.to_ipv6_mapped(),
+            IpAddr::V6(i) => i,
+        }
+        .octets();
+
+        let count = CidrBan::find()
+            .filter(
+                cidr_ban::Column::RangeBegin
+                    .lte(octets.to_vec())
+                    .and(cidr_ban::Column::RangeEnd.gte(octets.to_vec())),
+            )
+            .count(db)
+            .await?;
+
+        Ok(count > 0)
     }
 }

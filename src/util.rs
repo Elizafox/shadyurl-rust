@@ -25,27 +25,6 @@ pub(crate) mod bits {
     }
 }
 
-pub(crate) mod math {
-    use num::Float;
-
-    pub(crate) fn is_close<T: Float>(a: T, b: T) -> bool {
-        let abs_tol = T::from(0.0).unwrap();
-        let rel_tol = T::from(1e-05).unwrap();
-
-        if a == b {
-            return true;
-        }
-
-        if a.is_infinite() || b.is_infinite() {
-            return false;
-        }
-
-        let diff = (b - a).abs();
-
-        ((diff <= (rel_tol * b).abs()) || (diff <= (rel_tol * a).abs())) || (diff <= abs_tol)
-    }
-}
-
 pub(crate) mod format {
     use time::{
         convert::{Day, Hour, Microsecond, Millisecond, Minute, Nanosecond, Second, Week},
@@ -135,6 +114,27 @@ pub(crate) mod macros {
     pub(crate) use arr;
 }
 
+pub(crate) mod math {
+    use num::Float;
+
+    pub(crate) fn is_close<T: Float>(a: T, b: T) -> bool {
+        let abs_tol = T::from(0.0).unwrap();
+        let rel_tol = T::from(1e-05).unwrap();
+
+        if a == b {
+            return true;
+        }
+
+        if a.is_infinite() || b.is_infinite() {
+            return false;
+        }
+
+        let diff = (b - a).abs();
+
+        ((diff <= (rel_tol * b).abs()) || (diff <= (rel_tol * a).abs())) || (diff <= abs_tol)
+    }
+}
+
 pub(crate) mod net {
     use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
@@ -149,6 +149,22 @@ pub(crate) mod net {
 
         #[error("IP address types are mismatched")]
         IpTypeMismatch,
+    }
+
+    #[derive(Debug, thiserror::Error)]
+    pub(crate) enum AddressError {
+        #[error("Incorrect size: {}", .0)]
+        IncorrectSize(usize),
+    }
+
+    pub(crate) fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
+        let addr = match addr.len() {
+            4 => IpAddr::from(TryInto::<[u8; 4]>::try_into(addr).unwrap()),
+            16 => IpAddr::from(TryInto::<[u8; 16]>::try_into(addr).unwrap()),
+            _ => return Err(AddressError::IncorrectSize(addr.len())),
+        };
+
+        Ok(addr.to_canonical())
     }
 
     pub(crate) fn find_networks(

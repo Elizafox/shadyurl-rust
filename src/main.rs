@@ -18,6 +18,7 @@
 #![warn(clippy::cargo)]
 
 mod auth;
+mod bancache;
 mod csrf;
 mod env;
 mod error_response;

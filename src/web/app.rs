@@ -30,6 +30,7 @@ use migration::{Migrator, MigratorTrait};
 
 use crate::{
     auth::Backend,
+    bancache::BanCache,
     env::Vars,
     state::AppState,
     web::{
@@ -61,15 +62,18 @@ impl App {
             .min_connections(5)
             .sqlx_logging(false);
 
-        let db = Database::connect(opt).await?;
+        let db = Arc::new(Database::connect(opt).await?);
 
-        Migrator::up(&db, None).await?;
+        Migrator::up(db.as_ref(), None).await?;
+
+        let bancache = BanCache::new(db.clone());
 
         Ok(Self {
             state: AppState {
-                db: Arc::new(db),
+                db: db.clone(),
                 env,
                 protect: Arc::new(protect),
+                bancache,
             },
             redis_pool,
             redis_conn,
