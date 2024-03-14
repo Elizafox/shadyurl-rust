@@ -21,7 +21,7 @@ use crate::{bancache::BanCache, env::Vars};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone)]
-pub struct AppState {
+pub(crate) struct AppState {
     pub(crate) db: Arc<DbConn>,
     pub(crate) env: Vars,
     pub(crate) protect: Arc<ChaCha20Poly1305CsrfProtection>,

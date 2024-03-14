@@ -25,13 +25,13 @@ use service::Query;
 const CACHE_ENTRIES: u64 = 10_000;
 
 #[derive(Debug, thiserror::Error)]
-pub enum BanCacheError {
+pub(crate) enum BanCacheError {
     #[error(transparent)]
     Db(#[from] DbErr),
 }
 
 #[derive(Clone)]
-pub struct BanCache {
+pub(crate) struct BanCache {
     cache: Cache<IpAddr, bool>,
     db: Arc<DbConn>,
 }

@@ -26,7 +26,7 @@ use service::Query;
 
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::module_name_repetitions)]
-pub enum AuthError {
+pub(crate) enum AuthError {
     #[error(transparent)]
     DbErr(#[from] DbErr),
 
@@ -36,7 +36,7 @@ pub enum AuthError {
 
 // We marshall the database user in and out of this
 #[derive(Clone)]
-pub struct User(pub(crate) user::Model);
+pub(crate) struct User(pub(crate) user::Model);
 
 impl std::fmt::Debug for User {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -80,7 +80,7 @@ impl AuthUser for User {
 }
 
 #[derive(Debug, Clone)]
-pub struct Backend {
+pub(crate) struct Backend {
     db: Arc<DbConn>,
 }
 
@@ -91,7 +91,7 @@ impl Backend {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct Credentials {
+pub(crate) struct Credentials {
     pub(crate) username: String,
     pub(crate) password: String,
     pub(crate) authenticity_token: String,
@@ -122,4 +122,4 @@ impl AuthnBackend for Backend {
 }
 
 #[allow(clippy::module_name_repetitions)]
-pub type AuthSession = axum_login::AuthSession<Backend>;
+pub(crate) type AuthSession = axum_login::AuthSession<Backend>;

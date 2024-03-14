@@ -55,7 +55,7 @@ struct DeleteForm {
     id: i64,
 }
 
-pub fn router() -> Router<AppState> {
+pub(crate) fn router() -> Router<AppState> {
     Router::new()
         .route("/admin/url_filters", get(self::get::url_filters))
         .route("/admin/url_filters", post(self::post::url_filters))

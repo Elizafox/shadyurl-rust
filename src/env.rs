@@ -69,7 +69,7 @@ mod deserializers {
 }
 
 #[derive(Clone, Validate, Deserialize)]
-pub struct Vars {
+pub(crate) struct Vars {
     #[validate(length(min = 4))]
     pub(crate) base_host: String,
     #[serde(default)]

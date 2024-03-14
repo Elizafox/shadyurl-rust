@@ -16,7 +16,7 @@ use axum::{response::IntoResponse, Router};
 
 use crate::{error_response::ErrorResponse, state::AppState};
 
-pub fn router() -> Router<AppState> {
+pub(crate) fn router() -> Router<AppState> {
     Router::new().fallback(get::fallback)
 }
 

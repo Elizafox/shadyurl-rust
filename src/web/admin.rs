@@ -12,8 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub mod auth;
-pub mod cidr_ban;
-pub mod delete;
-pub mod index;
-pub mod url_filter;
+pub(super) mod auth;
+pub(super) mod cidr_ban;
+pub(super) mod delete;
+pub(super) mod index;
+pub(super) mod url_filter;

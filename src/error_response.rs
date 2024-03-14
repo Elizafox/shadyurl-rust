@@ -27,7 +27,7 @@ use crate::{
 };
 
 #[derive(Debug, thiserror::Error)]
-pub enum AppError {
+pub(crate) enum AppError {
     #[error(transparent)]
     Csrf(#[from] csrf::CsrfError),
 
@@ -109,7 +109,7 @@ struct UrlSubmissionErrorTemplate<'a> {
     url: &'a str,
 }
 
-pub struct ErrorResponse;
+pub(crate) struct ErrorResponse;
 
 impl ErrorResponse {
     pub(crate) fn bad_request(error_reason: &str) -> Response<Body> {

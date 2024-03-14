@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub use app::App;
+pub(crate) use app::App;
 
 mod admin;
 mod app;

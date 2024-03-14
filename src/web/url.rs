@@ -24,7 +24,7 @@ use service::Query;
 
 use crate::{error_response::AppError, state::AppState};
 
-pub fn router() -> Router<AppState> {
+pub(crate) fn router() -> Router<AppState> {
     Router::new()
         .route("/reverse-map/*url", get(self::get::url))
         .route("/*shady", get(self::get::shady))

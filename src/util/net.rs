@@ -19,7 +19,7 @@ use ipnetwork::{IpNetwork, IpNetworkError};
 use super::bits::count_trailing_zeroes;
 
 #[derive(Debug, thiserror::Error)]
-pub enum NetworkPrefixError {
+pub(crate) enum NetworkPrefixError {
     #[error(transparent)]
     IpNetwork(#[from] IpNetworkError),
 
@@ -28,12 +28,12 @@ pub enum NetworkPrefixError {
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum AddressError {
+pub(crate) enum AddressError {
     #[error("Incorrect size: {}", .0)]
     IncorrectSize(usize),
 }
 
-pub fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
+pub(crate) fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
     let addr = match addr.len() {
         4 => IpAddr::from(TryInto::<[u8; 4]>::try_into(addr).unwrap()),
         16 => IpAddr::from(TryInto::<[u8; 16]>::try_into(addr).unwrap()),
@@ -43,7 +43,7 @@ pub fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
     Ok(addr.to_canonical())
 }
 
-pub fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, NetworkPrefixError> {
+pub(crate) fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, NetworkPrefixError> {
     let res = match (start, end) {
         (IpAddr::V4(start_ip), IpAddr::V4(end_ip)) => {
             let mut start_int: u32 = start_ip.into();

@@ -20,7 +20,7 @@ use time::{
 use super::math::is_close;
 
 // This implementation is heavily modified from the time crate.
-pub fn humanize_duration(duration: Duration) -> String {
+pub(crate) fn humanize_duration(duration: Duration) -> String {
     const AVERAGE_YEAR: f64 = 365.2425;
     const AVERAGE_MONTH: f64 = AVERAGE_YEAR / 12.0;
 

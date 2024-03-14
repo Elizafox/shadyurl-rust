@@ -31,7 +31,7 @@ struct IndexTemplate<'a> {
     sitename: &'a str,
 }
 
-pub fn router() -> Router<AppState> {
+pub(crate) fn router() -> Router<AppState> {
     Router::new().route("/admin", get(self::get::index))
 }
 

@@ -64,7 +64,7 @@ struct DeleteForm {
     id: i64,
 }
 
-pub fn router() -> Router<AppState> {
+pub(crate) fn router() -> Router<AppState> {
     Router::new()
         .route("/admin/cidr_bans", get(self::get::cidr_bans))
         .route("/admin/cidr_bans", post(self::post::cidr_bans))
