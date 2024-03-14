@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/util.rs
+ * src/util/macros.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -12,8 +12,15 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub(crate) mod bits;
-pub(crate) mod format;
-pub(crate) mod macros;
-pub(crate) mod math;
-pub(crate) mod net;
+#[macro_export]
+macro_rules! arr {
+    (
+        $( #[$attr:meta] )*
+        $v:vis $id:ident $name:ident: [$ty:ty; _] = $value:expr
+    ) => {
+        $( #[$attr] )*
+        $v $id $name: [$ty; $value.len()] = $value;
+    }
+}
+
+pub(crate) use arr;

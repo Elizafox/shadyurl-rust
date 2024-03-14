@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/util.rs
+ * src/util/bits.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -12,8 +12,13 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub(crate) mod bits;
-pub(crate) mod format;
-pub(crate) mod macros;
-pub(crate) mod math;
-pub(crate) mod net;
+use num::PrimInt;
+
+pub fn count_trailing_zeroes<T: PrimInt>(mut n: T) -> u32 {
+    let mut count = 0;
+    while n != T::zero() {
+        count += 1;
+        n = n >> 1;
+    }
+    count
+}
