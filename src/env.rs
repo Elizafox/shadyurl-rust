@@ -14,7 +14,6 @@
 
 use axum_client_ip::SecureClientIpSource;
 use base64::prelude::*;
-use dotenvy::dotenv;
 use envy::from_env;
 use rand::{prelude::*, thread_rng};
 use serde::{
@@ -100,7 +99,6 @@ pub struct Vars {
 
 impl Vars {
     pub(crate) fn load_env() -> Result<Self, Box<dyn std::error::Error>> {
-        dotenv()?;
         let mut env: Self = from_env()?;
         if env.shady_host.is_empty() {
             env.shady_host = env.base_host.clone();

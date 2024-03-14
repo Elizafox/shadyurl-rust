@@ -31,12 +31,13 @@ mod web;
 use std::io::{prelude::*, stdin, stdout};
 
 use clap::{Parser, Subcommand};
+use dotenvy::dotenv;
 use password_auth::generate_hash;
 use proctitle::set_title;
 use rpassword::prompt_password;
 use sea_orm::{ConnectOptions, Database};
 use tracing::log::LevelFilter;
-use tracing_subscriber::EnvFilter;
+use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 use crate::{env::Vars, web::App};
 
@@ -163,12 +164,12 @@ async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::E
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let ef = EnvFilter::builder()
-        .with_default_directive(tracing_subscriber::filter::LevelFilter::DEBUG.into())
-        .try_from_env()?;
-    tracing_subscriber::fmt()
-        .compact()
-        .with_env_filter(ef)
+    // Important to do this first, as our logging config may be in .env
+    dotenv()?;
+
+    tracing_subscriber::registry()
+        .with(fmt::layer())
+        .with(EnvFilter::from_default_env())
         .init();
 
     let cli = Cli::parse();
