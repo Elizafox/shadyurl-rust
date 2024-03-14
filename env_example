@@ -61,3 +61,7 @@ REDIS_URL="redis://127.0.0.1"
 
 # Redis pool size, defaults to 3, increase if you need more
 REDIS_POOL_SIZE=3
+
+# Set the log level, this uses the EnvFilter syntax from tracing.
+# For production, it's recommended to keep this at warn or error.
+RUST_LOG="warn"
