@@ -12,7 +12,7 @@ pub struct Model {
     #[sea_orm(column_type = "Binary(16)", unique)]
     pub range_end: Vec<u8>,
     pub reason: Option<String>,
-    pub created_at: DateTime,
+    pub created_at: TimeDateTimeWithTimeZone,
     pub user_created_id: Option<i64>,
 }
 

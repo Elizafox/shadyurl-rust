@@ -10,7 +10,7 @@ pub struct Model {
     #[sea_orm(unique)]
     pub filter: String,
     pub reason: Option<String>,
-    pub created_at: DateTime,
+    pub created_at: TimeDateTimeWithTimeZone,
     pub user_created_id: Option<i64>,
 }
 

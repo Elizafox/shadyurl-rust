@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: CC0-1.0
  #
- # templates/admin/index.html
+ # templates/admin/admin_base.html
  #
  # This file is a component of ShadyURL by Elizabeth Myers.
  #
@@ -11,15 +11,13 @@
  # You should have received a copy of the CC0 legalcode along with this
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
-{% extends "admin/admin_base.html" %}
-{% block path %}admin{% endblock %}
-{% block title %}A{{ sitename }} — Admin{% endblock %}
-{% block content %}
-<p>
-<a href="/admin/urls">Manage URLs</a>
-<br><br>
-<a href="/admin/url_filters">Manage URL filters</a>
-<br><br>
-<a href="/admin/cidr_bans">Manage CIDR bans</a>
-</p>
+{% extends "base.html" %}
+{% block head_addition %}<meta name="robots" content="noindex,nofollow">{% endblock %}
+{% block title %}{{ sitename }} — Admin{% endblock %}
+{% block header %}
+<h1>ShadyUrl</h1>
+<h2>Admin portal</h2>
+<a href="/admin">Admin main page</a>
+<br>
+<a href="/logout">Logout</a>
 {% endblock %}

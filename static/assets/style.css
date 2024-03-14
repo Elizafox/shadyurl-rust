@@ -40,27 +40,47 @@ tr#admin-list-heading th {
 
 th#admin-list-id-heading {
     text-align: left;
-    width: 2%;
+    min-width: 5%;
 }
 
 th#admin-list-url-heading {
     text-align: left;
-    width: 20%;
+    min-width: 20%;
 }
 
 th#admin-list-redirect-heading {
     text-align: left;
-    width: 20%;
+    min-width: 25%;
+}
+
+th#admin-list-filter-heading {
+    text-align: left;
+    min-width: 10%;
 }
 
 th#admin-list-created-heading {
     text-align: right;
-    width: 8%;
+    min-width: 10%;
+}
+
+th#admin-list-note-heading {
+    text-align: left;
+    min-width: 20%;
+}
+
+th#admin-list-network-heading {
+    text-align: left;
+    min-width: 5%;
 }
 
 th#admin-list-ip-heading {
     text-align: right;
-    width: 10%;
+    min-width: 5%;
+}
+
+th#admin-list-admin-heading {
+    text-align: right;
+    min-width: 10%;
 }
 
 tr#admin-list-item td {
@@ -84,12 +104,33 @@ td#admin-list-redirect-item {
     padding-right: 0.5em;
 }
 
+td#admin-list-filter-item {
+    text-align: left;
+    padding-right: 0.5em;
+}
+
 td#admin-list-created-item {
     text-align: right;
     padding-right: 0.5em;
 }
 
+td#admin-list-note-item {
+    text-align: left;
+    padding-left: 0.5em;
+}
+
+td#admin-list-network-item {
+    text-align: left;
+    padding-left: 0.5em;
+    white-space: nowrap;
+}
+
 td#admin-list-ip-item {
+    text-align: right;
+    white-space: nowrap;
+}
+
+td#admin-list-admin-item {
     text-align: right;
 }
 

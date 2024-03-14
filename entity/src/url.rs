@@ -9,7 +9,7 @@ pub struct Model {
     pub id: i64,
     pub url: String,
     pub shady: String,
-    pub created_at: DateTime,
+    pub created_at: TimeDateTimeWithTimeZone,
     pub ip: Option<String>,
 }
 

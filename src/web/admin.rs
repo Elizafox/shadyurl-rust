@@ -13,6 +13,7 @@
  */
 
 pub mod auth;
+pub mod cidr_ban;
 pub mod delete;
 pub mod index;
 pub mod url_filter;

@@ -1,6 +1,6 @@
 {# SPDX-License-Identifier: CC0-1.0
  #
- # templates/admin/url_filter.html
+ # templates/admin/cidr_ban.html
  #
  # This file is a component of ShadyURL by Elizabeth Myers.
  #
@@ -12,14 +12,14 @@
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
 {% extends "admin/admin_base.html" %}
-{% block path %}admin/url_filters{% endblock %}
-{% block title %}{{ sitename }} — Admin — URL filters{% endblock %}
+{% block path %}admin/cidr_bans{% endblock %}
+{% block title %}{{ sitename }} — Admin — CIDR bans{% endblock %}
 {% block content %}
 <br>
-<form method="post" action="/admin/url_filters">
+<form method="post" action="/admin/cidr_bans">
     <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
-    <label for="filter">Filter regex:</label>
-    <input type="text" name="filter" placeholder="Filter regex">
+    <label for="range">Range (CIDR):</label>
+    <input type="text" name="range" placeholder="127.0.0.1/8">
     <label for="reason">Reason (optional):</label>
     <input type="text" name="reason" placeholder="Reason (optional)">
     <button type="submit" value="submit">Submit</button>
@@ -28,15 +28,15 @@
 <table id="admin-list-table">
     <tr id="admin-list-heading">
         <th id="admin-list-id-heading">ID</th>
-        <th id="admin-list-filter-heading">Filter</th>
+        <th id="admin-list-network-heading">Range</th>
         <th id="admin-list-note-heading">Note</th>
         <th id="admin-list-created-heading">Created</th>
         <th id="admin-list-admin-heading">Admin</th>
     </tr>
-{% for (entry, user) in url_filters %}
+{% for (entry, user) in cidr_bans %}
     <tr id="admin-list-item">
         <td id="admin-list-id-item">
-            <form method="post" action="/admin/url_filters/delete" id="inline">
+            <form method="post" action="/admin/cidr_bans/delete" id="inline">
                 <input type="hidden" name="authenticity_token" value="{{ authenticity_token }}">
                 <input type="hidden" name="id" value="{{ entry.id }}">
                 <button type="submit" value="submit" id="link-button">
@@ -44,7 +44,14 @@
                 </button>
             </form>
         </td>
-        <td id="admin-list-filter-item">{{ entry.filter }}</td>
+        <td id="admin-list-network-item">
+            {% match render::range_to_display(entry.range_begin.clone(), entry.range_end.clone()) %}
+                {% when Ok with (val) %}
+            {{ val|join("<br>") }}
+                {% when Err with (e) %}
+            <strong>Error fetching IP: {{ e }}</strong>
+            {% endmatch %}
+        </td>
         <td id="admin-list-note-item">{% if entry.reason.is_some() %}{{ entry.reason.as_ref().unwrap() }}{% else %}—{% endif %}</td>
         <td id="admin-list-created-item">
             <abbr title="{{ entry.created_at }}">

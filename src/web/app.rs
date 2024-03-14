@@ -33,7 +33,7 @@ use crate::{
     env::Vars,
     state::AppState,
     web::{
-        admin::{auth, delete, index, url_filter},
+        admin::{auth, cidr_ban, delete, index, url_filter},
         fallback, files, submission, url,
     },
 };
@@ -97,10 +97,11 @@ impl App {
 
         let app = Router::new()
             .merge(auth::router())
-            .merge(files::router())
-            .merge(submission::router())
-            .merge(index::router())
+            .merge(cidr_ban::router())
             .merge(delete::router())
+            .merge(files::router())
+            .merge(index::router())
+            .merge(submission::router())
             .merge(url::router())
             .merge(url_filter::router())
             .merge(fallback::router())

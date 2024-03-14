@@ -11,14 +11,9 @@
  # You should have received a copy of the CC0 legalcode along with this
  # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  #}
-{% extends "base.html" %}
+{% extends "admin/admin_base.html" %}
 {% block path %}admin/urls{% endblock %}
-{% block head_addition %}<meta name="robots" content="noindex,nofollow">{% endblock %}
-{% block title %}Admin – {{ sitename }} — URLs{% endblock %}
-{% block header %}
-<h1>Admin – {{ sitename }}</h1>
-<a href="/logout">Logout</a>
-{% endblock %}
+{% block title %}{{ sitename }} — Admin — URLs{% endblock %}
 {% block content %}
 <br>
 <table id="admin-list-table">
@@ -42,7 +37,11 @@
         </td>
         <td id="admin-list-url-item">{{ entry.url }}</td>
         <td id="admin-list-redirect-item">{{ entry.shady }}</td>
-        <td id="admin-list-created-item">{{ entry.created_at }}</td>
+        <td id="admin-list-created-item">
+            <abbr title="{{ entry.created_at }}">
+                {{ format::humanize_duration(OffsetDateTime::now_utc() - entry.created_at.clone()) }}
+            </abbr>
+        </td>
         <td id="admin-list-ip-item">{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>
     </tr>
 {% endfor %}
