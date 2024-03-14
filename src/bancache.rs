@@ -61,7 +61,7 @@ impl BanCache {
         }
     }
 
-    pub(crate) fn invalidate(&mut self, network: IpNetwork) {
+    pub(crate) fn invalidate(&self, network: IpNetwork) {
         self.cache
             .invalidate_entries_if(move |k, _| network.contains(*k))
             .expect("Could not invalidate cache");

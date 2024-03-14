@@ -139,6 +139,9 @@ mod post {
             }
         };
 
+        // Invalidate so users who aren't banned will now be
+        state.bancache.invalidate(network.clone());
+
         Mutation::create_cidr_ban(&state.db, network, submit_ban_form.reason, &user.0).await?;
 
         messages.success(format!(
@@ -152,7 +155,7 @@ mod post {
         session: Session,
         auth_session: AuthSession,
         messages: Messages,
-        State(mut state): State<AppState>,
+        State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
         csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
@@ -167,6 +170,7 @@ mod post {
         let begin = vec_to_ipaddr(ban.range_begin)?;
         let end = vec_to_ipaddr(ban.range_end)?;
 
+        // Invalidate the ban cache for all networks in this range
         for network in find_networks(begin, end)? {
             state.bancache.invalidate(network);
         }
