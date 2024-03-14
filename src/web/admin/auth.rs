@@ -39,7 +39,7 @@ struct LoginTemplate {
     sitename: String,
 }
 
-pub(crate) fn router() -> Router<AppState> {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/login", post(self::post::login))
         .route("/login", get(self::get::login))

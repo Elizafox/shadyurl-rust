@@ -14,7 +14,7 @@
 
 use num::PrimInt;
 
-pub(crate) fn count_trailing_zeroes<T: PrimInt>(mut n: T) -> u32 {
+pub fn count_trailing_zeroes<T: PrimInt>(mut n: T) -> u32 {
     let mut count = 0;
     while n != T::zero() {
         count += 1;

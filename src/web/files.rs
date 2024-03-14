@@ -17,7 +17,7 @@ use tower_http::services::{ServeDir, ServeFile};
 
 use crate::state::AppState;
 
-pub(crate) fn router() -> Router<AppState> {
+pub fn router() -> Router<AppState> {
     Router::new()
         .nest_service("/robots.txt", ServeFile::new("static/robots.txt"))
         .nest_service("/ads.txt", ServeFile::new("static/ads.txt"))

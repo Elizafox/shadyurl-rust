@@ -15,7 +15,7 @@
 use url::{Host, Url};
 use validator::ValidationError;
 
-pub(crate) fn validate_url(url: &str) -> Result<(), ValidationError> {
+pub fn validate_url(url: &str) -> Result<(), ValidationError> {
     if url.len() > 2047 {
         return Err(ValidationError::new("URL is too long"));
     }

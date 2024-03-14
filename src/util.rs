@@ -12,8 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub(crate) mod bits;
-pub(crate) mod format;
-pub(crate) mod macros;
-pub(crate) mod math;
-pub(crate) mod net;
+pub mod bits;
+pub mod format;
+pub mod macros;
+pub mod math;
+pub mod net;

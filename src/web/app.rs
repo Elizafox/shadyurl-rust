@@ -39,7 +39,7 @@ use crate::{
     },
 };
 
-pub(crate) struct App {
+pub struct App {
     state: AppState,
     redis_pool: RedisPool,
     redis_conn: JoinHandle<Result<(), RedisError>>,

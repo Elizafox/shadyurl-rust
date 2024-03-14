@@ -31,7 +31,7 @@ enum Mangler {
     HeckTransform,
 }
 
-pub(crate) struct Generator;
+pub struct Generator;
 
 impl Generator {
     fn generate_hash() -> String {

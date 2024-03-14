@@ -54,7 +54,7 @@ struct UrlForm {
     pub(super) url: String,
 }
 
-pub(crate) fn router() -> Router<AppState> {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/", get(self::get::index))
         .route("/submit", post(self::post::submit))

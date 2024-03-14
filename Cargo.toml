@@ -23,7 +23,6 @@ description = "A webapp that makes URLs shady"
 license = "CC0-1.0"
 homepage = "https://github.com/Elizafox/ShadyURL-Rust"
 repository = "https://github.com/Elizafox/ShadyURL-Rust"
-readme = "README.md"
 
 [workspace]
 members = [".", "entity", "migration", "service"]

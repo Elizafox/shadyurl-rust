@@ -64,7 +64,7 @@ struct DeleteForm {
     id: i64,
 }
 
-pub(crate) fn router() -> Router<AppState> {
+pub fn router() -> Router<AppState> {
     Router::new()
         .route("/admin/cidr_bans", get(self::get::cidr_bans))
         .route("/admin/cidr_bans", post(self::post::cidr_bans))
@@ -140,7 +140,7 @@ mod post {
         };
 
         // Invalidate so users who aren't banned will now be
-        state.bancache.invalidate(network.clone());
+        state.bancache.invalidate(network);
 
         Mutation::create_cidr_ban(&state.db, network, submit_ban_form.reason, &user.0).await?;
 

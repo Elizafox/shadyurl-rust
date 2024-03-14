@@ -17,7 +17,7 @@ use csrf::{ChaCha20Poly1305CsrfProtection, CsrfError, CsrfProtection};
 use tower_sessions::Session;
 
 #[derive(Debug, thiserror::Error)]
-pub(crate) enum VerifyCsrfError {
+pub enum VerifyCsrfError {
     #[error(transparent)]
     Decode(#[from] DecodeError),
 
@@ -28,7 +28,7 @@ pub(crate) enum VerifyCsrfError {
     CsrfValidation(String),
 }
 
-pub(crate) async fn verify(
+pub async fn verify(
     session: &Session,
     form_token: &str,
     protect: &ChaCha20Poly1305CsrfProtection,
