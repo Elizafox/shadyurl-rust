@@ -15,7 +15,7 @@
 name = "shadyurl-rust"
 version = "0.2.0"
 edition = "2021"
-rust-version = "1.74.1"
+rust-version = "1.75.0"
 authors = ["Elizabeth Myers"]
 categories = ["web-programming::http-server"]
 keywords = ["web", "service", "axum", "http"]
