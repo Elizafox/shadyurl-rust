@@ -12,17 +12,46 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use std::mem::size_of;
-
 use num::PrimInt;
 
-// NOTE: do not implement this trait for (type width in bits) > u32::MAX
-pub trait IntBitUtil: PrimInt {
-    // Count the minimum number of bits required to represent this number
-    #[allow(clippy::cast_possible_truncation)]
+pub trait HasILog2Checked: PrimInt {
+    fn checked_ilog2(self) -> Option<u32>;
+}
+
+impl HasILog2Checked for u8 {
+    fn checked_ilog2(self) -> Option<u32> {
+        Self::checked_ilog2(self)
+    }
+}
+
+impl HasILog2Checked for u16 {
+    fn checked_ilog2(self) -> Option<u32> {
+        Self::checked_ilog2(self)
+    }
+}
+
+impl HasILog2Checked for u32 {
+    fn checked_ilog2(self) -> Option<u32> {
+        Self::checked_ilog2(self)
+    }
+}
+
+impl HasILog2Checked for u64 {
+    fn checked_ilog2(self) -> Option<u32> {
+        Self::checked_ilog2(self)
+    }
+}
+
+impl HasILog2Checked for u128 {
+    fn checked_ilog2(self) -> Option<u32> {
+        Self::checked_ilog2(self)
+    }
+}
+
+pub trait IntBitUtil: HasILog2Checked {
     fn bit_length(&self) -> u32 {
-        assert!((size_of::<Self>() << 3) <= u32::MAX as usize);
-        (size_of::<Self>() << 3) as u32 - self.leading_zeros()
+        // This will generate reasonable code, believe it or not.
+        self.checked_ilog2().map_or(0, |v| v + 1)
     }
 }
 
