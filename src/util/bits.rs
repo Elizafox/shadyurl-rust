@@ -17,7 +17,7 @@ use std::mem::size_of;
 use num::PrimInt;
 
 // NOTE: do not implement this trait for size_of::<Size> > u32::MAX
-pub trait IntBitUtil: Sized + PrimInt {
+pub trait IntBitUtil: PrimInt {
     // Count the minimum number of bits required to represent this number
     #[allow(clippy::cast_possible_truncation)]
     fn bit_length(&self) -> u32 {
