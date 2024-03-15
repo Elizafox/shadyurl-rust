@@ -32,5 +32,7 @@ sqlite = ["sea-orm/sqlx-sqlite"]
 
 [dependencies]
 entity = { path = "../entity" }
+migration = {path = "../migration" }
 ipnetwork = "0.20.0"
 sea-orm = { version = "1.0.0-rc.1", features = ["debug-print", "runtime-tokio-native-tls"] }
+tracing = { version = "0.1.40", features = ["async-await", "log"] }

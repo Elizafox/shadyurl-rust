@@ -3238,7 +3238,9 @@ version = "0.1.0"
 dependencies = [
  "entity",
  "ipnetwork",
+ "migration",
  "sea-orm",
+ "tracing",
 ]
 
 [[package]]

@@ -12,9 +12,11 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+mod database;
 mod mutation;
 mod query;
 
+pub use database::*;
 pub use mutation::*;
 pub use query::*;
 

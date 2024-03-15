@@ -18,7 +18,7 @@ use axum::Router;
 use axum_login::AuthManagerLayerBuilder;
 use axum_messages::MessagesManagerLayer;
 use csrf::ChaCha20Poly1305CsrfProtection;
-use sea_orm::{ConnectOptions, Database};
+use sea_orm::ConnectOptions;
 use time::Duration;
 use tokio::task::JoinHandle;
 use tower::ServiceBuilder;
@@ -28,6 +28,7 @@ use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
 use tracing::info;
 
 use migration::{Migrator, MigratorTrait};
+use service::Database;
 
 use crate::{
     auth::Backend,
@@ -59,8 +60,7 @@ impl App {
         opt.max_connections(100)
             .min_connections(5)
             .sqlx_logging(false);
-
-        let db = Arc::new(Database::connect(opt).await?);
+        let db = Arc::new(Database::get_with_connect_options(opt).await?);
 
         Migrator::up(db.as_ref(), None).await?;
 

@@ -35,14 +35,12 @@ use dotenvy::dotenv;
 use password_auth::generate_hash;
 use proctitle::set_title;
 use rpassword::prompt_password;
-use sea_orm::{ConnectOptions, Database};
-use tracing::log::LevelFilter;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 use crate::{env::Vars, web::App};
 
 use migration::{Migrator, MigratorTrait};
-use service::{Mutation, Query};
+use service::{Database, Mutation, Query};
 
 #[derive(Parser)]
 struct Cli {
@@ -72,13 +70,7 @@ enum UserError {
 
 async fn add_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
     let env = Vars::load_env()?;
-    let mut opt = ConnectOptions::new(&env.database_url);
-    opt.sqlx_logging(false)
-        .sqlx_logging_level(LevelFilter::Warn);
-
-    let db = Database::connect(opt).await?;
-
-    Migrator::up(&db, None).await?;
+    let db = Database::get(&env.database_url).await?;
 
     let mut password = prompt_password("Password:")?;
     if password != prompt_password("Repeat password:")? {
@@ -98,13 +90,7 @@ async fn add_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> 
 
 async fn delete_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
     let env = Vars::load_env()?;
-    let mut opt = ConnectOptions::new(&env.database_url);
-    opt.sqlx_logging(false)
-        .sqlx_logging_level(LevelFilter::Warn);
-
-    let db = Database::connect(opt).await?;
-
-    Migrator::up(&db, None).await?;
+    let db = Database::get(&env.database_url).await?;
 
     let mut response = String::new();
     loop {
@@ -138,11 +124,7 @@ async fn delete_user_cli(username: &str) -> Result<(), Box<dyn std::error::Error
 
 async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::Error>> {
     let env = Vars::load_env()?;
-    let mut opt = ConnectOptions::new(&env.database_url);
-    opt.sqlx_logging(false)
-        .sqlx_logging_level(LevelFilter::Warn);
-
-    let db = Database::connect(opt).await?;
+    let db = Database::get(&env.database_url).await?;
 
     Migrator::up(&db, None).await?;
 
