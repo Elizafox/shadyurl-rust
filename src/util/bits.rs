@@ -16,12 +16,12 @@ use std::mem::size_of;
 
 use num::PrimInt;
 
-// NOTE: do not implement this type for size_of::<Size> > u32::MAX
-// (size_of::<Self>() regrettably is not a compile-time expression, so we can't do a static assert)
+// NOTE: do not implement this trait for size_of::<Size> > u32::MAX
 pub trait IntBitUtil: Sized + PrimInt {
     // Count the minimum number of bits required to represent this number
     #[allow(clippy::cast_possible_truncation)]
     fn bit_length(&self) -> u32 {
+        assert!(size_of::<Self>() <= u32::MAX as usize);
         (size_of::<Self>() - (self.leading_zeros() as usize)) as u32
     }
 }
