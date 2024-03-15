@@ -36,8 +36,8 @@ pub async fn verify(
     let authenticity_token: String = session
         .remove("authenticity_token")
         .await
-        .unwrap_or_default()
-        .unwrap_or_default();
+        .map_err(|e| VerifyCsrfError::CsrfValidation(format!("Could not get CSRF token: {e}")))?
+        .ok_or_else(|| VerifyCsrfError::CsrfValidation("No CSRF token found".to_string()))?;
 
     let token_bytes = BASE64_STANDARD.decode(form_token.as_bytes())?;
     let session_bytes = BASE64_STANDARD.decode(authenticity_token.as_bytes())?;
