@@ -65,7 +65,6 @@ envy = "0.4.2"
 heck = "0.5.0"
 ipnetwork = "0.20.0"
 itertools = "0.12.1"
-lazy_static = "1.4.0"
 num = "0.4.1"
 once_cell = { version = "1.19.0", features = ["parking_lot"] }
 password-auth = "1.0.0"

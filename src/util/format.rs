@@ -17,7 +17,7 @@ use time::{
     Duration,
 };
 
-use super::math::is_close;
+use super::math::FloatMathUtil;
 
 // This implementation is heavily modified from the time crate.
 pub fn humanize_duration(duration: Duration) -> String {
@@ -40,7 +40,7 @@ pub fn humanize_duration(duration: Duration) -> String {
     macro_rules! item {
         ($singular:literal, $plural:literal, $value:expr) => {
             let value = $value;
-            if is_close(value.round(), 1.0) {
+            if value.round().is_close(1.0) {
                 return format!("{} {suffix}", $singular);
             } else if value > 1.0 {
                 return format!("{value:.0} {} {suffix}", $plural);

@@ -17,7 +17,7 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use ipnetwork::{IpNetwork, IpNetworkError};
 use tracing::debug;
 
-use super::bits::count_trailing_zeroes;
+use super::bits::IntBitUtil;
 
 #[derive(Debug, thiserror::Error)]
 pub enum NetworkPrefixError {
@@ -63,7 +63,7 @@ pub fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, Netwo
                 #[allow(clippy::cast_possible_truncation)]
                 let nbits = start_int
                     .trailing_zeros()
-                    .min(count_trailing_zeroes(end_int - start_int + 1) - 1)
+                    .min((end_int - start_int + 1).bit_length() - 1)
                     as u8;
                 res.push(IpNetwork::new(
                     IpAddr::V4(Ipv4Addr::from(start_int)),
@@ -88,7 +88,7 @@ pub fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, Netwo
                 #[allow(clippy::cast_possible_truncation)]
                 let nbits = start_int
                     .trailing_zeros()
-                    .min(count_trailing_zeroes(end_int - start_int + 1) - 1)
+                    .min((end_int - start_int + 1).bit_length() - 1)
                     as u8;
                 res.push(IpNetwork::new(
                     IpAddr::V6(Ipv6Addr::from(start_int)),

@@ -14,20 +14,24 @@
 
 use num::Float;
 
-// This algorithm is taken from Python's isclose() algorithm in C
-pub fn is_close<T: Float>(a: T, b: T) -> bool {
-    let abs_tol = T::from(0.0).unwrap();
-    let rel_tol = T::from(1e-05).unwrap();
+pub trait FloatMathUtil: Float {
+    // This algorithm is taken from Python's isclose() algorithm in C
+    fn is_close(self, n: Self) -> bool {
+        let abs_tol = Self::from(0.0).unwrap();
+        let rel_tol = Self::from(1e-05).unwrap();
 
-    if a == b {
-        return true;
+        if self == n {
+            return true;
+        }
+
+        if self.is_infinite() || n.is_infinite() {
+            return false;
+        }
+
+        let diff = (n - self).abs();
+        ((diff <= (rel_tol * n).abs()) || (diff <= (rel_tol * self).abs())) || (diff <= abs_tol)
     }
-
-    if a.is_infinite() || b.is_infinite() {
-        return false;
-    }
-
-    let diff = (b - a).abs();
-
-    ((diff <= (rel_tol * b).abs()) || (diff <= (rel_tol * a).abs())) || (diff <= abs_tol)
 }
+
+impl FloatMathUtil for f32 {}
+impl FloatMathUtil for f64 {}

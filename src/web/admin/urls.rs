@@ -29,9 +29,7 @@ use tracing::{debug, info};
 use entity::url;
 use service::{Mutation, Query};
 
-use crate::{
-    auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format,
-};
+use crate::{auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format};
 
 #[derive(Template)]
 #[template(path = "admin/urls.html")]

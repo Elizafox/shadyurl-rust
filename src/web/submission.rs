@@ -28,9 +28,7 @@ use validator::Validate;
 
 use service::{Mutation, Query};
 
-use crate::{
-    err::AppError, generate::Generator, state::AppState, validators::validate_url,
-};
+use crate::{err::AppError, generate::Generator, state::AppState, validators::validate_url};
 
 #[derive(Template)]
 #[template(path = "index.html")]
