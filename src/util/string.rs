@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/util/format.rs
+ * src/util/string.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -12,6 +12,11 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+use once_cell::sync::Lazy;
+use rand::{
+    distributions::{DistString, Uniform},
+    prelude::*,
+};
 use time::{
     convert::{Day, Hour, Microsecond, Millisecond, Minute, Nanosecond, Second, Week},
     Duration,
@@ -86,4 +91,28 @@ pub fn humanize_duration(duration: Duration) -> String {
         seconds * f64::from(Nanosecond::per(Second))
     );
     format!("an instant {suffix}")
+}
+
+pub struct WebsafeAlphabet;
+
+impl Distribution<u8> for WebsafeAlphabet {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 {
+        const GEN_ASCII_STR_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                abcdefghijklmnopqrstuvwxyz\
+                0123456789$-_.+!*(),";
+        const MAX: usize = 26 + 26 + 10 + 10;
+        let range = Lazy::new(|| Uniform::new(0, MAX));
+
+        // SAFETY: guaranteed to be within bounds
+        unsafe { *GEN_ASCII_STR_CHARSET.get_unchecked((*range).sample(rng)) }
+    }
+}
+
+impl DistString for WebsafeAlphabet {
+    fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, string: &mut String, len: usize) {
+        unsafe {
+            let v = string.as_mut_vec();
+            v.extend(self.sample_iter(rng).take(len));
+        }
+    }
 }

@@ -13,7 +13,7 @@
  */
 
 pub mod bits;
-pub mod format;
 pub mod macros;
 pub mod math;
 pub mod net;
+pub mod string;

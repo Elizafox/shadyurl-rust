@@ -65,3 +65,9 @@ REDIS_POOL_SIZE=3
 # Set the log level, this uses the EnvFilter syntax from tracing.
 # For production, it's recommended to keep this at warn or error.
 RUST_LOG="warn"
+
+# Set the CSRF encryption key.
+# If unset, a random one will be generated each application start (invalidating all previous sessions).
+# This default MUST be changed. Generate a new one with:
+#   cargo run generate-key
+CSRF_KEY="R28gb3V0IGFuZCB0b3VjaCBzb21lIGdyYXNzLCBsb2w="

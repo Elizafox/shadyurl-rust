@@ -20,7 +20,6 @@ use axum::{
     Form, Router,
 };
 use axum_messages::{Message, Messages};
-use csrf::CsrfProtection;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
@@ -29,7 +28,9 @@ use tracing::{debug, info};
 use entity::url;
 use service::{Mutation, Query};
 
-use crate::{auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format};
+use crate::{
+    auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
+};
 
 #[derive(Template)]
 #[template(path = "admin/urls.html")]
@@ -54,7 +55,7 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, info, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse,
+        info, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, Form, IntoResponse,
         Messages, Mutation, Redirect, Response, Session, State,
     };
 
@@ -65,7 +66,12 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
+            &session,
+            &delete_form.authenticity_token,
+        )
+        .await?;
 
         if auth_session.user.is_none() {
             return Err(AppError::Unauthorized);
@@ -81,7 +87,7 @@ mod post {
 
 mod get {
     use super::{
-        debug, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages, Query,
+        debug, AppError, AppState, AuthSession, CsrfSessionEntry, IntoResponse, Messages, Query,
         Response, Session, State, UrlsTemplate,
     };
 
@@ -95,12 +101,8 @@ mod get {
             return Err(AppError::Unauthorized);
         }
 
-        let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
-
-        let authenticity_token = authenticity_token.b64_string();
-        let session_token = session_token.b64_string();
-
-        session.insert("authenticity_token", &session_token).await?;
+        let authenticity_token =
+            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let urls = Query::fetch_all_urls(&state.db).await?;
 

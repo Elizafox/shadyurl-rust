@@ -17,9 +17,8 @@ use rand::{
     distributions::{DistString, Uniform},
     prelude::*,
 };
-use rand_distr::Alphanumeric;
 
-use crate::util::macros::arr;
+use crate::util::{macros::arr, string::WebsafeAlphabet};
 
 #[derive(PartialEq, Eq, Copy, Clone)]
 enum Mangler {
@@ -35,10 +34,10 @@ pub struct Generator;
 
 impl Generator {
     fn generate_hash() -> String {
+        let distr_len = Lazy::new(|| Uniform::new(5, 9));
         let mut rng = thread_rng();
-        let distr_count = Lazy::new(|| Uniform::new_inclusive(5, 9));
-        let count = distr_count.sample(&mut rng);
-        Alphanumeric.sample_string(&mut rng, count)
+        let len = (*distr_len).sample(&mut rng);
+        WebsafeAlphabet.sample_string(&mut rng, len)
     }
 
     fn perform_mangle(mangler: Mangler, fragment: &str) -> String {

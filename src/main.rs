@@ -30,17 +30,21 @@ mod web;
 
 use std::io::{prelude::*, stdin, stdout};
 
+use base64::prelude::*;
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
 use mimalloc::MiMalloc;
 use password_auth::generate_hash;
 use proctitle::set_title;
+use rand::prelude::*;
 use rpassword::prompt_password;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
-use crate::{env::Vars, web::App};
+use crate::{
+    env::{Key, Vars},
+    web::App,
+};
 
-use migration::{Migrator, MigratorTrait};
 use service::{Database, Mutation, Query};
 
 #[global_allocator]
@@ -58,6 +62,7 @@ enum Commands {
     AddUser { username: String },
     DeleteUser { username: String },
     ChangePassword { username: String },
+    GenerateKeys,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -146,6 +151,20 @@ async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::E
     Ok(())
 }
 
+fn generate_keys() -> Result<(), Box<dyn std::error::Error>> {
+    let mut rng = thread_rng();
+
+    let mut enc: Key = [0u8; 32];
+
+    // Random key material will do just fine
+    rng.try_fill_bytes(&mut enc)?;
+
+    let enc_b64 = BASE64_STANDARD.encode(enc.as_ref());
+
+    println!("CSRF_KEY=\"{enc_b64}\"");
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Important to do this first, as our logging config may be in .env
@@ -174,6 +193,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             set_title("shadyurl-rust <change-password>");
             change_password_cli(username).await?;
             println!("Success! Password for {username} changed");
+            return Ok(());
+        }
+        Some(Commands::GenerateKeys) => {
+            set_title("shadyurl-rust <generate-keys>");
+            generate_keys()?;
             return Ok(());
         }
         Some(Commands::Run) | None => set_title("shadyurl-rust [running]"),

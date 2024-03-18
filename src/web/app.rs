@@ -14,10 +14,10 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
+use aes_gcm_siv::aead::KeyInit;
 use axum::Router;
 use axum_login::AuthManagerLayerBuilder;
 use axum_messages::MessagesManagerLayer;
-use csrf::ChaCha20Poly1305CsrfProtection;
 use sea_orm::ConnectOptions;
 use time::Duration;
 use tokio::task::JoinHandle;
@@ -33,6 +33,7 @@ use service::Database;
 use crate::{
     auth::Backend,
     bancache::BanCache,
+    csrf::CryptoEngine,
     env::Vars,
     state::AppState,
     web::{admin, fallback, files, submission, url},
@@ -47,8 +48,6 @@ pub struct App {
 impl App {
     pub(crate) async fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let env = Vars::load_env()?;
-
-        let protect = ChaCha20Poly1305CsrfProtection::from_key(env.csrf_key);
 
         let redis_config = RedisConfig::from_url(&env.redis_url)?;
 
@@ -66,12 +65,14 @@ impl App {
 
         let bancache = BanCache::new(db.clone());
 
+        let csrf_crypto_engine = CryptoEngine::new(&env.csrf_key.into());
+
         Ok(Self {
             state: AppState {
                 db: db.clone(),
                 env,
-                protect: Arc::new(protect),
                 bancache,
+                csrf_crypto_engine,
             },
             redis_pool,
             redis_conn,

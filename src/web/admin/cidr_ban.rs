@@ -22,7 +22,6 @@ use axum::{
     Form, Router,
 };
 use axum_messages::{Message, Messages};
-use csrf::CsrfProtection;
 use ipnetwork::IpNetwork;
 use serde::Deserialize;
 use time::OffsetDateTime;
@@ -34,12 +33,12 @@ use service::{Mutation, Query};
 
 use crate::{
     auth::AuthSession,
-    csrf as csrf_crate,
+    csrf::CsrfSessionEntry,
     err::AppError,
     state::AppState,
     util::{
-        format,
         net::{find_networks, vec_to_ipaddr, AddressError, NetworkPrefixError},
+        string,
     },
 };
 
@@ -104,9 +103,9 @@ mod render {
 
 mod post {
     use super::{
-        csrf_crate, debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession,
-        DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect,
-        Response, Session, State, SubmitBanForm,
+        debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession,
+        CsrfSessionEntry, DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation,
+        Query, Redirect, Response, Session, State, SubmitBanForm,
     };
 
     pub(super) async fn cidr_bans(
@@ -116,10 +115,10 @@ mod post {
         State(state): State<AppState>,
         Form(submit_ban_form): Form<SubmitBanForm>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
             &session,
             &submit_ban_form.authenticity_token,
-            &state.protect,
         )
         .await?;
 
@@ -172,7 +171,12 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
+            &session,
+            &delete_form.authenticity_token,
+        )
+        .await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to delete a cidr_ban");
@@ -204,7 +208,7 @@ mod post {
 
 mod get {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, CsrfProtection,
+        debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, CsrfSessionEntry,
         IntoResponse, Messages, Query, Response, Session, State,
     };
 
@@ -219,12 +223,8 @@ mod get {
             return Err(AppError::Unauthorized);
         };
 
-        let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
-
-        let authenticity_token = authenticity_token.b64_string();
-        let session_token = session_token.b64_string();
-
-        session.insert("authenticity_token", &session_token).await?;
+        let authenticity_token =
+            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let cidr_bans = Query::fetch_all_cidr_bans(&state.db).await?;
 

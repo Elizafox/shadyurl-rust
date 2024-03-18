@@ -23,8 +23,10 @@ use serde::{
 use tracing::error;
 use validator::Validate;
 
+pub type Key = [u8; 32];
+
 mod defaults {
-    use super::{thread_rng, Rng};
+    use super::{thread_rng, Key, Rng};
 
     pub(super) fn redis_url() -> String {
         "redis://127.0.0.1".to_string()
@@ -38,32 +40,32 @@ mod defaults {
         "ShadyURL".to_string()
     }
 
-    pub(super) fn csrf_key() -> [u8; 32] {
+    pub(super) fn csrf_key() -> Key {
         let mut ret = [0u8; 32];
-        thread_rng().fill(&mut ret[..]);
+        thread_rng().fill(&mut ret);
         ret
     }
 }
 
 mod deserializers {
-    use super::{error, Deserialize, Deserializer, Engine, Error, BASE64_STANDARD};
+    use super::{error, Deserialize, Deserializer, Engine, Error, Key, BASE64_STANDARD};
 
-    pub(super) fn csrf_key<'de, D>(d: D) -> Result<[u8; 32], D::Error>
+    pub(super) fn csrf_key<'de, D>(d: D) -> Result<Key, D::Error>
     where
         D: Deserializer<'de>,
     {
         let key_b64 = String::deserialize(d)?;
         let val = BASE64_STANDARD
             .decode(key_b64)
-            .map_err(|e| Error::custom(format!("Could not decode csrf key: {e}")))?;
+            .map_err(|e| Error::custom(format!("Could not decode session key: {e}")))?;
 
-        let ret: [u8; 32] = val.try_into().map_err(|v: Vec<u8>| {
+        let ret: Key = val.try_into().map_err(|v: Vec<u8>| {
             error!(
-                "CSRF key length was incorrect (expected 32 bytes, got {}",
+                "Session key length was incorrect (expected 64 bytes, got {}",
                 v.len()
             );
             Error::custom(format!(
-                "Could not decode csrf key: length was incorrect (expected 32 bytes, got {})",
+                "Could not decode session key: length was incorrect (expected 64 bytes, got {})",
                 v.len()
             ))
         })?;
@@ -95,11 +97,12 @@ pub struct Vars {
     #[validate(range(min = 1))]
     pub(crate) redis_pool_size: usize,
 
+    // FIXME: encrypt entire session with this, but axum-login isn't ready
     #[serde(
         deserialize_with = "deserializers::csrf_key",
         default = "defaults::csrf_key"
     )]
-    pub(crate) csrf_key: [u8; 32],
+    pub(crate) csrf_key: Key,
 }
 
 impl Vars {

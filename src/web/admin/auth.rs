@@ -20,13 +20,12 @@ use axum::{
     Form, Router,
 };
 use axum_messages::{Message, Messages};
-use csrf::CsrfProtection;
 use tower_sessions::Session;
 use tracing::{info, warn};
 
 use crate::{
     auth::{AuthSession, Credentials},
-    csrf as csrf_crate,
+    csrf::CsrfSessionEntry,
     err::AppError,
     state::AppState,
 };
@@ -48,8 +47,8 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, info, warn, AppError, AppState, AuthSession, Credentials, Form, IntoResponse,
-        Messages, Redirect, Response, Session, State,
+        info, warn, AppError, AppState, AuthSession, Credentials, CsrfSessionEntry, Form,
+        IntoResponse, Messages, Redirect, Response, Session, State,
     };
 
     pub(super) async fn login(
@@ -59,7 +58,12 @@ mod post {
         State(state): State<AppState>,
         Form(creds): Form<Credentials>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(&session, &creds.authenticity_token, &state.protect).await?;
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
+            &session,
+            &creds.authenticity_token,
+        )
+        .await?;
 
         let Some(user) = auth_session.authenticate(creds.clone()).await? else {
             warn!(
@@ -80,7 +84,7 @@ mod post {
 
 mod get {
     use super::{
-        info, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, LoginTemplate,
+        info, AppError, AppState, AuthSession, CsrfSessionEntry, IntoResponse, LoginTemplate,
         Messages, Redirect, Response, Session, State,
     };
 
@@ -94,12 +98,8 @@ mod get {
             return Ok(Redirect::to("/admin").into_response());
         }
 
-        let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
-
-        let authenticity_token = authenticity_token.b64_string();
-        let session_token = session_token.b64_string();
-
-        session.insert("authenticity_token", &session_token).await?;
+        let authenticity_token =
+            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         Ok(LoginTemplate {
             authenticity_token,

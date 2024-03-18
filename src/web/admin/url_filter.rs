@@ -20,7 +20,6 @@ use axum::{
     Form, Router,
 };
 use axum_messages::{Message, Messages};
-use csrf::CsrfProtection;
 use regex::Regex;
 use serde::Deserialize;
 use time::OffsetDateTime;
@@ -30,7 +29,9 @@ use tracing::{debug, warn};
 use entity::{url_filter, user};
 use service::{Mutation, Query};
 
-use crate::{auth::AuthSession, csrf as csrf_crate, err::AppError, state::AppState, util::format};
+use crate::{
+    auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
+};
 
 #[derive(Template)]
 #[template(path = "admin/url_filter.html")]
@@ -63,8 +64,9 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        csrf_crate, debug, warn, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse,
-        Messages, Mutation, Redirect, Regex, Response, Session, State, SubmitFilterForm,
+        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, Form,
+        IntoResponse, Messages, Mutation, Redirect, Regex, Response, Session, State,
+        SubmitFilterForm,
     };
 
     pub(super) async fn url_filters(
@@ -74,10 +76,10 @@ mod post {
         State(state): State<AppState>,
         Form(submit_filter_form): Form<SubmitFilterForm>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
             &session,
             &submit_filter_form.authenticity_token,
-            &state.protect,
         )
         .await?;
 
@@ -130,7 +132,12 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        csrf_crate::verify(&session, &delete_form.authenticity_token, &state.protect).await?;
+        CsrfSessionEntry::check_session(
+            &state.csrf_crypto_engine,
+            &session,
+            &delete_form.authenticity_token,
+        )
+        .await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to delete a url_filter");
@@ -153,7 +160,7 @@ mod post {
 
 mod get {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CsrfProtection, IntoResponse, Messages,
+        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, IntoResponse, Messages,
         Query, Response, Session, State, UrlFiltersTemplate,
     };
 
@@ -168,12 +175,8 @@ mod get {
             return Err(AppError::Unauthorized);
         };
 
-        let (authenticity_token, session_token) = state.protect.generate_token_pair(None, 300)?;
-
-        let authenticity_token = authenticity_token.b64_string();
-        let session_token = session_token.b64_string();
-
-        session.insert("authenticity_token", &session_token).await?;
+        let authenticity_token =
+            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let url_filters = Query::fetch_all_url_filters(&state.db).await?;
 

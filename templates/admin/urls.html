@@ -39,7 +39,7 @@
         <td id="admin-list-redirect-item">{{ entry.shady }}</td>
         <td id="admin-list-created-item">
             <abbr title="{{ entry.created_at }}">
-                {{ format::humanize_duration(OffsetDateTime::now_utc() - entry.created_at.clone()) }}
+                {{ string::humanize_duration(OffsetDateTime::now_utc() - entry.created_at.clone()) }}
             </abbr>
         </td>
         <td id="admin-list-ip-item">{% if entry.ip.as_ref().is_some() %}{{ entry.ip.as_ref().unwrap() }}{% else %}–{% endif %}</td>

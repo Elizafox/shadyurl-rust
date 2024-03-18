@@ -55,7 +55,7 @@
         <td id="admin-list-note-item">{% if entry.reason.is_some() %}{{ entry.reason.as_ref().unwrap() }}{% else %}—{% endif %}</td>
         <td id="admin-list-created-item">
             <abbr title="{{ entry.created_at }}">
-                {{ format::humanize_duration(OffsetDateTime::now_utc() - entry.created_at.clone()) }}
+                {{ string::humanize_duration(OffsetDateTime::now_utc() - entry.created_at.clone()) }}
             </abbr>
         </td>
         <td id="admin-list-admin-item">{% if user.is_some() %}{{ user.as_ref().unwrap().username }}{% else %}–{% endif %}</td>
