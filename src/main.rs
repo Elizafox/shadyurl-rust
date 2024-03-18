@@ -32,6 +32,7 @@ use std::io::{prelude::*, stdin, stdout};
 
 use clap::{Parser, Subcommand};
 use dotenvy::dotenv;
+use mimalloc::MiMalloc;
 use password_auth::generate_hash;
 use proctitle::set_title;
 use rpassword::prompt_password;
@@ -41,6 +42,9 @@ use crate::{env::Vars, web::App};
 
 use migration::{Migrator, MigratorTrait};
 use service::{Database, Mutation, Query};
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[derive(Parser)]
 struct Cli {
