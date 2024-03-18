@@ -73,7 +73,7 @@ rand="0.8.5"
 rand_distr = "0.4.3"
 regex = "1.10.3"
 rpassword = "7.3.1"
-sea-orm = { version = "1.0.0-rc.1", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
+sea-orm = { version = "1.0.0-rc.2", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
 sea-query = { version = "0.31.0-rc.4", features = ["thread-safe", "with-time"] }
 serde = { version = "1.0.197", features = ["derive"] }
 thiserror = "1.0.58"
