@@ -47,6 +47,10 @@ impl CliSubcommand for DeleteUserSubcommand {
     type PromptUserData = ();
     type CommandData = UsernameArgument;
 
+    fn proc_title() -> String {
+        "shadyurl-rust [delete-user]".to_string()
+    }
+
     fn prompt_user() -> Result<Self::PromptUserData, Self::Error> {
         let mut response = String::new();
         loop {

@@ -27,6 +27,10 @@ impl CliSubcommand for RunSubcommand {
     type PromptUserData = ();
     type CommandData = ();
 
+    fn proc_title() -> String {
+        "shadyurl-rust [running]".to_string()
+    }
+
     fn prompt_user() -> Result<Self::PromptUserData, Self::Error> {
         Ok(())
     }

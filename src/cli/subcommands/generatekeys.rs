@@ -32,6 +32,10 @@ impl CliSubcommand for GenerateKeysSubcommand {
     type PromptUserData = ();
     type CommandData = ();
 
+    fn proc_title() -> String {
+        "shadyurl-rust [generate-keys]".to_string()
+    }
+
     fn prompt_user() -> Result<Self::PromptUserData, Self::Error> {
         Ok(())
     }

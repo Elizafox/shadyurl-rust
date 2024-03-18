@@ -49,6 +49,10 @@ impl CliSubcommand for ChangePasswordSubcommand {
     type PromptUserData = ChangePasswordData;
     type CommandData = UsernameArgument;
 
+    fn proc_title() -> String {
+        "shadyurl-rust [change-password]".to_string()
+    }
+
     fn prompt_user() -> Result<Self::PromptUserData, Self::Error> {
         let mut password = prompt_password("Password:")?;
         if password != prompt_password("Repeat password:")? {
