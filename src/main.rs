@@ -126,8 +126,6 @@ async fn change_password_cli(username: &str) -> Result<(), Box<dyn std::error::E
     let env = Vars::load_env()?;
     let db = Database::get(&env.database_url).await?;
 
-    Migrator::up(&db, None).await?;
-
     let mut password = prompt_password("Password:")?;
     if password != prompt_password("Repeat password:")? {
         eprintln!("Passwords do not match");
