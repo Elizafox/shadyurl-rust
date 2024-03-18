@@ -25,7 +25,8 @@ use tracing::{error, warn};
 use crate::{
     auth::{AuthError, Backend},
     bancache::BanCacheError,
-    csrf::CsrfSessionError,
+    csrf::SessionError,
+    urlcache::UrlCacheError,
     util::net::{AddressError, NetworkPrefixError},
 };
 
@@ -33,7 +34,7 @@ use crate::{
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
     #[error(transparent)]
-    VerifyCsrf(#[from] CsrfSessionError),
+    VerifyCsrf(#[from] SessionError),
 
     #[error(transparent)]
     Auth(#[from] AuthError),
@@ -49,6 +50,9 @@ pub enum AppError {
 
     #[error(transparent)]
     BanCache(#[from] BanCacheError),
+
+    #[error(transparent)]
+    UrlCache(#[from] UrlCacheError),
 
     #[error(transparent)]
     Address(#[from] AddressError),

@@ -31,9 +31,7 @@ use tracing::{debug, warn};
 use entity::{url_filter, user};
 use service::{Mutation, Query};
 
-use crate::{
-    auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
-};
+use crate::{auth::AuthSession, csrf::SessionEntry, err::AppError, state::AppState, util::string};
 
 // URL filter landing page (also submission page)
 #[derive(Template)]
@@ -63,22 +61,23 @@ pub fn router() -> Router<AppState> {
         .route("/admin/url_filters", get(self::get::url_filters))
         .route("/admin/url_filters", post(self::post::url_filters))
         .route("/admin/url_filters/delete", post(self::post::delete))
+        .route("/admin/url_filters/flush", get(self::get::flush))
 }
 
 mod post {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, FilterForm,
-        Form, IntoResponse, Messages, Mutation, Redirect, Regex, Response, Session, State,
+        debug, warn, AppError, AppState, AuthSession, DeleteForm, FilterForm, Form, IntoResponse,
+        Messages, Mutation, Query, Redirect, Regex, Response, Session, SessionEntry, State,
     };
 
     pub(super) async fn url_filters(
         session: Session,
         auth_session: AuthSession,
         messages: Messages,
-        State(state): State<AppState>,
+        State(mut state): State<AppState>,
         Form(filter_form): Form<FilterForm>,
     ) -> Result<Response, AppError> {
-        CsrfSessionEntry::check_session(
+        SessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
             &filter_form.authenticity_token,
@@ -96,17 +95,20 @@ mod post {
             return Ok(Redirect::to("/admin/url_filters").into_response());
         }
 
-        if let Err(e) = Regex::new(&filter_form.filter) {
-            debug!(
-                "Bad filter regex \"{}\" received from {} ({e})",
-                filter_form.filter, user.0.username
-            );
-            messages.error(format!(
-                "Malformed URL filter regex {}: {e}",
-                filter_form.filter
-            ));
-            return Ok(Redirect::to("/admin/url_filters").into_response());
-        }
+        let cmpreg = match Regex::new(&filter_form.filter) {
+            Err(e) => {
+                debug!(
+                    "Bad filter regex \"{}\" received from {} ({e})",
+                    filter_form.filter, user.0.username
+                );
+                messages.error(format!(
+                    "Malformed URL filter regex {}: {e}",
+                    filter_form.filter
+                ));
+                return Ok(Redirect::to("/admin/url_filters").into_response());
+            }
+            Ok(cmpreg) => cmpreg,
+        };
 
         Mutation::create_url_filter(
             &state.db,
@@ -115,6 +117,7 @@ mod post {
             &user.0,
         )
         .await?;
+        state.urlcache.add_regex_cache(cmpreg).await?;
 
         warn!(
             "URL filter created by {}: {}",
@@ -128,10 +131,10 @@ mod post {
         session: Session,
         auth_session: AuthSession,
         messages: Messages,
-        State(state): State<AppState>,
+        State(mut state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        CsrfSessionEntry::check_session(
+        SessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
             &delete_form.authenticity_token,
@@ -143,7 +146,12 @@ mod post {
             return Err(AppError::Unauthorized);
         };
 
+        let filter = Query::find_url_filter(&state.db, delete_form.id)
+            .await?
+            .ok_or_else(|| AppError::NotFound)?;
+
         Mutation::delete_url_filter(&state.db, delete_form.id).await?;
+        state.urlcache.remove_regex_cache(&filter.filter).await?;
 
         warn!(
             "URL filter {} deleted by {}",
@@ -159,8 +167,8 @@ mod post {
 
 mod get {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, IntoResponse, Messages,
-        Query, Response, Session, State, UrlFiltersTemplate,
+        debug, warn, AppError, AppState, AuthSession, IntoResponse, Messages, Query, Redirect,
+        Response, Session, SessionEntry, State, UrlFiltersTemplate,
     };
 
     pub(super) async fn url_filters(
@@ -175,7 +183,7 @@ mod get {
         };
 
         let authenticity_token =
-            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let url_filters = Query::fetch_all_url_filters(&state.db).await?;
 
@@ -188,5 +196,22 @@ mod get {
             url_filters,
         }
         .into_response())
+    }
+
+    #[axum::debug_handler]
+    pub(super) async fn flush(
+        auth_session: AuthSession,
+        messages: Messages,
+        State(mut state): State<AppState>,
+    ) -> Result<Response, AppError> {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to flush URL filters");
+            return Err(AppError::Unauthorized);
+        };
+
+        state.urlcache.sync_regex_cache().await?;
+        messages.success("Flushed URL filter cache");
+        debug!("User {} flushed URL filter cache", user.0.username);
+        Ok(Redirect::to("/admin/url_filters").into_response())
     }
 }

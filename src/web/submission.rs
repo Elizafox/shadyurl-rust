@@ -23,12 +23,12 @@ use axum::{
 };
 use axum_client_ip::SecureClientIp;
 use axum_messages::{Message, Messages};
-use regex::Regex;
+
 use serde::Deserialize;
 use tracing::{debug, info};
 use validator::Validate;
 
-use service::{Mutation, Query};
+use service::Mutation;
 
 use crate::{err::AppError, generate::Generator, state::AppState, validators::validate_url};
 
@@ -81,10 +81,11 @@ mod get {
 
 mod post {
     use super::{
-        debug, info, AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation, Query,
-        Regex, Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
+        debug, info, AppError, AppState, Form, Generator, IntoResponse, Messages, Mutation,
+        Response, SecureClientIp, State, SubmissionTemplate, UrlForm, Validate,
     };
 
+    #[axum::debug_handler]
     pub(super) async fn submit(
         messages: Messages,
         SecureClientIp(addr): SecureClientIp,
@@ -110,19 +111,13 @@ mod post {
             return Err(AppError::UrlValidation(url_form.url, error_reason));
         }
 
-        // TODO: url blacklist cache, precompiled regex
-        for url_filter in Query::fetch_all_url_filters(&state.db).await? {
-            let creg = Regex::new(&url_filter.0.filter)?;
-            if creg.is_match(&url_form.url) {
-                return Err(AppError::UrlValidation(
-                    url_form.url,
-                    "URL is banned".to_string(),
-                ));
-            }
-            info!(
-                "Blacklisted URL submitted matching \"{}\": {}",
-                url_filter.0.filter, url_form.url
-            );
+        if state.urlcache.check_url_banned(&url_form.url).await? {
+            info!("Blacklisted URL submitted: {}", url_form.url);
+
+            return Err(AppError::UrlValidation(
+                url_form.url,
+                "URL is banned".to_string(),
+            ));
         }
 
         let shady = Generator::shady_filename();

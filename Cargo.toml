@@ -83,7 +83,7 @@ serde = { version = "1.0.197", features = ["derive"] }
 subtle = { version = "2.5.0", features = ["core_hint_black_box", "const-generics"] }
 thiserror = "1.0.58"
 time = { version = "0.3.34", features = ["local-offset"] }
-tokio = { version = "1.36.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "time"] }
+tokio = { version = "1.36.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "sync", "time"] }
 tracing = { version = "0.1.40", features = ["async-await", "log"] }
 tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lot", "time"] }
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }

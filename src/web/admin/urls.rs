@@ -30,9 +30,7 @@ use tracing::{debug, info};
 use entity::url;
 use service::{Mutation, Query};
 
-use crate::{
-    auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
-};
+use crate::{auth::AuthSession, csrf::SessionEntry, err::AppError, state::AppState, util::string};
 
 // URL listing landing page (also deletion)
 #[derive(Template)]
@@ -58,8 +56,8 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        info, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, Form, IntoResponse,
-        Messages, Mutation, Redirect, Response, Session, State,
+        info, AppError, AppState, AuthSession, DeleteForm, Form, IntoResponse, Messages, Mutation,
+        Redirect, Response, Session, SessionEntry, State,
     };
 
     pub(super) async fn delete(
@@ -69,7 +67,7 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        CsrfSessionEntry::check_session(
+        SessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
             &delete_form.authenticity_token,
@@ -90,8 +88,8 @@ mod post {
 
 mod get {
     use super::{
-        debug, AppError, AppState, AuthSession, CsrfSessionEntry, IntoResponse, Messages, Query,
-        Response, Session, State, UrlsTemplate,
+        debug, AppError, AppState, AuthSession, IntoResponse, Messages, Query, Response, Session,
+        SessionEntry, State, UrlsTemplate,
     };
 
     pub(super) async fn urls(
@@ -105,7 +103,7 @@ mod get {
         }
 
         let authenticity_token =
-            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let urls = Query::fetch_all_urls(&state.db).await?;
 

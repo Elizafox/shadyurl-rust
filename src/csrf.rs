@@ -36,23 +36,23 @@ const MAX_DURATION: Duration = Duration::minutes(10); // FIXME - configurable?
 
 // Actual session data, a random token and the time the session began.
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct CsrfSessionData {
+pub struct SessionData {
     pub(super) token: String,
     pub(super) time: OffsetDateTime,
 }
 
 // This is the actual entry that gets put into the session.
-// We serialise CsrfSessionData, then encrypt it for storage.
+// We serialise SessionData, then encrypt it for storage.
 // It's safe to store the nonce decrypted, and necessary. It is however important the nonce *never
 // once be reused*.
 #[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct CsrfSessionEntry {
+pub struct SessionEntry {
     encrypted: Vec<u8>,
     nonce: Vec<u8>,
 }
 
 #[derive(Debug, thiserror::Error)]
-pub enum CsrfSessionError {
+pub enum SessionError {
     #[error(transparent)]
     Session(#[from] tower_sessions::session::Error),
 
@@ -72,7 +72,7 @@ pub enum CsrfSessionError {
     Expired,
 }
 
-impl CsrfSessionData {
+impl SessionData {
     fn new() -> Self {
         let len_distr = Lazy::new(|| Uniform::new(24usize, 48usize));
         let mut rng = thread_rng();
@@ -83,10 +83,10 @@ impl CsrfSessionData {
         }
     }
 
-    pub fn cmp(&self, token: &str) -> Result<(), CsrfSessionError> {
+    pub fn cmp(&self, token: &str) -> Result<(), SessionError> {
         if token.as_bytes().ct_ne(self.token.as_bytes()).into() {
             debug!("CSRF tokens mismatched: {token} != {}", self.token);
-            return Err(CsrfSessionError::Mismatch);
+            return Err(SessionError::Mismatch);
         }
 
         // This isn't sensitive info, so it's okay not to compare in constant time
@@ -95,19 +95,19 @@ impl CsrfSessionData {
                 "CSRF token expired: {}",
                 OffsetDateTime::now_utc() - self.time
             );
-            return Err(CsrfSessionError::Expired);
+            return Err(SessionError::Expired);
         }
 
         Ok(())
     }
 }
 
-impl CsrfSessionEntry {
+impl SessionEntry {
     pub async fn insert_session(
         engine: &CryptoEngine,
         session: &Session,
-    ) -> Result<String, CsrfSessionError> {
-        let data = CsrfSessionData::new();
+    ) -> Result<String, SessionError> {
+        let data = SessionData::new();
 
         // Serialise and encrypt the data
         let buf = bincode::serialize(&data)?;
@@ -128,16 +128,16 @@ impl CsrfSessionEntry {
         engine: &CryptoEngine,
         session: &Session,
         token: &str,
-    ) -> Result<(), CsrfSessionError> {
+    ) -> Result<(), SessionError> {
         // Smokey the Bear sez: Only YOU can prevent forest fi... err, session reuse
         let entry: Self = session
             .remove(SESSION_KEY)
             .await?
-            .ok_or(CsrfSessionError::NoToken)?;
+            .ok_or(SessionError::NoToken)?;
 
         // Decrypt and deserialise the data
         let decrypted = engine.decrypt(entry.nonce.as_slice().into(), entry.encrypted.as_ref())?;
-        let data: CsrfSessionData = bincode::deserialize(&decrypted)?;
+        let data: SessionData = bincode::deserialize(&decrypted)?;
 
         // Verify the token
         data.cmp(token)

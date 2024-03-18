@@ -24,6 +24,7 @@ mod env;
 mod err;
 mod generate;
 mod state;
+mod urlcache;
 mod util;
 mod validators;
 mod web;

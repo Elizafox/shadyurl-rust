@@ -35,7 +35,7 @@ use service::{Mutation, Query};
 
 use crate::{
     auth::AuthSession,
-    csrf::CsrfSessionEntry,
+    csrf::SessionEntry,
     err::AppError,
     state::AppState,
     util::{
@@ -73,6 +73,7 @@ pub fn router() -> Router<AppState> {
         .route("/admin/cidr_bans", get(self::get::cidr_bans))
         .route("/admin/cidr_bans", post(self::post::cidr_bans))
         .route("/admin/cidr_bans/delete", post(self::post::delete))
+        .route("/admin/cidr_bans/flush", get(self::get::flush))
 }
 
 mod render {
@@ -110,8 +111,8 @@ mod render {
 mod post {
     use super::{
         debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession, BanForm,
-        CsrfSessionEntry, DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation,
-        Query, Redirect, Response, Session, State,
+        DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect,
+        Response, Session, SessionEntry, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -121,7 +122,7 @@ mod post {
         State(state): State<AppState>,
         Form(ban_form): Form<BanForm>,
     ) -> Result<Response, AppError> {
-        CsrfSessionEntry::check_session(
+        SessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
             &ban_form.authenticity_token,
@@ -171,7 +172,7 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        CsrfSessionEntry::check_session(
+        SessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
             &delete_form.authenticity_token,
@@ -189,6 +190,9 @@ mod post {
         let begin = vec_to_ipaddr(ban.range_begin)?;
         let end = vec_to_ipaddr(ban.range_end)?;
 
+        // Delete from the database first
+        Mutation::delete_cidr_ban(&state.db, delete_form.id).await?;
+
         // Invalidate the ban cache for all networks in this range
         for network in find_networks(begin, end)? {
             state.bancache.invalidate(network);
@@ -199,8 +203,6 @@ mod post {
             );
         }
 
-        Mutation::delete_cidr_ban(&state.db, delete_form.id).await?;
-
         messages.success(format!("Deleted CIDR ban #{} successfully", delete_form.id));
         Ok(Redirect::to("/admin/cidr_bans").into_response())
     }
@@ -208,8 +210,8 @@ mod post {
 
 mod get {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, CsrfSessionEntry,
-        IntoResponse, Messages, Query, Response, Session, State,
+        debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, IntoResponse, Messages,
+        Query, Redirect, Response, Session, SessionEntry, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -224,7 +226,7 @@ mod get {
         };
 
         let authenticity_token =
-            CsrfSessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
 
         let cidr_bans = Query::fetch_all_cidr_bans(&state.db).await?;
 
@@ -237,5 +239,21 @@ mod get {
             cidr_bans,
         }
         .into_response())
+    }
+
+    pub(super) async fn flush(
+        auth_session: AuthSession,
+        messages: Messages,
+        State(state): State<AppState>,
+    ) -> Result<Response, AppError> {
+        let Some(user) = auth_session.user else {
+            warn!("Unauthorized attempt to flush ban cache");
+            return Err(AppError::Unauthorized);
+        };
+
+        state.bancache.invalidate_all();
+        messages.success("Flushed CIDR ban cache");
+        debug!("User {} flushed ban cache", user.0.username);
+        Ok(Redirect::to("/admin/cidr_bans").into_response())
     }
 }

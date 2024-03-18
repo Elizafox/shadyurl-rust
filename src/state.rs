@@ -18,7 +18,7 @@ use std::sync::Arc;
 
 use sea_orm::DbConn;
 
-use crate::{bancache::BanCache, csrf::CryptoEngine, env::Vars};
+use crate::{bancache::BanCache, csrf::CryptoEngine, env::Vars, urlcache::UrlCache};
 
 // This is the struct that holds state for handlers
 #[allow(clippy::module_name_repetitions)]
@@ -29,5 +29,6 @@ pub struct AppState {
     pub(crate) db: Arc<DbConn>,
     pub(crate) env: Vars,
     pub(crate) bancache: BanCache,
+    pub(crate) urlcache: UrlCache,
     pub(crate) csrf_crypto_engine: CryptoEngine,
 }

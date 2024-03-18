@@ -37,6 +37,7 @@ use crate::{
     csrf::CryptoEngine,
     env::Vars,
     state::AppState,
+    urlcache::UrlCache,
     web::{admin, fallback, files, submission, url},
 };
 
@@ -67,6 +68,7 @@ impl App {
         let db = Arc::new(Database::get_with_connect_options(opt).await?);
 
         let bancache = BanCache::new(db.clone());
+        let urlcache = UrlCache::new(db.clone()).await?;
 
         let csrf_crypto_engine = CryptoEngine::new(&env.csrf_key.into());
 
@@ -75,6 +77,7 @@ impl App {
                 db: db.clone(),
                 env,
                 bancache,
+                urlcache,
                 csrf_crypto_engine,
             },
             redis_pool,
