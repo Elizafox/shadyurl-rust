@@ -25,7 +25,8 @@ use time::Duration;
 use tokio::task::JoinHandle;
 use tower::ServiceBuilder;
 use tower_http::{normalize_path::NormalizePathLayer, timeout::TimeoutLayer};
-use tower_sessions::{Expiry, SessionManagerLayer};
+use tower_sessions::{CachingSessionStore, Expiry, SessionManagerLayer};
+use tower_sessions_moka_store::MokaStore;
 use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
 use tracing::info;
 
@@ -87,8 +88,10 @@ impl App {
 
     // Begin serving
     pub(crate) async fn serve(self) -> Result<(), Box<dyn std::error::Error>> {
-        let session_store = RedisStore::new(self.redis_pool);
-        let session_layer = SessionManagerLayer::new(session_store)
+        let redis_store = RedisStore::new(self.redis_pool);
+        let moka_store = MokaStore::new(Some(100));
+        let caching_store = CachingSessionStore::new(moka_store, redis_store);
+        let session_layer = SessionManagerLayer::new(caching_store)
             .with_expiry(Expiry::OnInactivity(Duration::days(1)));
 
         let backend = Backend::new(self.state.db.clone());
