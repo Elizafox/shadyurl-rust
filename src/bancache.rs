@@ -24,6 +24,7 @@ use service::Query;
 
 // This caches IP bans/allows so we don't hit the database so much.
 
+// TODO: configurable
 const CACHE_ENTRIES: u64 = 10_000;
 
 #[derive(Debug, thiserror::Error)]
@@ -72,5 +73,11 @@ impl BanCache {
         self.cache
             .invalidate_entries_if(move |k, _| network.contains(*k))
             .expect("Could not invalidate cache");
+    }
+
+    // Invalidate all bans in the cache
+    pub(crate) fn invalidate_all(&self) {
+        trace!("Invalidating entire ban cache");
+        self.cache.invalidate_all();
     }
 }

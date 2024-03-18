@@ -70,12 +70,11 @@ impl Query {
     pub async fn fetch_all_urls(db: &DbConn) -> Result<Vec<url::Model>, DbErr> {
         Url::find().order_by_asc(url::Column::Id).all(db).await
     }
-    
+
     // Find a URL filter by its ID.
     pub async fn find_url_filter(db: &DbConn, id: i64) -> Result<Option<url_filter::Model>, DbErr> {
         UrlFilter::find_by_id(id).one(db).await
     }
-
 
     // Get all CIDR bans in the database.
     // TODO: pagination?
