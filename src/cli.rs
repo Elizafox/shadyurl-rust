@@ -12,7 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub mod parser;
+mod parser;
 mod subcommands;
 
 pub use parser::run_command;
