@@ -32,7 +32,7 @@ use crate::util::string::WebsafeAlphabet;
 pub type CryptoEngine = Aes256GcmSiv;
 
 const SESSION_KEY: &str = "shadyurl.csrf";
-const MAX_DURATION: Duration = Duration::minutes(10);  // FIXME - configurable?
+const MAX_DURATION: Duration = Duration::minutes(10); // FIXME - configurable?
 
 // Actual session data, a random token and the time the session began.
 #[derive(Debug, Clone, Deserialize, Serialize)]

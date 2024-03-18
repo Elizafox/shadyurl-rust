@@ -22,6 +22,8 @@ use tracing::trace;
 
 use service::Query;
 
+// This caches IP bans/allows so we don't hit the database so much.
+
 const CACHE_ENTRIES: u64 = 10_000;
 
 #[derive(Debug, thiserror::Error)]
@@ -39,6 +41,7 @@ pub struct BanCache {
 impl BanCache {
     pub(crate) fn new(db: Arc<DbConn>) -> Self {
         Self {
+            // XXX - should these cache parameters be configurable?
             cache: Cache::builder()
                 .max_capacity(CACHE_ENTRIES)
                 .time_to_live(Duration::days(1).unsigned_abs())
@@ -49,6 +52,7 @@ impl BanCache {
         }
     }
 
+    // Check for a ban, if it's not present, then check the database.
     pub(crate) async fn check_ban(&self, ip: IpAddr) -> Result<bool, BanCacheError> {
         if let Some(result) = self.cache.get(&ip).await {
             trace!("{ip}: got a cache hit (banned: {result})");
@@ -61,6 +65,8 @@ impl BanCache {
         }
     }
 
+    // Invalidate a ban in the cache
+    // NOTE: this must be called after a ban is created *or* deleted.
     pub(crate) fn invalidate(&self, network: IpNetwork) {
         trace!("Invalidating cache for {network}");
         self.cache

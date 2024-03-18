@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// URL submission routes
+
 use askama_axum::Template;
 use axum::{
     extract::State,
@@ -30,6 +32,7 @@ use service::{Mutation, Query};
 
 use crate::{err::AppError, generate::Generator, state::AppState, validators::validate_url};
 
+// Home page
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate<'a> {
@@ -38,6 +41,7 @@ struct IndexTemplate<'a> {
     sitename: &'a str,
 }
 
+// Template for submission
 #[derive(Template)]
 #[template(path = "submit.html")]
 struct SubmissionTemplate<'a> {
@@ -87,6 +91,7 @@ mod post {
         State(state): State<AppState>,
         Form(url_form): Form<UrlForm>,
     ) -> Result<Response, AppError> {
+        // Check the ban cache (which will also check the db for us)
         if state.bancache.check_ban(addr).await? {
             info!(
                 "Banned client ({addr}) attempted to submit url: {}",
@@ -96,6 +101,7 @@ mod post {
         }
 
         if let Err(e) = url_form.validate() {
+            // Failed the validation checks
             let error_reason = e
                 .field_errors()
                 .get("url")
@@ -104,6 +110,7 @@ mod post {
             return Err(AppError::UrlValidation(url_form.url, error_reason));
         }
 
+        // TODO: url blacklist cache, precompiled regex
         for url_filter in Query::fetch_all_url_filters(&state.db).await? {
             let creg = Regex::new(&url_filter.0.filter)?;
             if creg.is_match(&url_form.url) {

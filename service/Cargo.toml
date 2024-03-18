@@ -11,14 +11,14 @@
 # You should have received a copy of the CC0 legalcode along with this
 # work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 
+# This contains a bunch of database services/abstractions for ShadyURL.
+
 [package]
 name = "service"
 version = "0.1.0"
 edition = "2021"
 license = "CC0-1.0"
 publish = false
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 name = "service"

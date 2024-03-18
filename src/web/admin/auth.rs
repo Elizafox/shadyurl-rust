@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Admin login routes
+
 use askama_axum::Template;
 use axum::{
     extract::State,
@@ -30,6 +32,7 @@ use crate::{
     state::AppState,
 };
 
+// Admin login portal
 #[derive(Template)]
 #[template(path = "admin/login.html")]
 struct LoginTemplate {
@@ -95,6 +98,7 @@ mod get {
         State(state): State<AppState>,
     ) -> Result<Response, AppError> {
         if auth_session.user.is_some() {
+            // Already logged in
             return Ok(Redirect::to("/admin").into_response());
         }
 
@@ -114,8 +118,10 @@ mod get {
         mut auth_session: AuthSession,
         messages: Messages,
     ) -> Result<Response, AppError> {
+        // Logout, clear session,
         auth_session.logout().await?;
         session.clear().await;
+
         info!("User {} logging out", auth_session.user.unwrap().0.username);
         messages.success("You have logged out");
         Ok(Redirect::to("/").into_response())

@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Useful mathematical functions
+
 use num::Float;
 
 pub trait FloatMathUtil: Float {

@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Useful bit utilities
+
 use num::PrimInt;
 
 pub trait HasILog2Checked: PrimInt {

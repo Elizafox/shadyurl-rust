@@ -12,6 +12,9 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Service static files as a fallback.
+// Ideally, the web server should do this for us, but this is useful for development mode.
+
 use axum::Router;
 use tower_http::services::{ServeDir, ServeFile};
 

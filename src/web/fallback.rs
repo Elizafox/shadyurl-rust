@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Fallback handler for 404, etc.
+
 use axum::{response::IntoResponse, Router};
 
 use crate::{err::ErrorResponse, state::AppState};

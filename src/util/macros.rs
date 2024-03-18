@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Useful macros used in random places
+
 #[macro_export]
 macro_rules! arr {
     (

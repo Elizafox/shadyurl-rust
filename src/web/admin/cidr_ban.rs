@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// CIDR ban routes
+
 use std::str::FromStr;
 
 use askama_axum::Template;
@@ -42,6 +44,7 @@ use crate::{
     },
 };
 
+// CIDR ban listing page (also submission)
 #[derive(Template)]
 #[template(path = "admin/cidr_ban.html")]
 struct CidrBansTemplate<'a> {
@@ -52,8 +55,9 @@ struct CidrBansTemplate<'a> {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct SubmitBanForm {
+struct BanForm {
     authenticity_token: String,
+    // TODO: probably write a validator for this
     range: String,
     reason: Option<String>,
 }
@@ -83,6 +87,8 @@ mod render {
         Addr(#[from] AddressError),
     }
 
+    // Given an IP range from the database, render it fit for display
+    // Used in templates.
     pub(super) fn range_to_display(
         begin: Vec<u8>,
         end: Vec<u8>,
@@ -103,9 +109,9 @@ mod render {
 
 mod post {
     use super::{
-        debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession,
+        debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession, BanForm,
         CsrfSessionEntry, DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation,
-        Query, Redirect, Response, Session, State, SubmitBanForm,
+        Query, Redirect, Response, Session, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -113,12 +119,12 @@ mod post {
         auth_session: AuthSession,
         messages: Messages,
         State(state): State<AppState>,
-        Form(submit_ban_form): Form<SubmitBanForm>,
+        Form(ban_form): Form<BanForm>,
     ) -> Result<Response, AppError> {
         CsrfSessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
-            &submit_ban_form.authenticity_token,
+            &ban_form.authenticity_token,
         )
         .await?;
 
@@ -127,7 +133,7 @@ mod post {
             return Err(AppError::Unauthorized);
         };
 
-        if submit_ban_form.range.is_empty() {
+        if ban_form.range.is_empty() {
             debug!(
                 "Empty ban range received from form from user {}",
                 user.0.username
@@ -136,12 +142,12 @@ mod post {
             return Ok(Redirect::to("/admin/cidr_bans").into_response());
         }
 
-        let network = match IpNetwork::from_str(&submit_ban_form.range) {
+        let network = match IpNetwork::from_str(&ban_form.range) {
             Ok(network) => network,
             Err(e) => {
                 debug!(
                     "Invalid IP range specified ({}) from {}: {e}",
-                    submit_ban_form.range, user.0.username
+                    ban_form.range, user.0.username
                 );
                 messages.error(format!("Invalid IP range specified: {e}"));
                 return Ok(Redirect::to("/admin/cidr_bans").into_response());
@@ -151,16 +157,10 @@ mod post {
         // Invalidate so users who aren't banned will now be
         state.bancache.invalidate(network);
 
-        Mutation::create_cidr_ban(&state.db, network, submit_ban_form.reason, &user.0).await?;
+        Mutation::create_cidr_ban(&state.db, network, ban_form.reason, &user.0).await?;
 
-        warn!(
-            "CIDR ban ({}) added by {}",
-            submit_ban_form.range, user.0.username
-        );
-        messages.success(format!(
-            "Added CIDR ban {} successfullly",
-            submit_ban_form.range
-        ));
+        warn!("CIDR ban ({}) added by {}", ban_form.range, user.0.username);
+        messages.success(format!("Added CIDR ban {} successfullly", ban_form.range));
         Ok(Redirect::to("/admin/cidr_bans").into_response())
     }
 

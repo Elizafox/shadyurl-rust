@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Error generation and response stuff, used for handlers.
+
 use askama_axum::Template;
 use axum::{
     body::Body,
@@ -27,6 +29,7 @@ use crate::{
     util::net::{AddressError, NetworkPrefixError},
 };
 
+// Anything that can go wrong in a handler should go here.
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
     #[error(transparent)]
@@ -79,6 +82,7 @@ impl IntoResponse for AppError {
             Self::NotFound => ErrorResponse::not_found(),
             Self::Unauthorized => ErrorResponse::unauthorized(),
             _ => {
+                // If it's anything else, 500.
                 error!("Internal server error: {}", self.to_string());
                 ErrorResponse::internal_server_error(self.to_string().as_str())
             }
@@ -113,6 +117,7 @@ struct UrlSubmissionErrorTemplate<'a> {
     url: &'a str,
 }
 
+// This returns various canned responses for various issues.
 pub struct ErrorResponse;
 
 impl ErrorResponse {

@@ -19,19 +19,21 @@ use axum_login::{AuthUser, AuthnBackend, UserId};
 use password_auth::verify_password;
 use sea_orm::{DbConn, DbErr};
 use serde::Deserialize;
-use tokio::task;
+use tokio::task::{spawn_blocking, JoinError};
 
 use entity::user;
 use service::Query;
+
+// Various auth bits and pieces
 
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::module_name_repetitions)]
 pub enum AuthError {
     #[error(transparent)]
-    DbErr(#[from] DbErr),
+    Database(#[from] DbErr),
 
     #[error(transparent)]
-    TaskJoin(#[from] task::JoinError),
+    TaskJoin(#[from] JoinError),
 }
 
 // We marshall the database user in and out of this
@@ -90,6 +92,7 @@ impl Backend {
     }
 }
 
+// This struct also doubles as a form for our login page
 #[derive(Debug, Clone, Deserialize)]
 pub struct Credentials {
     pub(crate) username: String,
@@ -109,7 +112,7 @@ impl AuthnBackend for Backend {
     ) -> Result<Option<Self::User>, Self::Error> {
         let user = Self::User::find_user_by_username(&self.db, &creds.username).await?;
 
-        task::spawn_blocking(|| {
+        spawn_blocking(|| {
             Ok(user.filter(|user| verify_password(creds.password, &user.0.password_hash).is_ok()))
         })
         .await?

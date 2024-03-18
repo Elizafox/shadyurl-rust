@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// URL filter routes
+
 use askama_axum::Template;
 use axum::{
     extract::State,
@@ -33,6 +35,7 @@ use crate::{
     auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
 };
 
+// URL filter landing page (also submission page)
 #[derive(Template)]
 #[template(path = "admin/url_filter.html")]
 struct UrlFiltersTemplate<'a> {
@@ -43,7 +46,7 @@ struct UrlFiltersTemplate<'a> {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct SubmitFilterForm {
+struct FilterForm {
     authenticity_token: String,
     filter: String,
     reason: Option<String>,
@@ -64,9 +67,8 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, Form,
-        IntoResponse, Messages, Mutation, Redirect, Regex, Response, Session, State,
-        SubmitFilterForm,
+        debug, warn, AppError, AppState, AuthSession, CsrfSessionEntry, DeleteForm, FilterForm,
+        Form, IntoResponse, Messages, Mutation, Redirect, Regex, Response, Session, State,
     };
 
     pub(super) async fn url_filters(
@@ -74,12 +76,12 @@ mod post {
         auth_session: AuthSession,
         messages: Messages,
         State(state): State<AppState>,
-        Form(submit_filter_form): Form<SubmitFilterForm>,
+        Form(filter_form): Form<FilterForm>,
     ) -> Result<Response, AppError> {
         CsrfSessionEntry::check_session(
             &state.csrf_crypto_engine,
             &session,
-            &submit_filter_form.authenticity_token,
+            &filter_form.authenticity_token,
         )
         .await?;
 
@@ -88,40 +90,37 @@ mod post {
             return Err(AppError::Unauthorized);
         };
 
-        if submit_filter_form.filter.is_empty() {
+        if filter_form.filter.is_empty() {
             debug!("Empty filter received from {}", user.0.username);
             messages.error("Filter cannot be empty");
             return Ok(Redirect::to("/admin/url_filters").into_response());
         }
 
-        if let Err(e) = Regex::new(&submit_filter_form.filter) {
+        if let Err(e) = Regex::new(&filter_form.filter) {
             debug!(
                 "Bad filter regex \"{}\" received from {} ({e})",
-                submit_filter_form.filter, user.0.username
+                filter_form.filter, user.0.username
             );
             messages.error(format!(
                 "Malformed URL filter regex {}: {e}",
-                submit_filter_form.filter
+                filter_form.filter
             ));
             return Ok(Redirect::to("/admin/url_filters").into_response());
         }
 
         Mutation::create_url_filter(
             &state.db,
-            submit_filter_form.filter.clone(),
-            submit_filter_form.reason,
+            filter_form.filter.clone(),
+            filter_form.reason,
             &user.0,
         )
         .await?;
 
         warn!(
             "URL filter created by {}: {}",
-            user.0.username, submit_filter_form.filter
+            user.0.username, filter_form.filter
         );
-        messages.success(format!(
-            "Added filter {} successfullly",
-            submit_filter_form.filter
-        ));
+        messages.success(format!("Added filter {} successfullly", filter_form.filter));
         Ok(Redirect::to("/admin/url_filters").into_response())
     }
 

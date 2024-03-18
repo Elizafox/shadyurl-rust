@@ -15,8 +15,9 @@
 use url::{Host, Url};
 use validator::ValidationError;
 
+// Ensure a URL is a valid type
 pub fn validate_url(url: &str) -> Result<(), ValidationError> {
-    if url.len() > 2047 {
+    if url.len() > 2048 {
         return Err(ValidationError::new("URL is too long"));
     }
 

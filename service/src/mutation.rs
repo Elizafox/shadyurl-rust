@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Database mutation operations for ShadyURL
+
 use ipnetwork::{IpNetwork, Ipv6Network};
 use sea_orm::*;
 
@@ -22,6 +24,7 @@ use crate::Query;
 pub struct Mutation;
 
 impl Mutation {
+    // Create a CIDR ban given a network, reason, and user
     pub async fn create_cidr_ban(
         db: &DbConn,
         network: IpNetwork,
@@ -51,6 +54,7 @@ impl Mutation {
         .await
     }
 
+    // Create a user given a username and password hash
     pub async fn create_user(
         db: &DbConn,
         username: &str,
@@ -65,6 +69,7 @@ impl Mutation {
         .await
     }
 
+    // Create a URL given a url, shady "filename", and IP
     pub async fn create_url(
         db: &DbConn,
         url: &str,
@@ -81,6 +86,7 @@ impl Mutation {
         .await
     }
 
+    // Create a URL filter given a filter string, an optional reason, and a user.
     pub async fn create_url_filter(
         db: &DbConn,
         filter: String,
@@ -97,6 +103,7 @@ impl Mutation {
         .await
     }
 
+    // Change a user password given a username and password hash.
     pub async fn change_user_password(
         db: &DbConn,
         username: &str,
@@ -111,18 +118,22 @@ impl Mutation {
         user.update(db).await.map(Into::into)
     }
 
+    // Delete a CIDR ban by ID.
     pub async fn delete_cidr_ban(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         CidrBan::delete_by_id(id).exec(db).await
     }
 
+    // Delete a user by ID.
     pub async fn delete_user(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         User::delete_by_id(id).exec(db).await
     }
 
+    // Delete a URL by ID.
     pub async fn delete_url(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         Url::delete_by_id(id).exec(db).await
     }
 
+    // Delete a URL filter by ID.
     pub async fn delete_url_filter(db: &DbConn, id: i64) -> Result<DeleteResult, DbErr> {
         UrlFilter::delete_by_id(id).exec(db).await
     }

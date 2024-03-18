@@ -23,6 +23,8 @@ use serde::{
 use tracing::error;
 use validator::Validate;
 
+// Routines to get configuration information from the environment and .env file
+
 pub type Key = [u8; 32];
 
 mod defaults {

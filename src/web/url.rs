@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Various URL routes, including shady URL's.
+
 use axum::{
     extract::{Path, State},
     response::{IntoResponse, Redirect, Response},

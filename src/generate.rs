@@ -20,6 +20,9 @@ use rand::{
 
 use crate::util::{macros::arr, string::WebsafeAlphabet};
 
+// The thing that generates shady URL's
+
+// A mangler type
 #[derive(PartialEq, Eq, Copy, Clone)]
 enum Mangler {
     NoOp,
@@ -33,6 +36,8 @@ enum Mangler {
 pub struct Generator;
 
 impl Generator {
+    // Generate the random looking part of the URL
+    // This adds some more randomness to the process, but otherwise does nothing
     fn generate_hash() -> String {
         let distr_len = Lazy::new(|| Uniform::new(5, 9));
         let mut rng = thread_rng();
@@ -40,6 +45,7 @@ impl Generator {
         WebsafeAlphabet.sample_string(&mut rng, len)
     }
 
+    // Given a fragment of the shady URL, mangle it with the given mangler.
     fn perform_mangle(mangler: Mangler, fragment: &str) -> String {
         let mut rng = thread_rng();
         match mangler {
@@ -88,6 +94,7 @@ impl Generator {
                 })
                 .collect(),
             Mangler::HeckTransform => {
+                // TODO: better way to do this?
                 let distr_transform = Lazy::new(|| Uniform::new(0, 6));
                 match (*distr_transform).sample(&mut rng) {
                     0 => heck::AsLowerCamelCase(fragment).to_string(),
@@ -103,6 +110,7 @@ impl Generator {
         }
     }
 
+    // Choose a random mangler
     fn get_mangler() -> Mangler {
         let mut rng = thread_rng();
         let distr_mangle = Lazy::new(|| Uniform::new(0, 15));
@@ -117,6 +125,7 @@ impl Generator {
         }
     }
 
+    // Mangle a fragment passed in.
     fn mangle_fragment(fragment: &str) -> String {
         // Select mangling function
         let mut rng = thread_rng();
@@ -156,6 +165,7 @@ impl Generator {
         new
     }
 
+    // Create a shady-looking filename for the URL
     pub(crate) fn shady_filename() -> String {
         arr!(const SEPS: [&str; _] = ["!", "_", "+", "~"]);
 
@@ -225,6 +235,7 @@ impl Generator {
 mod strings {
     use super::arr;
 
+    // NSFW fragments to use in the string
     arr!(pub(super) const NSFW: [&str; _] = [
         "---click-here---",
         "---install-virus---",
@@ -1193,6 +1204,7 @@ mod strings {
         "zooporn",
     ]);
 
+    // Various extensions to use in a shady filename
     arr!(pub(super) const EXT: [&str; _] = [
         ".avi", ".bas", ".csv", ".divx", ".dll", ".doc", ".docx", ".flv", ".gif", ".htm", ".html",
         ".ini", ".jar", ".js", ".jpeg", ".jpg", ".m1v", ".m4a", ".mid", ".midi", ".mkv", ".mod", ".mov",
@@ -1201,6 +1213,7 @@ mod strings {
         ".xhtml", ".xls", ".xlsx", ".xml", ".zip",
     ]);
 
+    // Executable formats, to make it look really shady
     arr!(pub(super) const EXT_EXE: [&str; _] = [
         ".app", ".bat", ".dmg", ".exe", ".msi", ".run", ".script",
     ]);

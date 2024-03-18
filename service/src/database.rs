@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Database connection services.
+
 use sea_orm::{ConnectOptions, DbConn, DbErr};
 use tracing::log::LevelFilter;
 
@@ -20,6 +22,7 @@ use migration::{Migrator, MigratorTrait};
 pub struct Database;
 
 impl Database {
+    // Get a DbConn with the given connection options.
     pub async fn get_with_connect_options(opt: ConnectOptions) -> Result<DbConn, DbErr> {
         let db = sea_orm::Database::connect(opt).await?;
 
@@ -28,6 +31,7 @@ impl Database {
         Ok(db)
     }
 
+    // Get a DbConn with some default options.
     pub async fn get(url: &str) -> Result<DbConn, DbErr> {
         let mut opt = ConnectOptions::new(url);
         opt.sqlx_logging(false)

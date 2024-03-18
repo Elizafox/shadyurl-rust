@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Useful utilities for working with/creating strings
+
 use once_cell::sync::Lazy;
 use rand::{
     distributions::{DistString, Uniform},
@@ -24,6 +26,7 @@ use time::{
 
 use super::math::FloatMathUtil;
 
+// Convert a Duration into something for humans.
 // This implementation is heavily modified from the time crate.
 pub fn humanize_duration(duration: Duration) -> String {
     const AVERAGE_YEAR: f64 = 365.2425;
@@ -93,6 +96,8 @@ pub fn humanize_duration(duration: Duration) -> String {
     format!("an instant {suffix}")
 }
 
+// Generate a random string using web-safe characters
+// (This means safe for URL's *and* HTML, without escaping)
 pub struct WebsafeAlphabet;
 
 impl Distribution<u8> for WebsafeAlphabet {

@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// URL management routes
+
 use askama_axum::Template;
 use axum::{
     extract::State,
@@ -32,6 +34,7 @@ use crate::{
     auth::AuthSession, csrf::CsrfSessionEntry, err::AppError, state::AppState, util::string,
 };
 
+// URL listing landing page (also deletion)
 #[derive(Template)]
 #[template(path = "admin/urls.html")]
 struct UrlsTemplate<'a> {

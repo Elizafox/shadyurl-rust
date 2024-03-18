@@ -12,15 +12,20 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// State for handlers and such
+
 use std::sync::Arc;
 
 use sea_orm::DbConn;
 
 use crate::{bancache::BanCache, csrf::CryptoEngine, env::Vars};
 
+// This is the struct that holds state for handlers
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone)]
 pub struct AppState {
+    // We can't keep references to DbConn, and this can span threads
+    // So this needs to be an Arc.
     pub(crate) db: Arc<DbConn>,
     pub(crate) env: Vars,
     pub(crate) bancache: BanCache,

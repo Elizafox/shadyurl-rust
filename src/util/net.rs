@@ -12,6 +12,8 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
+// Useful functions for dealing with IP addresses
+
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 use ipnetwork::{IpNetwork, IpNetworkError};
@@ -34,6 +36,8 @@ pub enum AddressError {
     IncorrectSize(usize),
 }
 
+// IpAddr only takes fixed arrays, but often we work with Vecs as they're more flexible.
+// This bridges the gap.
 pub fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
     let addr = match addr.len() {
         4 => IpAddr::from(TryInto::<[u8; 4]>::try_into(addr).unwrap()),
@@ -50,6 +54,7 @@ pub fn vec_to_ipaddr(addr: Vec<u8>) -> Result<IpAddr, AddressError> {
     Ok(addr.to_canonical())
 }
 
+// Given an IP range, find the given IpNetworks (it may encompass more than one)
 pub fn find_networks(start: IpAddr, end: IpAddr) -> Result<Vec<IpNetwork>, NetworkPrefixError> {
     let res = match (start, end) {
         (IpAddr::V4(start_ip), IpAddr::V4(end_ip)) => {
