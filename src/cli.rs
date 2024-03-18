@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/web.rs
+ * src/cli.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -12,11 +12,7 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-pub use app::{App, RuntimeError};
+pub mod parser;
+mod subcommands;
 
-mod admin;
-mod app;
-mod fallback;
-mod files;
-mod submission;
-mod url;
+pub use parser::run_command;

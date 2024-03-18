@@ -107,8 +107,18 @@ pub struct Vars {
     pub(crate) csrf_key: Key,
 }
 
+#[allow(clippy::module_name_repetitions)]
+#[derive(Clone, Debug, thiserror::Error)]
+pub enum EnvError {
+    #[error(transparent)]
+    Validation(#[from] validator::ValidationErrors),
+
+    #[error(transparent)]
+    Envy(#[from] envy::Error),
+}
+
 impl Vars {
-    pub(crate) fn load_env() -> Result<Self, Box<dyn std::error::Error>> {
+    pub(crate) fn load_env() -> Result<Self, EnvError> {
         let mut env: Self = from_env()?;
         if env.shady_host.is_empty() {
             env.shady_host = env.base_host.clone();

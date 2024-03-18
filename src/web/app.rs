@@ -49,9 +49,33 @@ pub struct App {
     redis_conn: JoinHandle<Result<(), RedisError>>,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum RuntimeError {
+    #[error(transparent)]
+    Env(#[from] crate::env::EnvError),
+
+    #[error(transparent)]
+    UrlCache(#[from] crate::urlcache::UrlCacheError),
+
+    #[error(transparent)]
+    Db(#[from] sea_orm::DbErr),
+
+    #[error(transparent)]
+    RedisStore(#[from] tower_sessions_redis_store::RedisStoreError),
+
+    #[error(transparent)]
+    RedisFred(#[from] tower_sessions_redis_store::fred::error::RedisError),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    TaskJoin(#[from] tokio::task::JoinError),
+}
+
 impl App {
     // Load configuration and begin initalising DB connections, etc.
-    pub(crate) async fn new() -> Result<Self, Box<dyn std::error::Error>> {
+    pub(crate) async fn new() -> Result<Self, RuntimeError> {
         let env = Vars::load_env()?;
 
         let redis_config = RedisConfig::from_url(&env.redis_url)?;
@@ -87,7 +111,7 @@ impl App {
     }
 
     // Begin serving
-    pub(crate) async fn serve(self) -> Result<(), Box<dyn std::error::Error>> {
+    pub(crate) async fn serve(self) -> Result<(), RuntimeError> {
         let redis_store = RedisStore::new(self.redis_pool);
         let moka_store = MokaStore::new(Some(100));
         let caching_store = CachingSessionStore::new(moka_store, redis_store);
