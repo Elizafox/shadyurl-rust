@@ -32,14 +32,19 @@ use crate::util::string::WebsafeAlphabet;
 pub type CryptoEngine = Aes256GcmSiv;
 
 const SESSION_KEY: &str = "shadyurl.csrf";
-const MAX_DURATION: Duration = Duration::minutes(10);
+const MAX_DURATION: Duration = Duration::minutes(10);  // FIXME - configurable?
 
+// Actual session data, a random token and the time the session began.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CsrfSessionData {
     pub(super) token: String,
     pub(super) time: OffsetDateTime,
 }
 
+// This is the actual entry that gets put into the session.
+// We serialise CsrfSessionData, then encrypt it for storage.
+// It's safe to store the nonce decrypted, and necessary. It is however important the nonce *never
+// once be reused*.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CsrfSessionEntry {
     encrypted: Vec<u8>,
@@ -104,6 +109,7 @@ impl CsrfSessionEntry {
     ) -> Result<String, CsrfSessionError> {
         let data = CsrfSessionData::new();
 
+        // Serialise and encrypt the data
         let buf = bincode::serialize(&data)?;
         let nonce = Aes256GcmSiv::generate_nonce(&mut OsRng);
         let encrypted: Vec<u8> = engine.encrypt(&nonce, buf.as_ref())?;
@@ -129,9 +135,11 @@ impl CsrfSessionEntry {
             .await?
             .ok_or(CsrfSessionError::NoToken)?;
 
+        // Decrypt and deserialise the data
         let decrypted = engine.decrypt(entry.nonce.as_slice().into(), entry.encrypted.as_ref())?;
         let data: CsrfSessionData = bincode::deserialize(&decrypted)?;
 
+        // Verify the token
         data.cmp(token)
     }
 }
