@@ -19,7 +19,7 @@ use crate::cli::subcommands::{
     GenerateKeysSubcommand, RunSubcommand,
 };
 
-// Simple things
+// For commands that only take a username as an argument
 #[derive(Debug, Clone, Args)]
 pub struct UsernameArgument {
     pub username: String,

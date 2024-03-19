@@ -15,7 +15,7 @@
 use std::io::{prelude::*, stdin, stdout};
 
 use crate::{
-    cli::{parser::UsernameArgument, subcommands::CliSubcommand},
+    cli::subcommands::{CliSubcommand, UsernameArgument},
     env::{EnvError, Vars},
 };
 

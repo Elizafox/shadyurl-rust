@@ -16,7 +16,7 @@ use password_auth::generate_hash;
 use rpassword::prompt_password;
 
 use crate::{
-    cli::{parser::UsernameArgument, subcommands::CliSubcommand},
+    cli::subcommands::{CliSubcommand, UsernameArgument},
     env::{EnvError, Vars},
 };
 

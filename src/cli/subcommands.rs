@@ -12,6 +12,8 @@
 * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
 
+// Subcommand related stuff
+
 mod adduser;
 mod changepassword;
 mod deleteuser;
@@ -21,6 +23,9 @@ mod run;
 use proctitle::set_title;
 
 use crate::env::{EnvError, Vars};
+
+// Re-exported
+pub(crate) use crate::cli::parser::UsernameArgument;
 
 #[async_trait::async_trait]
 pub trait CliSubcommand {
