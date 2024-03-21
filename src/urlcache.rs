@@ -25,9 +25,6 @@ use tracing::trace;
 
 use service::Query;
 
-// TODO: configurable
-const CACHE_ENTRIES: u64 = 1000;
-
 #[derive(Debug, thiserror::Error)]
 pub enum UrlCacheError {
     #[error(transparent)]
@@ -53,7 +50,12 @@ pub struct UrlCache {
 
 impl UrlCache {
     // Create a new UrlCache instance and initalise regexes from the database.
-    pub(crate) async fn new(db: Arc<DbConn>) -> Result<Self, UrlCacheError> {
+    pub(crate) async fn new(
+        db: Arc<DbConn>,
+        entries: u64,
+        ttl: Duration,
+        idle: Duration,
+    ) -> Result<Self, UrlCacheError> {
         let mut regex = Vec::new();
         for url_filter in Query::fetch_all_url_filters(&db).await? {
             trace!("Adding URL filter {}", url_filter.0.filter);
@@ -65,9 +67,9 @@ impl UrlCache {
             // XXX - should these cache parameters be configurable?
             regex: Arc::new(RwLock::new(regex)),
             cache: Cache::builder()
-                .max_capacity(CACHE_ENTRIES)
-                .time_to_live(Duration::days(7).unsigned_abs())
-                .time_to_idle(Duration::days(1).unsigned_abs())
+                .max_capacity(entries)
+                .time_to_live(ttl.unsigned_abs())
+                .time_to_idle(idle.unsigned_abs())
                 .support_invalidation_closures()
                 .build(),
             db,

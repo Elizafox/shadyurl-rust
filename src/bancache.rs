@@ -24,9 +24,6 @@ use service::Query;
 
 // This caches IP bans/allows so we don't hit the database so much.
 
-// TODO: configurable
-const CACHE_ENTRIES: u64 = 10_000;
-
 #[derive(Debug, thiserror::Error)]
 pub enum BanCacheError {
     #[error(transparent)]
@@ -40,13 +37,13 @@ pub struct BanCache {
 }
 
 impl BanCache {
-    pub(crate) fn new(db: Arc<DbConn>) -> Self {
+    pub(crate) fn new(db: Arc<DbConn>, entries: u64, ttl: Duration, idle: Duration) -> Self {
         Self {
             // XXX - should these cache parameters be configurable?
             cache: Cache::builder()
-                .max_capacity(CACHE_ENTRIES)
-                .time_to_live(Duration::days(1).unsigned_abs())
-                .time_to_idle(Duration::minutes(10).unsigned_abs())
+                .max_capacity(entries)
+                .time_to_live(ttl.unsigned_abs())
+                .time_to_idle(idle.unsigned_abs())
                 .support_invalidation_closures()
                 .build(),
             db,
