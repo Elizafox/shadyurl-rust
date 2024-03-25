@@ -89,7 +89,7 @@ tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lo
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
 tower-http = { version = "0.5.2", features = ["fs", "normalize-path", "timeout", "tokio"] }
 tower-sessions = { version = "0.11.1", features = ["axum-core"] }
-tower-sessions-moka-store = "0.11.0"
+tower-sessions-moka-store = "0.12.0"
 tower-sessions-redis-store = "0.11.0"
 url = "2.5.0"
 validator = { version = "0.17.0", features = ["derive"] }
