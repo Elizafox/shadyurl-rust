@@ -25,7 +25,7 @@ use proctitle::set_title;
 use crate::env::{EnvError, Vars};
 
 // Re-exported
-pub(crate) use crate::cli::parser::UsernameArgument;
+pub use crate::cli::parser::UsernameArgument;
 
 #[async_trait::async_trait]
 pub trait CliSubcommand {

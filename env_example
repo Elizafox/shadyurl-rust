@@ -66,6 +66,26 @@ REDIS_POOL_SIZE=3
 # For production, it's recommended to keep this at warn or error.
 RUST_LOG="warn"
 
+# URL cache parameters.
+# The URL cache is used to cache if a URL matches a banned regex.
+# If it does, it is disallowed for shadifying.
+#     - URL_CACHE_TTL: maximum time a URL can live in the cache. (default: 3 days)
+#     - URL_CACHE_IDLE: maximum time a URL can be idle in the cache. (default: 1 day)
+#     - URL_CACHE_MAX_ENTRIES: maximum cache entries allowed (default: 5000)
+URL_CACHE_TTL="3d"
+URL_CACHE_IDLE="1d"
+URL_CACHE_MAX_ENTRIES=5000
+
+# Ban cache parameters.
+# The ban cache is used to cache if a given IP is in a banned IP block.
+# If it is, the user cannot shadify their URL.
+#     - BAN_CACHE_TTL: maximum time an IP can live in the cache. (default: 3 days)
+#     - BAN_CACHE_IDLE: maximum time an IP can be idle in the cache. (default: 1 day)
+#     - BAN_CACHE_MAX_ENTRIES: maximum cache entries allowed (default: 5000)
+BAN_CACHE_TTL="3d"
+BAN_CACHE_IDLE="1d"
+BAN_CACHE_MAX_ENTRIES=5000
+
 # Set the CSRF encryption key.
 # If unset, a random one will be generated each application start (invalidating all previous sessions).
 # This default MUST be changed. Generate a new one with:

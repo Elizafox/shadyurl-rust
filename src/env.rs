@@ -40,6 +40,10 @@ mod defaults {
         2
     }
 
+    pub(super) const fn max_cache_entries() -> u64 {
+        5000
+    }
+
     pub(super) fn sitename() -> String {
         "ShadyURL".to_string()
     }
@@ -50,11 +54,11 @@ mod defaults {
         ret
     }
 
-    pub(super) fn duration_1d() -> Duration {
+    pub(super) const fn duration_1d() -> Duration {
         Duration::days(1)
     }
 
-    pub(super) fn duration_3d() -> Duration {
+    pub(super) const fn duration_3d() -> Duration {
         Duration::days(3)
     }
 }
@@ -146,6 +150,11 @@ pub struct Vars {
         default = "defaults::duration_1d"
     )]
     pub(crate) url_cache_idle: Duration,
+
+    #[serde(default = "defaults::max_cache_entries")]
+    pub(crate) ban_cache_max_entries: u64,
+    #[serde(default = "defaults::max_cache_entries")]
+    pub(crate) url_cache_max_entries: u64,
 
     // FIXME: encrypt entire session with this, but axum-login isn't ready
     #[serde(

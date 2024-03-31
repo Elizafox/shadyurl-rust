@@ -93,9 +93,19 @@ impl App {
         let db = Arc::new(Database::get_with_connect_options(opt).await?);
 
         // TODO: configurable
-        let bancache = BanCache::new(db.clone(), 5000, env.ban_cache_ttl, env.ban_cache_idle);
-        let urlcache =
-            UrlCache::new(db.clone(), 5000, env.url_cache_ttl, env.url_cache_idle).await?;
+        let bancache = BanCache::new(
+            db.clone(),
+            env.ban_cache_max_entries,
+            env.ban_cache_ttl,
+            env.ban_cache_idle,
+        );
+        let urlcache = UrlCache::new(
+            db.clone(),
+            env.url_cache_max_entries,
+            env.url_cache_ttl,
+            env.url_cache_idle,
+        )
+        .await?;
 
         let csrf_crypto_engine = CryptoEngine::new(&env.csrf_key.into());
 
