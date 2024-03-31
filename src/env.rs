@@ -20,6 +20,8 @@ use serde::{
     de::{Deserializer, Error},
     Deserialize,
 };
+use systemd_duration::time::parse;
+use time::Duration;
 use tracing::error;
 use validator::Validate;
 
@@ -28,7 +30,7 @@ use validator::Validate;
 pub type Key = [u8; 32];
 
 mod defaults {
-    use super::{thread_rng, Key, Rng};
+    use super::{thread_rng, Duration, Key, Rng};
 
     pub(super) fn redis_url() -> String {
         "redis://127.0.0.1".to_string()
@@ -47,10 +49,35 @@ mod defaults {
         thread_rng().fill(&mut ret);
         ret
     }
+
+    pub(super) fn duration_1d() -> Duration {
+        Duration::days(1)
+    }
+
+    pub(super) fn duration_3d() -> Duration {
+        Duration::days(3)
+    }
 }
 
 mod deserializers {
-    use super::{error, Deserialize, Deserializer, Engine, Error, Key, BASE64_STANDARD};
+    use super::{
+        error, parse, Deserialize, Deserializer, Duration, Engine, Error, Key, BASE64_STANDARD,
+    };
+
+    pub(super) fn duration<'de, D>(d: D) -> Result<Duration, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let duration_string = String::deserialize(d)?;
+        let ret: Duration = parse(&duration_string).map_err(|e| {
+            error!("Invalid duration: \"{duration_string}\", error: {e}");
+            Error::custom(format!(
+                "Invalid duration received: \"{duration_string}\", error: {e}"
+            ))
+        })?;
+
+        Ok(ret)
+    }
 
     pub(super) fn csrf_key<'de, D>(d: D) -> Result<Key, D::Error>
     where
@@ -98,6 +125,27 @@ pub struct Vars {
     #[serde(default = "defaults::redis_pool_size")]
     #[validate(range(min = 1))]
     pub(crate) redis_pool_size: usize,
+
+    #[serde(
+        deserialize_with = "deserializers::duration",
+        default = "defaults::duration_3d"
+    )]
+    pub(crate) ban_cache_ttl: Duration,
+    #[serde(
+        deserialize_with = "deserializers::duration",
+        default = "defaults::duration_1d"
+    )]
+    pub(crate) ban_cache_idle: Duration,
+    #[serde(
+        deserialize_with = "deserializers::duration",
+        default = "defaults::duration_3d"
+    )]
+    pub(crate) url_cache_ttl: Duration,
+    #[serde(
+        deserialize_with = "deserializers::duration",
+        default = "defaults::duration_1d"
+    )]
+    pub(crate) url_cache_idle: Duration,
 
     // FIXME: encrypt entire session with this, but axum-login isn't ready
     #[serde(
