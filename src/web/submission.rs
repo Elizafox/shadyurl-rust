@@ -53,7 +53,7 @@ struct SubmissionTemplate<'a> {
 
 #[derive(Debug, Clone, Validate, Deserialize)]
 struct UrlForm {
-    #[validate(custom(function = validate_url))]
+    #[validate(length(min = 3), custom(function = validate_url))]
     pub(super) url: String,
 }
 
@@ -106,7 +106,7 @@ mod post {
             let error_reason = e
                 .field_errors()
                 .get("url")
-                .map_or("Unknown error".to_string(), |v| v[0].code.to_string());
+                .map_or("Unknown error".to_string(), |v| v[0].to_string());
             debug!("Invalid URL submitted ({}): {error_reason}", url_form.url);
             return Err(AppError::UrlValidation(url_form.url, error_reason));
         }

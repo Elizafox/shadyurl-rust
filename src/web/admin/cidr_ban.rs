@@ -29,6 +29,7 @@ use serde::Deserialize;
 use time::OffsetDateTime;
 use tower_sessions::Session;
 use tracing::{debug, warn};
+use validator::Validate;
 
 use entity::{cidr_ban, user};
 use service::{Mutation, Query};
@@ -42,6 +43,7 @@ use crate::{
         net::{find_networks, vec_to_ipaddr, AddressError, NetworkPrefixError},
         string,
     },
+    validators::validate_network,
 };
 
 // CIDR ban listing page (also submission)
@@ -54,10 +56,10 @@ struct CidrBansTemplate<'a> {
     cidr_bans: Vec<(cidr_ban::Model, Option<user::Model>)>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Validate)]
 struct BanForm {
     authenticity_token: String,
-    // TODO: probably write a validator for this
+    #[validate(custom(function = validate_network))]
     range: String,
     reason: Option<String>,
 }
@@ -112,7 +114,7 @@ mod post {
     use super::{
         debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession, BanForm,
         DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect,
-        Response, Session, SessionData, State,
+        Response, Session, SessionData, State, Validate,
     };
 
     pub(super) async fn cidr_bans(
@@ -129,25 +131,20 @@ mod post {
             return Err(AppError::Unauthorized);
         };
 
-        if ban_form.range.is_empty() {
-            debug!(
-                "Empty ban range received from form from user {}",
-                user.0.username
-            );
-            messages.error("Range cannot be empty");
+        if let Err(e) = ban_form.validate() {
+            // Failed the validation checks
+            let error_reason = e
+                .field_errors()
+                .get("range")
+                .map_or("Unknown error".to_string(), |v| v[0].to_string());
+            debug!("Invalid range ({}) submitted from user {}: {error_reason}", ban_form.range, user.0.username);
+            messages.error(format!("Invalid range: {error_reason}").as_str());
             return Ok(Redirect::to("/admin/cidr_bans").into_response());
         }
 
         let network = match IpNetwork::from_str(&ban_form.range) {
             Ok(network) => network,
-            Err(e) => {
-                debug!(
-                    "Invalid IP range specified ({}) from {}: {e}",
-                    ban_form.range, user.0.username
-                );
-                messages.error(format!("Invalid IP range specified: {e}"));
-                return Ok(Redirect::to("/admin/cidr_bans").into_response());
-            }
+            Err(_) => unreachable!(),
         };
 
         // Invalidate so users who aren't banned will now be
