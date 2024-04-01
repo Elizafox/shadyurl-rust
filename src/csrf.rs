@@ -12,10 +12,6 @@
  * work.  If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-use aes_gcm_siv::{
-    aead::{Aead, AeadCore, OsRng},
-    Aes256GcmSiv,
-};
 use once_cell::sync::Lazy;
 use rand::{
     distributions::{DistString, Uniform},
@@ -29,8 +25,6 @@ use tracing::debug;
 
 use crate::util::string::WebsafeAlphabet;
 
-pub type CryptoEngine = Aes256GcmSiv;
-
 const SESSION_KEY: &str = "shadyurl.csrf";
 const MAX_DURATION: Duration = Duration::minutes(10); // FIXME - configurable?
 
@@ -41,26 +35,10 @@ pub struct SessionData {
     pub(super) time: OffsetDateTime,
 }
 
-// This is the actual entry that gets put into the session.
-// We serialise SessionData, then encrypt it for storage.
-// It's safe to store the nonce decrypted, and necessary. It is however important the nonce *never
-// once be reused*.
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub struct SessionEntry {
-    encrypted: Vec<u8>,
-    nonce: Vec<u8>,
-}
-
 #[derive(Debug, thiserror::Error)]
 pub enum SessionError {
     #[error(transparent)]
     Session(#[from] tower_sessions::session::Error),
-
-    #[error(transparent)]
-    Crypto(#[from] aes_gcm_siv::Error),
-
-    #[error(transparent)]
-    Serialization(#[from] bincode::Error),
 
     #[error("No CSRF token")]
     NoToken,
@@ -83,7 +61,7 @@ impl SessionData {
         }
     }
 
-    pub fn cmp(&self, token: &str) -> Result<(), SessionError> {
+    fn cmp(&self, token: &str) -> Result<(), SessionError> {
         if token.as_bytes().ct_ne(self.token.as_bytes()).into() {
             debug!("CSRF tokens mismatched: {token} != {}", self.token);
             return Err(SessionError::Mismatch);
@@ -100,44 +78,22 @@ impl SessionData {
 
         Ok(())
     }
-}
 
-impl SessionEntry {
-    pub async fn insert_session(
-        engine: &CryptoEngine,
-        session: &Session,
-    ) -> Result<String, SessionError> {
-        let data = SessionData::new();
+    pub async fn new_into_session(session: &Session) -> Result<String, SessionError> {
+        let data = Self::new();
+        let token = data.token.clone();
 
-        // Serialise and encrypt the data
-        let buf = bincode::serialize(&data)?;
-        let nonce = Aes256GcmSiv::generate_nonce(&mut OsRng);
-        let encrypted: Vec<u8> = engine.encrypt(&nonce, buf.as_ref())?;
+        session.insert(SESSION_KEY, data).await?;
 
-        let entry = Self {
-            encrypted,
-            nonce: nonce.as_slice().into(),
-        };
-
-        session.insert(SESSION_KEY, entry).await?;
-
-        Ok(data.token)
+        Ok(token)
     }
 
-    pub async fn check_session(
-        engine: &CryptoEngine,
-        session: &Session,
-        token: &str,
-    ) -> Result<(), SessionError> {
+    pub async fn check_session(session: &Session, token: &str) -> Result<(), SessionError> {
         // Smokey the Bear sez: Only YOU can prevent forest fi... err, session reuse
-        let entry: Self = session
+        let data: Self = session
             .remove(SESSION_KEY)
             .await?
             .ok_or(SessionError::NoToken)?;
-
-        // Decrypt and deserialise the data
-        let decrypted = engine.decrypt(entry.nonce.as_slice().into(), entry.encrypted.as_ref())?;
-        let data: SessionData = bincode::deserialize(&decrypted)?;
 
         // Verify the token
         data.cmp(token)

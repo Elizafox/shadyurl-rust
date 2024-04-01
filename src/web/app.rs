@@ -16,7 +16,6 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use aes_gcm_siv::aead::KeyInit;
 use axum::Router;
 use axum_login::AuthManagerLayerBuilder;
 use axum_messages::MessagesManagerLayer;
@@ -25,7 +24,7 @@ use time::Duration;
 use tokio::task::JoinHandle;
 use tower::ServiceBuilder;
 use tower_http::{normalize_path::NormalizePathLayer, timeout::TimeoutLayer};
-use tower_sessions::{CachingSessionStore, Expiry, SessionManagerLayer};
+use tower_sessions::{cookie::Key, CachingSessionStore, Expiry, SessionManagerLayer};
 use tower_sessions_moka_store::MokaStore;
 use tower_sessions_redis_store::{fred::prelude::*, RedisStore};
 use tracing::info;
@@ -35,7 +34,6 @@ use service::Database;
 use crate::{
     auth::Backend,
     bancache::BanCache,
-    csrf::CryptoEngine,
     env::Vars,
     state::AppState,
     urlcache::UrlCache,
@@ -107,15 +105,12 @@ impl App {
         )
         .await?;
 
-        let csrf_crypto_engine = CryptoEngine::new(&env.csrf_key.into());
-
         Ok(Self {
             state: AppState {
                 db: db.clone(),
                 env,
                 bancache,
                 urlcache,
-                csrf_crypto_engine,
             },
             redis_pool,
             redis_conn,
@@ -128,7 +123,8 @@ impl App {
         let moka_store = MokaStore::new(Some(100));
         let caching_store = CachingSessionStore::new(moka_store, redis_store);
         let session_layer = SessionManagerLayer::new(caching_store)
-            .with_expiry(Expiry::OnInactivity(Duration::days(1)));
+            .with_expiry(Expiry::OnInactivity(Duration::days(1)))
+            .with_private(Key::derive_from(&self.state.env.csrf_key));
 
         let backend = Backend::new(self.state.db.clone());
         let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();

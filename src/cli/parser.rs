@@ -16,7 +16,7 @@ use clap::{Args, Parser, Subcommand};
 
 use crate::cli::subcommands::{
     AddUserSubcommand, ChangePasswordSubcommand, CliSubcommand, DeleteUserSubcommand,
-    GenerateKeysSubcommand, RunSubcommand,
+    GenerateKeySubcommand, RunSubcommand,
 };
 
 // For commands that only take a username as an argument
@@ -37,7 +37,7 @@ pub enum Commands {
     AddUser(UsernameArgument),
     DeleteUser(UsernameArgument),
     ChangePassword(UsernameArgument),
-    GenerateKeys,
+    GenerateKey,
 }
 
 pub async fn run_command() -> Result<(), Box<dyn std::error::Error>> {
@@ -55,8 +55,8 @@ pub async fn run_command() -> Result<(), Box<dyn std::error::Error>> {
             ChangePasswordSubcommand::run_command(data).await?;
             Ok(())
         }
-        Some(Commands::GenerateKeys) => {
-            GenerateKeysSubcommand::run_command(&()).await?;
+        Some(Commands::GenerateKey) => {
+            GenerateKeySubcommand::run_command(&()).await?;
             Ok(())
         }
         Some(Commands::Run) | None => {

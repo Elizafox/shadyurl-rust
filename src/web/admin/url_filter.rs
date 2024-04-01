@@ -31,7 +31,7 @@ use tracing::{debug, warn};
 use entity::{url_filter, user};
 use service::{Mutation, Query};
 
-use crate::{auth::AuthSession, csrf::SessionEntry, err::AppError, state::AppState, util::string};
+use crate::{auth::AuthSession, csrf::SessionData, err::AppError, state::AppState, util::string};
 
 // URL filter landing page (also submission page)
 #[derive(Template)]
@@ -67,7 +67,7 @@ pub fn router() -> Router<AppState> {
 mod post {
     use super::{
         debug, warn, AppError, AppState, AuthSession, DeleteForm, FilterForm, Form, IntoResponse,
-        Messages, Mutation, Query, Redirect, Regex, Response, Session, SessionEntry, State,
+        Messages, Mutation, Query, Redirect, Regex, Response, Session, SessionData, State,
     };
 
     pub(super) async fn url_filters(
@@ -77,12 +77,7 @@ mod post {
         State(mut state): State<AppState>,
         Form(filter_form): Form<FilterForm>,
     ) -> Result<Response, AppError> {
-        SessionEntry::check_session(
-            &state.csrf_crypto_engine,
-            &session,
-            &filter_form.authenticity_token,
-        )
-        .await?;
+        SessionData::check_session(&session, &filter_form.authenticity_token).await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to add a url_filter");
@@ -134,12 +129,7 @@ mod post {
         State(mut state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        SessionEntry::check_session(
-            &state.csrf_crypto_engine,
-            &session,
-            &delete_form.authenticity_token,
-        )
-        .await?;
+        SessionData::check_session(&session, &delete_form.authenticity_token).await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to delete a url_filter");
@@ -168,7 +158,7 @@ mod post {
 mod get {
     use super::{
         debug, warn, AppError, AppState, AuthSession, IntoResponse, Messages, Query, Redirect,
-        Response, Session, SessionEntry, State, UrlFiltersTemplate,
+        Response, Session, SessionData, State, UrlFiltersTemplate,
     };
 
     pub(super) async fn url_filters(
@@ -182,8 +172,7 @@ mod get {
             return Err(AppError::Unauthorized);
         };
 
-        let authenticity_token =
-            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+        let authenticity_token = SessionData::new_into_session(&session).await?;
 
         let url_filters = Query::fetch_all_url_filters(&state.db).await?;
 

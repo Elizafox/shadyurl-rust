@@ -27,7 +27,7 @@ use tracing::{info, warn};
 
 use crate::{
     auth::{AuthSession, Credentials},
-    csrf::SessionEntry,
+    csrf::SessionData,
     err::AppError,
     state::AppState,
 };
@@ -50,23 +50,17 @@ pub fn router() -> Router<AppState> {
 
 mod post {
     use super::{
-        info, warn, AppError, AppState, AuthSession, Credentials, Form, IntoResponse, Messages,
-        Redirect, Response, Session, SessionEntry, State,
+        info, warn, AppError, AuthSession, Credentials, Form, IntoResponse, Messages, Redirect,
+        Response, Session, SessionData,
     };
 
     pub(super) async fn login(
         session: Session,
         mut auth_session: AuthSession,
         messages: Messages,
-        State(state): State<AppState>,
         Form(creds): Form<Credentials>,
     ) -> Result<Response, AppError> {
-        SessionEntry::check_session(
-            &state.csrf_crypto_engine,
-            &session,
-            &creds.authenticity_token,
-        )
-        .await?;
+        SessionData::check_session(&session, &creds.authenticity_token).await?;
 
         let Some(user) = auth_session.authenticate(creds.clone()).await? else {
             warn!(
@@ -88,7 +82,7 @@ mod post {
 mod get {
     use super::{
         info, AppError, AppState, AuthSession, IntoResponse, LoginTemplate, Messages, Redirect,
-        Response, Session, SessionEntry, State,
+        Response, Session, SessionData, State,
     };
 
     pub(super) async fn login(
@@ -102,8 +96,7 @@ mod get {
             return Ok(Redirect::to("/admin").into_response());
         }
 
-        let authenticity_token =
-            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+        let authenticity_token = SessionData::new_into_session(&session).await?;
 
         Ok(LoginTemplate {
             authenticity_token,

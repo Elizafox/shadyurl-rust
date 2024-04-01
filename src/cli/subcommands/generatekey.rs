@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: CC0-1.0
  *
- * src/cli/subcommands/generatekeys.rs
+ * src/cli/subcommands/generatekey.rs
  *
  * This file is a component of ShadyURL by Elizabeth Myers.
  *
@@ -24,16 +24,16 @@ pub enum CliError {
     Rand(#[from] rand::Error),
 }
 
-pub struct GenerateKeysSubcommand;
+pub struct GenerateKeySubcommand;
 
 #[async_trait::async_trait]
-impl CliSubcommand for GenerateKeysSubcommand {
+impl CliSubcommand for GenerateKeySubcommand {
     type Error = CliError;
     type PromptUserData = ();
     type CommandData = ();
 
     fn proc_title() -> String {
-        "shadyurl-rust [generate-keys]".to_string()
+        "shadyurl-rust [generate-key]".to_string()
     }
 
     fn prompt_user() -> Result<Self::PromptUserData, Self::Error> {
@@ -47,7 +47,7 @@ impl CliSubcommand for GenerateKeysSubcommand {
     ) -> Result<(), Self::Error> {
         let mut rng = thread_rng();
 
-        let mut enc: Key = [0u8; 32];
+        let mut enc: Key = [0u8; 64];
 
         // Random key material will do just fine
         rng.try_fill_bytes(&mut enc)?;

@@ -35,7 +35,7 @@ use service::{Mutation, Query};
 
 use crate::{
     auth::AuthSession,
-    csrf::SessionEntry,
+    csrf::SessionData,
     err::AppError,
     state::AppState,
     util::{
@@ -112,7 +112,7 @@ mod post {
     use super::{
         debug, find_networks, vec_to_ipaddr, warn, AppError, AppState, AuthSession, BanForm,
         DeleteForm, Form, FromStr, IntoResponse, IpNetwork, Messages, Mutation, Query, Redirect,
-        Response, Session, SessionEntry, State,
+        Response, Session, SessionData, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -122,12 +122,7 @@ mod post {
         State(state): State<AppState>,
         Form(ban_form): Form<BanForm>,
     ) -> Result<Response, AppError> {
-        SessionEntry::check_session(
-            &state.csrf_crypto_engine,
-            &session,
-            &ban_form.authenticity_token,
-        )
-        .await?;
+        SessionData::check_session(&session, &ban_form.authenticity_token).await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to add a cidr_ban");
@@ -172,12 +167,7 @@ mod post {
         State(state): State<AppState>,
         Form(delete_form): Form<DeleteForm>,
     ) -> Result<Response, AppError> {
-        SessionEntry::check_session(
-            &state.csrf_crypto_engine,
-            &session,
-            &delete_form.authenticity_token,
-        )
-        .await?;
+        SessionData::check_session(&session, &delete_form.authenticity_token).await?;
 
         let Some(user) = auth_session.user else {
             warn!("Unauthorized attempt to delete a cidr_ban");
@@ -211,7 +201,7 @@ mod post {
 mod get {
     use super::{
         debug, warn, AppError, AppState, AuthSession, CidrBansTemplate, IntoResponse, Messages,
-        Query, Redirect, Response, Session, SessionEntry, State,
+        Query, Redirect, Response, Session, SessionData, State,
     };
 
     pub(super) async fn cidr_bans(
@@ -225,8 +215,7 @@ mod get {
             return Err(AppError::Unauthorized);
         };
 
-        let authenticity_token =
-            SessionEntry::insert_session(&state.csrf_crypto_engine, &session).await?;
+        let authenticity_token = SessionData::new_into_session(&session).await?;
 
         let cidr_bans = Query::fetch_all_cidr_bans(&state.db).await?;
 

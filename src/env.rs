@@ -27,7 +27,7 @@ use validator::Validate;
 
 // Routines to get configuration information from the environment and .env file
 
-pub type Key = [u8; 32];
+pub type Key = [u8; 64];
 
 mod defaults {
     use super::{thread_rng, Duration, Key, Rng};
@@ -49,7 +49,7 @@ mod defaults {
     }
 
     pub(super) fn csrf_key() -> Key {
-        let mut ret = [0u8; 32];
+        let mut ret = [0u8; 64];
         thread_rng().fill(&mut ret);
         ret
     }

@@ -89,5 +89,5 @@ BAN_CACHE_MAX_ENTRIES=5000
 # Set the CSRF encryption key.
 # If unset, a random one will be generated each application start (invalidating all previous sessions).
 # This default MUST be changed. Generate a new one with:
-#   cargo run generate-key
-CSRF_KEY="R28gb3V0IGFuZCB0b3VjaCBzb21lIGdyYXNzLCBsb2w="
+#     cargo run generate-key
+CSRF_KEY="V2h5IGRpZCB5b3Ugd2FzdGUgeW91ciB0aW1lIGRlY29kaW5nIHRoaXMgdGhpbmc/IEdvIHRvdWNoIGdyYXNzLg=="

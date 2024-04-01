@@ -17,7 +17,7 @@
 mod adduser;
 mod changepassword;
 mod deleteuser;
-mod generatekeys;
+mod generatekey;
 mod run;
 
 use proctitle::set_title;
@@ -26,6 +26,12 @@ use crate::env::{EnvError, Vars};
 
 // Re-exported
 pub use crate::cli::parser::UsernameArgument;
+
+pub use adduser::AddUserSubcommand;
+pub use changepassword::ChangePasswordSubcommand;
+pub use deleteuser::DeleteUserSubcommand;
+pub use generatekey::GenerateKeySubcommand;
+pub use run::RunSubcommand;
 
 #[async_trait::async_trait]
 pub trait CliSubcommand {
@@ -60,9 +66,3 @@ pub trait CliSubcommand {
         data: &Self::CommandData,
     ) -> Result<(), Self::Error>;
 }
-
-pub use adduser::AddUserSubcommand;
-pub use changepassword::ChangePasswordSubcommand;
-pub use deleteuser::DeleteUserSubcommand;
-pub use generatekeys::GenerateKeysSubcommand;
-pub use run::RunSubcommand;
