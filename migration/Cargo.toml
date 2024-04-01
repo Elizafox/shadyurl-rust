@@ -31,5 +31,5 @@ postgres = ["sea-orm-migration/sqlx-postgres"]
 sqlite = ["sea-orm-migration/sqlx-sqlite"]
 
 [dependencies]
-sea-orm-migration = { version = "1.0.0-rc.2", features = ["runtime-tokio-native-tls", "with-time"] }
-tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
+sea-orm-migration = { version = "1.0.0-rc.3", features = ["runtime-tokio-native-tls", "with-time"] }
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
