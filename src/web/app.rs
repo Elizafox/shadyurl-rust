@@ -124,7 +124,7 @@ impl App {
         let caching_store = CachingSessionStore::new(moka_store, redis_store);
         let session_layer = SessionManagerLayer::new(caching_store)
             .with_expiry(Expiry::OnInactivity(Duration::days(1)))
-            .with_private(Key::derive_from(&self.state.env.csrf_key));
+            .with_private(Key::from(&self.state.env.csrf_key));
 
         let backend = Backend::new(self.state.db.clone());
         let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
