@@ -53,8 +53,7 @@ IP_SOURCE="RightmostXForwardedFor"
 #
 # Be sure to run from the source dir:
 #     . ./.env && sea-orm-cli migrate -u "$DATABASE_URL" up
-DATABASE_URL="postgresql://localhost/shadyurl"
-#DATABASE_URL="sqlite:/tmp/test.db"
+DATABASE_URL="sqlite:/:memory:"
 
 # Redis URL, must start with redis:// as below.
 REDIS_URL="redis://127.0.0.1"
