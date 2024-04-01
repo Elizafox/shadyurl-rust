@@ -49,7 +49,7 @@ pub fn validate_url(url: &str) -> Result<(), ValidationError> {
                 }
             }
         }
-        _ => Err(err.clone().with_message("Bad URL scheme".into())),
+        _ => Err(err.with_message("Bad URL scheme".into())),
     }
 }
 

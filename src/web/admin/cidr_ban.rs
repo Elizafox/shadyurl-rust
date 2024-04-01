@@ -137,15 +137,17 @@ mod post {
                 .field_errors()
                 .get("range")
                 .map_or("Unknown error".to_string(), |v| v[0].to_string());
-            debug!("Invalid range ({}) submitted from user {}: {error_reason}", ban_form.range, user.0.username);
+            debug!(
+                "Invalid range ({}) submitted from user {}: {error_reason}",
+                ban_form.range, user.0.username
+            );
             messages.error(format!("Invalid range: {error_reason}").as_str());
             return Ok(Redirect::to("/admin/cidr_bans").into_response());
         }
 
-        let network = match IpNetwork::from_str(&ban_form.range) {
-            Ok(network) => network,
-            Err(_) => unreachable!(),
-        };
+        // Validated previously
+        let network =
+            IpNetwork::from_str(&ban_form.range).map_or_else(|_| unreachable!(), |network| network);
 
         // Invalidate so users who aren't banned will now be
         state.bancache.invalidate(network);
