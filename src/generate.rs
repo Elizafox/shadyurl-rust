@@ -17,6 +17,7 @@ use rand::{
     distributions::{DistString, Uniform},
     prelude::*,
 };
+use tokio::task::spawn_blocking;
 
 use crate::util::{macros::arr, string::WebsafeAlphabet};
 
@@ -166,7 +167,7 @@ impl Generator {
     }
 
     // Create a shady-looking filename for the URL
-    pub(crate) fn shady_filename() -> String {
+    fn generate_shady_filename() -> String {
         arr!(const SEPS: [&str; _] = ["!", "_", "+", "~"]);
 
         let mut rng = thread_rng();
@@ -229,6 +230,14 @@ impl Generator {
         }
 
         out.into_iter().collect()
+    }
+
+    // async wrapper around generate_shady_filename
+    pub(crate) async fn shady_filename() -> String {
+        
+        spawn_blocking(Self::generate_shady_filename)
+            .await
+            .expect("shady_filename task unexpectedly failed")
     }
 }
 

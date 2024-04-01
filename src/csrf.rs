@@ -20,6 +20,7 @@ use rand::{
 use serde::{Deserialize, Serialize};
 use subtle::ConstantTimeEq;
 use time::{Duration, OffsetDateTime};
+use tokio::task::{spawn_blocking, JoinError};
 use tower_sessions::Session;
 use tracing::debug;
 
@@ -40,6 +41,9 @@ pub enum SessionError {
     #[error(transparent)]
     Session(#[from] tower_sessions::session::Error),
 
+    #[error(transparent)]
+    Join(#[from] JoinError),
+
     #[error("No CSRF token")]
     NoToken,
 
@@ -51,36 +55,44 @@ pub enum SessionError {
 }
 
 impl SessionData {
-    fn new() -> Self {
+    async fn new() -> Self {
         let len_distr = Lazy::new(|| Uniform::new(24usize, 48usize));
-        let mut rng = thread_rng();
-        let len = (*len_distr).sample(&mut rng);
-        Self {
-            token: WebsafeAlphabet.sample_string(&mut rng, len),
-            time: OffsetDateTime::now_utc(),
-        }
+        spawn_blocking(move || {
+            let mut rng = thread_rng();
+            let len = (*len_distr).sample(&mut rng);
+            Self {
+                token: WebsafeAlphabet.sample_string(&mut rng, len),
+                time: OffsetDateTime::now_utc(),
+            }
+        })
+        .await
+        .expect("Unexpectedly failed to create session data")
     }
 
-    fn cmp(&self, token: &str) -> Result<(), SessionError> {
-        if token.as_bytes().ct_ne(self.token.as_bytes()).into() {
-            debug!("CSRF tokens mismatched: {token} != {}", self.token);
-            return Err(SessionError::Mismatch);
-        }
+    async fn cmp(self, token: &str) -> Result<(), SessionError> {
+        let token = token.to_owned();
+        spawn_blocking(move || {
+            if token.as_bytes().ct_ne(self.token.as_bytes()).into() {
+                debug!("CSRF tokens mismatched");
+                return Err(SessionError::Mismatch);
+            }
 
-        // This isn't sensitive info, so it's okay not to compare in constant time
-        if OffsetDateTime::now_utc() - self.time > MAX_DURATION {
-            debug!(
-                "CSRF token expired: {}",
-                OffsetDateTime::now_utc() - self.time
-            );
-            return Err(SessionError::Expired);
-        }
+            // This isn't sensitive info, so it's okay not to compare in constant time
+            if OffsetDateTime::now_utc() - self.time > MAX_DURATION {
+                debug!(
+                    "CSRF token expired: {}",
+                    OffsetDateTime::now_utc() - self.time
+                );
+                return Err(SessionError::Expired);
+            }
 
-        Ok(())
+            Ok(())
+        })
+        .await?
     }
 
     pub async fn new_into_session(session: &Session) -> Result<String, SessionError> {
-        let data = Self::new();
+        let data = Self::new().await;
         let token = data.token.clone();
 
         session.insert(SESSION_KEY, data).await?;
@@ -96,6 +108,6 @@ impl SessionData {
             .ok_or(SessionError::NoToken)?;
 
         // Verify the token
-        data.cmp(token)
+        data.cmp(token).await
     }
 }

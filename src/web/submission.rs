@@ -120,7 +120,7 @@ mod post {
             ));
         }
 
-        let shady = Generator::shady_filename();
+        let shady = Generator::shady_filename().await;
         Mutation::create_url(&state.db, &url_form.url, &shady, Some(addr.to_string())).await?;
 
         debug!("URL created: {} -> {shady}", url_form.url);
