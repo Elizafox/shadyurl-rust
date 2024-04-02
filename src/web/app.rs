@@ -127,13 +127,12 @@ impl App {
             .with_private(Key::from(&self.state.env.csrf_key));
 
         let backend = Backend::new(self.state.db.clone());
-        let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
+        let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
         let services = ServiceBuilder::new()
             .layer(TimeoutLayer::new(Duration::seconds(15).unsigned_abs()))
             .layer(NormalizePathLayer::trim_trailing_slash())
             .layer(auth_layer)
-            .layer(session_layer)
             .layer(MessagesManagerLayer)
             .layer(self.state.env.ip_source.clone().into_extension());
 
