@@ -173,7 +173,7 @@ impl Generator {
         let mut rng = thread_rng();
 
         // These never change, so no point in regenerating them each time
-        let distr_count = Lazy::new(|| Uniform::new_inclusive(3, 6));
+        let distr_count = Lazy::new(|| Uniform::new_inclusive(4, 7));
 
         let token_count = distr_count.sample(&mut rng);
         let mut nsfw_str_count = token_count;
@@ -234,7 +234,6 @@ impl Generator {
 
     // async wrapper around generate_shady_filename
     pub(crate) async fn shady_filename() -> String {
-        
         spawn_blocking(Self::generate_shady_filename)
             .await
             .expect("shady_filename task unexpectedly failed")
