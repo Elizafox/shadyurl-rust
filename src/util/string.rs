@@ -104,8 +104,9 @@ impl Distribution<u8> for WebsafeAlphabet {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 {
         const GEN_ASCII_STR_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                 abcdefghijklmnopqrstuvwxyz\
-                0123456789$-_.+!*(),";
-        const MAX: usize = 26 + 26 + 10 + 10;
+                0123456789\
+                $-_+!*,";
+        const MAX: usize = 26 + 26 + 10 + 7;
         let range = Lazy::new(|| Uniform::new(0, MAX));
 
         // SAFETY: guaranteed to be within bounds
