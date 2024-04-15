@@ -89,4 +89,4 @@ tower-sessions = { version = "0.12.1", features = ["axum-core", "private"] }
 tower-sessions-moka-store = "0.12.0"
 tower-sessions-redis-store = "0.12.0"
 url = "2.5.0"
-validator = { version = "0.17.0", features = ["derive"] }
+validator = { version = "0.18.1", features = ["derive"] }
