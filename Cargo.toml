@@ -54,7 +54,7 @@ askama = { version = "0.12.1", features = ["with-axum", "urlencode", "mime", "mi
 askama_axum = { version = "0.4.0", default-features = false, features = ["urlencode"] }
 async-trait = "0.1.79"
 axum = { version = "0.7.5", features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
-axum-client-ip = "0.5.1"
+axum-client-ip = "0.6.0"
 axum-login = "0.15.0"
 axum-messages = "0.6.0"
 base64 = "0.22.0"
