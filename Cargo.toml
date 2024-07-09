@@ -35,9 +35,9 @@ strip = true
 
 [features]
 default = ["sqlite"]
-mysql = ["sea-orm/sqlx-mysql", "sea-query/backend-postgres", "migration/mysql"]
-postgres = ["sea-orm/sqlx-postgres", "sea-query/backend-postgres", "migration/postgres"]
-sqlite = ["sea-orm/sqlx-sqlite", "sea-query/backend-sqlite", "migration/sqlite"]
+mysql = ["sea-orm/sqlx-mysql", "migration/mysql"]
+postgres = ["sea-orm/sqlx-postgres", "migration/postgres"]
+sqlite = ["sea-orm/sqlx-sqlite", "migration/sqlite"]
 tracing = ["tokio/tracing", "tower/tracing", "tower-http/tracing"]
 
 [dependencies]
@@ -74,7 +74,6 @@ rand = "0.8.5"
 regex = "1.10.5"
 rpassword = "7.3.1"
 sea-orm = { version = "1.0.0-rc.7", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
-sea-query = { version = "0.31.0-rc.8", features = ["thread-safe", "with-time"] }
 serde = { version = "1.0.204", features = ["derive"] }
 subtle = { version = "2.6.1", features = ["core_hint_black_box", "const-generics"] }
 systemd-duration = { version = "0.2.0", features = ["with-time"] }
