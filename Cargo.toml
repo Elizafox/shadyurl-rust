@@ -63,7 +63,7 @@ dotenvy = "0.15.7"
 envy = "0.4.2"
 heck = "0.5.0"
 ipnetwork = "0.20.0"
-itertools = "0.12.1"
+itertools = "0.13.0"
 mimalloc = "0.1.39"
 moka = { version = "0.12.5", features = ["future"] }
 num = "0.4.1"
