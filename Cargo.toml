@@ -52,41 +52,41 @@ service = { path = "service" }
 
 askama = { version = "0.12.1", features = ["with-axum", "urlencode", "mime", "mime_guess"], default-features = false }
 askama_axum = { version = "0.4.0", default-features = false, features = ["urlencode"] }
-async-trait = "0.1.79"
+async-trait = "0.1.81"
 axum = { version = "0.7.5", features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
-axum-client-ip = "0.5.1"
-axum-login = "0.15.0"
-axum-messages = "0.6.0"
-base64 = "0.22.0"
-clap = { version = "4.5.4", features = ["cargo", "derive", "unicode"] }
+axum-client-ip = "0.6.0"
+axum-login = "0.15.3"
+axum-messages = "0.6.1"
+base64 = "0.22.1"
+clap = { version = "4.5.8", features = ["cargo", "derive", "unicode"] }
 dotenvy = "0.15.7"
 envy = "0.4.2"
 heck = "0.5.0"
 ipnetwork = "0.20.0"
 itertools = "0.13.0"
-mimalloc = "0.1.39"
-moka = { version = "0.12.5", features = ["future"] }
-num = "0.4.1"
+mimalloc = "0.1.43"
+moka = { version = "0.12.8", features = ["future"] }
+num = "0.4.3"
 once_cell = { version = "1.19.0", features = ["parking_lot"] }
 password-auth = "1.0.0"
 proctitle = "0.1.1"
 rand = "0.8.5"
-regex = "1.10.4"
+regex = "1.10.5"
 rpassword = "7.3.1"
-sea-orm = { version = "1.0.0-rc.3", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
-sea-query = { version = "0.31.0-rc.4", features = ["thread-safe", "with-time"] }
-serde = { version = "1.0.197", features = ["derive"] }
-subtle = { version = "2.5.0", features = ["core_hint_black_box", "const-generics"] }
+sea-orm = { version = "1.0.0-rc.7", features = ["macros", "runtime-tokio-native-tls", "with-time"] }
+sea-query = { version = "0.31.0-rc.8", features = ["thread-safe", "with-time"] }
+serde = { version = "1.0.204", features = ["derive"] }
+subtle = { version = "2.6.1", features = ["core_hint_black_box", "const-generics"] }
 systemd-duration = { version = "0.2.0", features = ["with-time"] }
-thiserror = "1.0.58"
-time = { version = "0.3.34", features = ["local-offset", "serde", "serde-human-readable", "serde-well-known"] }
-tokio = { version = "1.37.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "sync", "time"] }
+thiserror = "1.0.61"
+time = { version = "0.3.36", features = ["local-offset", "serde", "serde-human-readable", "serde-well-known"] }
+tokio = { version = "1.38.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "sync", "time"] }
 tracing = { version = "0.1.40", features = ["async-await", "log"] }
 tracing-subscriber = { version = "0.3.18", features = ["local-time", "parking_lot", "time"] }
 tower = { version = "0.4.13", features = ["timeout", "tokio"] }
 tower-http = { version = "0.5.2", features = ["fs", "normalize-path", "timeout", "tokio"] }
-tower-sessions = { version = "0.12.1", features = ["axum-core", "private"] }
+tower-sessions = { version = "0.12.2", features = ["axum-core", "private"] }
 tower-sessions-moka-store = "0.13.0"
 tower-sessions-redis-store = "0.13.0"
-url = "2.5.0"
-validator = { version = "0.17.0", features = ["derive"] }
+url = "2.5.2"
+validator = { version = "0.18.1", features = ["derive"] }

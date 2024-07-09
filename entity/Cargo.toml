@@ -25,4 +25,4 @@ name = "entity"
 path = "src/mod.rs"
 
 [dependencies]
-sea-orm = { version = "1.0.0-rc.3", default-features = false, features = ["with-time"] }
+sea-orm = { version = "1.0.0-rc.7", default-features = false, features = ["with-time"] }
