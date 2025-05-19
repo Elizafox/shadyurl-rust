@@ -50,7 +50,7 @@ service = { path = "service" }
 # Package dependencies go below here #
 ######################################
 
-askama = { version = "0.12.1", features = ["with-axum", "urlencode", "mime", "mime_guess"], default-features = false }
+askama = { version = "0.14.0", features = ["with-axum", "urlencode", "mime", "mime_guess"], default-features = false }
 askama_axum = { version = "0.4.0", default-features = false, features = ["urlencode"] }
 async-trait = "0.1.81"
 axum = { version = "0.7.5", features = ["form", "http1", "http2", "macros", "tokio", "tower-log"] }
