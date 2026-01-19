@@ -77,7 +77,7 @@ sea-orm = { version = "1.0.0-rc.7", features = ["macros", "runtime-tokio-native-
 serde = { version = "1.0.204", features = ["derive"] }
 subtle = { version = "2.6.1", features = ["core_hint_black_box", "const-generics"] }
 systemd-duration = { version = "0.2.0", features = ["with-time"] }
-thiserror = "1.0.61"
+thiserror = "2.0.18"
 time = { version = "0.3.36", features = ["local-offset", "serde", "serde-human-readable", "serde-well-known"] }
 tokio = { version = "1.38.0", features = ["macros", "parking_lot", "rt-multi-thread", "signal", "sync", "time"] }
 tracing = { version = "0.1.40", features = ["async-await", "log"] }
